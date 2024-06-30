@@ -1,0 +1,12 @@
+
+#ifndef INSTRENDERER_MESHCOMPONENT_H
+#define INSTRENDERER_MESHCOMPONENT_H
+
+
+class MeshComponent
+{
+
+};
+
+
+#endif //INSTRENDERER_MESHCOMPONENT_H

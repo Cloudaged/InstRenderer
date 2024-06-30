@@ -1,0 +1,12 @@
+
+#ifndef INSTRENDERER_MATERIAL_H
+#define INSTRENDERER_MATERIAL_H
+
+
+class Material
+{
+
+};
+
+
+#endif //INSTRENDERER_MATERIAL_H
