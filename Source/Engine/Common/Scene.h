@@ -14,9 +14,12 @@ public:
     ~Scene();
     entt::registry reg;
 
-    std::vector<GameObject*> objects;
-    template<typename T>
-    T* CreateObject(std::string name);
+    std::vector<entt::meta_any> objects;
+    entt::meta_any CreateObject(std::string name,std::string type);
+    entt::meta_any CreateObject(std::string name,std::string type,int parent);
+    void DeleteObject(int id);
+    void Destroy(int i);
+    void RenameObject(int id,std::string dstName);
 };
 
 

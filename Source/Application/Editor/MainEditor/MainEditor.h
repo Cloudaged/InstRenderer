@@ -8,6 +8,8 @@
 #include "../ResourceEditor/ResourceEditor.h"
 #include "../RenderEditor/RenderEditor.h"
 #include "../ConsoleEditor/ConsoleEditor.h"
+#include "../EditorTypes.h"
+
 
 #include "QMenuBar"
 #include "QMenu"
@@ -47,8 +49,6 @@ private:
     void InitSubWidget();
     void InitSubWidgetLayoutAndShow();
 
-    //Emit func
-    void EmitFunc();
 
     //ToolBar
     QMenuBar* menuBar;
@@ -58,7 +58,8 @@ private:
     Ui::MainEditor *ui;
 
 signals:
-    void AddNewNode();
+    void AddNewNode(std::string name, std::string type);
+    void DeleteNode();
 
 };
 

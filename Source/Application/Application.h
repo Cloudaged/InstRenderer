@@ -2,7 +2,9 @@
 #define INSTRENDERER_APPLICATION_H
 #include "QApplication"
 
-#include "MainEditor/MainEditor.h"
+#include "Editor/MainEditor/MainEditor.h"
+#include "Presenter.h"
+
 #include "Common/GameInstance.h"
 #include "Common/GameType.h"
 #include <string>
@@ -18,14 +20,11 @@ public:
     WindowSize windowSize;
 private:
 
-    void Opts();
-    void AddNode();
-
     QApplication* qApplication;
     MainEditor* editor;
     GameInstance* gameInstance;
+    Presenter* presenter;
 
-    void AddObjects();
 };
 
 

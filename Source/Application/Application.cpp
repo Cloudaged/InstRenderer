@@ -6,8 +6,10 @@ Application::Application(std::string title, WindowSize size,int argc,char** argv
 
     //Editor
     qApplication = new QApplication(argc,argv);
-    editor = new MainEditor();
     gameInstance = new GameInstance(windowSize);
+    editor = new MainEditor();
+
+    presenter = new Presenter(gameInstance,editor);
     //GameInstance
 
 
@@ -15,7 +17,6 @@ Application::Application(std::string title, WindowSize size,int argc,char** argv
 
 void Application::Run()
 {
-    Opts();
 
 }
 
@@ -24,17 +25,6 @@ int Application::Quit()
     return qApplication->exec();
 }
 
-void Application::Opts()
-{
-    AddNode();
-}
 
-void Application::AddNode()
-{
-    editor->connect(editor,&MainEditor::AddNewNode,[&]()
-    {
-        std::cout<<"Add nodes\n";
-    });
-}
 
 

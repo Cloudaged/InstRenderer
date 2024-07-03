@@ -8,6 +8,7 @@ static void RegisterMeta()
             .type("GameObject"_hs)
             .data<&GameObject::entityID>("entityID"_hs)
             .data<&GameObject::name>("name"_hs)
+            .data<&GameObject::parent>("parent"_hs)
             .ctor<entt::entity,std::string>();
 
     entt::meta<MeshObject>()

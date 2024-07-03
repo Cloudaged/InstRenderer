@@ -14,7 +14,6 @@ MainEditor::MainEditor(QWidget *parent) :
     InitSubWidget();
     InitSubWidgetLayoutAndShow();
 
-    EmitFunc();
 
 }
 
@@ -86,13 +85,7 @@ void MainEditor::InitMenuBar()
     this->setMenuBar(menuBar);
 }
 
-void MainEditor::EmitFunc()
-{
-    connect(sceneEditor,&SceneEditor::AddObjAction,[&]()
-    {
-        std::cout<<"Add Obj Action\n";
-        emit AddNewNode();
-    });
 
 
-}
+
+

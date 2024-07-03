@@ -12,6 +12,7 @@ public:
     GameObject(entt::entity entity,std::string name);
     entt::entity entityID;
     std::string name;
+    int parent=-1;
 };
 
 
