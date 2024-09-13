@@ -10,24 +10,28 @@ MyToolBox::MyToolBox(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    MyToolPage* page1 = new MyToolPage;
-    MyToolPage* page2 = new MyToolPage;
-
-    QVBoxLayout* layout = new QVBoxLayout;
-    layout->addWidget(page1->pushButton);
-    layout->addWidget(page1->contentWidget);
-    layout->addWidget(page2->pushButton);
-    layout->addWidget(page2->contentWidget);
-    layout->addStretch();
-    layout->setSpacing(0);
-
-
-    this->setLayout(layout);
-
-    //setLayout(layout);
 }
 
 MyToolBox::~MyToolBox()
 {
     delete ui;
 }
+
+void MyToolBox::Reconstruct(std::vector<QWidget*> contents)
+{
+    delete layout;
+    layout = new QVBoxLayout(this);
+
+    for (auto& content:contents)
+    {
+        MyToolPage* page = new MyToolPage(content,"MyName",this);
+
+
+        layout->addWidget(page);
+    }
+
+    layout->addStretch();
+    layout->setSpacing(0);
+    this->setLayout(layout);
+}
+

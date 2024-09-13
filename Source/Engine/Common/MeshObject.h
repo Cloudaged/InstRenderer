@@ -2,7 +2,6 @@
 #ifndef INSTRENDERER_MESHOBJECT_H
 #define INSTRENDERER_MESHOBJECT_H
 #include "GameObject.h"
-#include "Component/MeshComponent.h"
 class MeshObject : public GameObject
 {
 public:

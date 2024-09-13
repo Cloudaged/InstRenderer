@@ -1,0 +1,24 @@
+
+#ifndef INSTRENDERER_ALLOCATEDIMAGE_H
+#define INSTRENDERER_ALLOCATEDIMAGE_H
+#include "vma/vk_mem_alloc.h"
+#include "vulkan/vulkan.h"
+class AllocatedImage
+{
+public:
+    AllocatedImage();
+    AllocatedImage(VkFormat format,VkImageUsageFlags usageFlags,VkExtent2D extent,int mipLevel,VkImageAspectFlags aspectFlags);
+    VkImage vk_image;
+    VkImageView imageView;
+    VmaAllocation allocation;
+    VkExtent3D imageExtent;
+    VkFormat imageFormat;
+    VkImageUsageFlags usage;
+    VmaAllocationInfo info;
+    VkImageLayout layout;
+
+
+};
+
+
+#endif //INSTRENDERER_ALLOCATEDIMAGE_H

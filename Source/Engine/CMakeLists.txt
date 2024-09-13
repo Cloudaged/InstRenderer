@@ -9,4 +9,8 @@ file(GLOB_RECURSE SOURCE
 add_library(${PROJECT_NAME} SHARED ${HEADER} ${SOURCE})
 target_link_libraries(${PROJECT_NAME}
         Vulkan::Vulkan
+        mingw32
+        SDL2main
+        SDL2
+        assimp
         )

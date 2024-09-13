@@ -10,6 +10,8 @@ ComponentEditor::ComponentEditor(QDockWidget *parent) :
 {
     ui->setupUi(this);
     InitToolBox();
+    transformCompUI = new TransformComponentUI({});
+   // transformCompUI->hide();
 }
 
 ComponentEditor::~ComponentEditor()
@@ -20,14 +22,54 @@ ComponentEditor::~ComponentEditor()
 void ComponentEditor::InitToolBox()
 {
     scrollArea = new QScrollArea();
+    toolBox = new MyToolBox(this);
 
-    QWidget* res = new QWidget();
+    //QVBoxLayout* vlayout = new QVBoxLayout(toolBox);
+    //vlayout->addWidget(new TransformComponentUI(toolBox));
 
-    toolBox = new MyToolBox();
+    //toolBox->setLayout(vlayout);
+
+
+    //scrollArea->setWidgetResizable(true);
+    //scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+
 
     scrollArea->setWidget(toolBox);
-
-
-    //scrollArea->setWidget(toolBox);
     this->setWidget(scrollArea);
+}
+
+void ComponentEditor::resizeEvent(QResizeEvent *event)
+{
+    toolBox->resize(event->size().width(),this->height());
+    QWidget::resizeEvent(event);
+}
+
+void ComponentEditor::ChangeGameObject(GameObject *gameObject, entt::registry *reg)
+{
+    if(toolBox)
+        delete toolBox;
+    toolBox = new MyToolBox(this);
+
+    std::vector<QWidget*> contents;
+
+    curID = gameObject->entityID;
+    auto& bits = gameObject->componentBits;
+
+    if(bits.test(static_cast<size_t>(ComponentType::Transform)))
+    {
+        //Transform
+        auto& transformComp = reg->get<Transform>(gameObject->entityID);
+
+        transformCompUI->ChangeData(transformComp);
+
+        contents.push_back(transformCompUI);
+    }
+    if(bits.test(static_cast<size_t>(ComponentType::Renderable)))
+    {
+        //Renderable
+
+    }
+
+    toolBox->Reconstruct(contents);
+    scrollArea->setWidget(toolBox);
 }

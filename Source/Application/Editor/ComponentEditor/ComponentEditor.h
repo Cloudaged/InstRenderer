@@ -6,9 +6,16 @@
 #include "QDockWidget"
 #include "QToolBox"
 #include "QLabel"
+#include "QResizeEvent"
 #include "QPushButton"
 #include "../ComponentUI/Base/MyToolPage.h"
 #include "../ComponentUI/Base/MyToolBox.h"
+
+#include "entt.hpp"
+#include "../Engine/Common/GameObject.h"
+
+#include "../Engine/Common/Component/Components.h"
+#include "../ComponentUI/TransformComponentUI/TransformComponentUI.h"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -23,10 +30,15 @@ Q_OBJECT
 public:
     explicit ComponentEditor(QDockWidget *parent = nullptr);
 
+    void ChangeGameObject(GameObject* gameObject,entt::registry* reg);
+
     ~ComponentEditor() override;
 
+    entt::entity curID;
+    TransformComponentUI* transformCompUI;
 private:
     void InitToolBox();
+    void resizeEvent(QResizeEvent *event) override;
     Ui::ComponentEditor *ui;
     MyToolBox* toolBox;
     QScrollArea* scrollArea;

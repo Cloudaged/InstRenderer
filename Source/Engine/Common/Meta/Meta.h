@@ -1,6 +1,8 @@
 #include "entt.hpp"
 #include "../GameObject.h"
 #include "../MeshObject.h"
+
+#include "../Component/Components.h"
 using namespace entt::literals;
 static void RegisterMeta()
 {
@@ -18,4 +20,10 @@ static void RegisterMeta()
             .data<&MeshObject::name>("name"_hs)
             .data<&MeshObject::count>("count"_hs)
             .ctor<entt::entity,std::string>();
+
+    entt::meta<Transform>()
+            .type("Transform"_hs)
+            .data<&Transform::pos>("Position"_hs)
+            .data<&Transform::rotation>("Rotation"_hs)
+            .data<&Transform::scale>("Scale"_hs);
 }

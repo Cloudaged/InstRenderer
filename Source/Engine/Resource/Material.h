@@ -2,11 +2,14 @@
 #ifndef INSTRENDERER_MATERIAL_H
 #define INSTRENDERER_MATERIAL_H
 
-
-class Material
+namespace Res
 {
 
-};
+    class Material
+    {
 
+    };
+
+} // Res
 
 #endif //INSTRENDERER_MATERIAL_H

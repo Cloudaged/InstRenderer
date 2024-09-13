@@ -1,13 +1,15 @@
 
 #include "Application.h"
 
-Application::Application(std::string title, WindowSize size,int argc,char** argv): windowSize(size)
+Application::Application(MainEditor* editor,std::string title, WindowSize size,int argc,char** argv): windowSize(size),editor(editor)
 {
 
     //Editor
     qApplication = new QApplication(argc,argv);
     gameInstance = new GameInstance(windowSize);
-    editor = new MainEditor();
+
+    EditorInitializer initializer;
+
 
     presenter = new Presenter(gameInstance,editor);
     //GameInstance
@@ -17,12 +19,20 @@ Application::Application(std::string title, WindowSize size,int argc,char** argv
 
 void Application::Run()
 {
-
+    while (1)
+    {
+        gameInstance->Tick();
+    }
 }
 
 int Application::Quit()
 {
     return qApplication->exec();
+}
+
+void Application::InitEditor()
+{
+    EditorInitializer initializer;
 }
 
 

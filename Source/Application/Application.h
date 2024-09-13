@@ -13,13 +13,13 @@
 class  Application
 {
 public:
-    Application(std::string title,WindowSize size,int argc,char** argv);
+    Application(MainEditor* editor,std::string title,WindowSize size,int argc,char** argv);
     void Run();
     int Quit();
     std::string title;
     WindowSize windowSize;
 private:
-
+    void InitEditor();
     QApplication* qApplication;
     MainEditor* editor;
     GameInstance* gameInstance;

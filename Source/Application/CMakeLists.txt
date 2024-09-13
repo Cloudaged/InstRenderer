@@ -10,7 +10,7 @@ file(GLOB_RECURSE EDITOR_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/Editor/*.cpp)
 
 
-add_executable(${PROJECT_NAME} main.cpp Application.h Application.cpp Presenter.cpp Presenter.h
+add_executable(${PROJECT_NAME} main.cpp Application.h Application.cpp Presenter.cpp Presenter.h GameThread.h GameThread.cpp
         ${EDITOR_HEADER} ${EDITOR_SOURCE}
         )
 

@@ -11,6 +11,7 @@ SceneEditor::SceneEditor(QDockWidget *parent) :
     ui->setupUi(this);
     InitTreeWidget();
     ConnectFuncs();
+    ItemChanged();
 }
 
 
@@ -175,6 +176,18 @@ std::string SceneEditor::GetUniqueName(std::string name)
         ++count;
     }
     return uniqueName.toStdString();
+}
+
+void SceneEditor::ItemChanged()
+{
+    connect(treeWidget,&QTreeWidget::itemSelectionChanged,[&]()
+    {
+        if(!treeWidget->selectedItems().empty())
+        {
+            emit SelectedItemChanged(treeWidget->selectedItems()[0]->text(2).toInt());
+        }
+
+    });
 }
 
 

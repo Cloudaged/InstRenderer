@@ -9,7 +9,7 @@
 #include "../RenderEditor/RenderEditor.h"
 #include "../ConsoleEditor/ConsoleEditor.h"
 #include "../EditorTypes.h"
-
+#include "SDL2/SDL.h"
 
 #include "QMenuBar"
 #include "QMenu"
@@ -22,6 +22,10 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
+struct EditorInitializer
+{
+    SDL_Window* window;
+};
 
 
 class  MainEditor : public QMainWindow

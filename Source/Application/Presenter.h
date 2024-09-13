@@ -12,6 +12,8 @@ public:
     MainEditor* editor;
 
 private:
+    void UpdateComponentData();
+    void ChangeSelectedItem();
     void AddGameObject();
     void DeleteGameObject();
     void RenameGameObject();

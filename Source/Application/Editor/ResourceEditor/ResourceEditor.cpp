@@ -29,5 +29,5 @@ void ResourceEditor::InitListWidget()
     QIcon* icon = new QIcon("D:\\code_lib\\AGProject\\InstRenderer\\Source\\Editor\\icons\\GameObject.png");
     QListWidgetItem* item = new QListWidgetItem(listWidget);
     item->setIcon(*icon);
-    item->setText("Mesh");
+    item->setText("ResMesh");
 }

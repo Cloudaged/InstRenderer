@@ -1,0 +1,13 @@
+
+#ifndef INSTRENDERER_RESOURCEMANAGER_H
+#define INSTRENDERER_RESOURCEMANAGER_H
+
+
+class ResourceManager
+{
+public:
+private:
+};
+
+
+#endif //INSTRENDERER_RESOURCEMANAGER_H

@@ -9,6 +9,7 @@
 #include "QFile"
 #include "QPushButton"
 #include "iostream"
+#include "bitset"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -17,16 +18,25 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
+enum class ComponentType
+{
+    Transform = 0,
+    Renderable = 1
+};
+
+
+
 class  MyToolPage : public QWidget
 {
 Q_OBJECT
 
 public:
-    explicit MyToolPage(QWidget *parent = nullptr);
+    explicit MyToolPage(QWidget* content,std::string name,QWidget *parent = nullptr);
 
     ~MyToolPage() override;
 
     QWidget* contentWidget;
+    QObject* contentParent;
     QPushButton* pushButton;
 
 private:
@@ -35,7 +45,6 @@ private:
     //QLabel* label;
 
     QVBoxLayout* layout;
-
 public slots:
     void AddWidget(const QString &title, QWidget* widget);
     void Expand();

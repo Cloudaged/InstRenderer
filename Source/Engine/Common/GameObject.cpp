@@ -3,8 +3,8 @@
 #include "iostream"
 
 
-GameObject::GameObject(entt::entity entity, const std::string name):entityID(entity)
+GameObject::GameObject(entt::entity entity, const std::string name):entityID(entity),name(name)
 {
-    this->name = name;
     std::cout<<"Object Created!: "<<name<<"\n";
 }
+

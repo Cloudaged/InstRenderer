@@ -46,6 +46,7 @@ private:
     void ConnectFuncs();
 
     void CheckItem();
+    void ItemChanged();
     std::string GetUniqueName(std::string name);
     QTreeWidgetItem* FindItems(QTreeWidgetItem* topItem,int id);
 
@@ -59,6 +60,8 @@ signals:
     void AddObjAction(std::string name,std::string type);
     void AddSubObjAction(std::string name,std::string type,int parent);
     void DeleteObjAction(int id);
+    void SelectedItemChanged(int id);
+
 };
 
 

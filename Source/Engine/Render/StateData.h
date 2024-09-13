@@ -1,0 +1,12 @@
+
+#ifndef INSTRENDERER_STATEDATA_H
+#define INSTRENDERER_STATEDATA_H
+
+
+class StateData
+{
+
+};
+
+
+#endif //INSTRENDERER_STATEDATA_H

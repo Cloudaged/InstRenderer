@@ -19,9 +19,9 @@ Q_OBJECT
 
 public:
     explicit MyToolBox(QWidget *parent = nullptr);
-
+    void Reconstruct(std::vector<QWidget*> contents);
     ~MyToolBox() override;
-
+    QVBoxLayout* layout= nullptr;
 private:
 
     Ui::MyToolBox *ui;

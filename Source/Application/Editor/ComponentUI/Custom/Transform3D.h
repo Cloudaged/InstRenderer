@@ -1,0 +1,42 @@
+
+#ifndef INSTRENDERER_TRANSFORM3D_H
+#define INSTRENDERER_TRANSFORM3D_H
+
+#include <QWidget>
+#include "QLabel"
+#include "QLineEdit"
+
+#include "QHBoxLayout"
+#include "glm/glm.hpp"
+QT_BEGIN_NAMESPACE
+namespace Ui
+{
+    class Transform3D;
+}
+QT_END_NAMESPACE
+
+
+class Transform3D : public QWidget
+{
+Q_OBJECT
+
+public:
+    explicit Transform3D(std::string tagName,glm::vec3 data,QWidget *parent = nullptr);
+
+    ~Transform3D() override;
+    QLabel tag;
+    QLineEdit* xEdit,*yEdit,*zEdit;
+
+    void UpdateData(glm::vec3 data);
+private:
+    glm::vec3 data;
+    std::string tagName;
+    void InitWidget();
+    void InitSignal();
+    QLabel* xLabel,*yLabel,*zLabel;
+
+    Ui::Transform3D *ui;
+};
+
+
+#endif //INSTRENDERER_TRANSFORM3D_H
