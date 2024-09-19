@@ -21,7 +21,6 @@ private:
 public:
 
     virtual void SetupAttachments() = 0;
-    virtual void Execute(entt::view<entt::get_t<Renderable>> view) = 0;
     void Build();
     VkRenderPass passHandle;
     VkFramebuffer framebufferHandle;

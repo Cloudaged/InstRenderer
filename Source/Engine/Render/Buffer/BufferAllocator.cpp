@@ -26,13 +26,13 @@ Buffer BufferAllocator::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage,
     return *buffer;
 }
 
-Texture BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format, VkImageUsageFlags usage)
+AllocatedImage BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format, VkImageUsageFlags usage)
 {
-    Texture* texture  = new Texture();
-    texture->format = format;
-    texture->width = extent2D.width;
-    texture->height = extent2D.height;
-    texture->usage = usage;
+    AllocatedImage* allocatedImage  = new AllocatedImage();
+    allocatedImage->imageFormat = format;
+    allocatedImage->imageExtent.width = extent2D.width;
+    allocatedImage->imageExtent.height = extent2D.height;
+    allocatedImage->usage = usage;
 
     VmaAllocationCreateInfo imageAllocateInfo{};
     imageAllocateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -51,7 +51,8 @@ Texture BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format,
     info.usage = usage;
     info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    if(vmaCreateImage(VulkanContext::GetContext().allocator,&info,&imageAllocateInfo,&texture->vk_image,&texture->allocation, &texture->allocInfo)!=VK_SUCCESS)
+    if(vmaCreateImage(VulkanContext::GetContext().allocator,&info,&imageAllocateInfo,&allocatedImage->vk_image,
+                      &allocatedImage->allocation, &allocatedImage->allocationInfo) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create allocatedImage");
     }
@@ -60,7 +61,7 @@ Texture BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format,
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.pNext = nullptr;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.image = texture->vk_image;
+    viewInfo.image = allocatedImage->vk_image;
     viewInfo.format = format;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 0;
@@ -68,12 +69,12 @@ Texture BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format,
     viewInfo.subresourceRange.layerCount = 1;
     viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-    if(vkCreateImageView(VulkanContext::GetContext().device,&viewInfo, nullptr,&texture->view)!=VK_SUCCESS)
+    if(vkCreateImageView(VulkanContext::GetContext().device,&viewInfo, nullptr,&allocatedImage->imageView)!=VK_SUCCESS)
     {
         throw std::runtime_error("failed to create imageview");
     }
 
-    return *texture;
+    return *allocatedImage;
 }
 
 void *BufferAllocator::GetMappedMemory(Buffer allocatedBuffer)

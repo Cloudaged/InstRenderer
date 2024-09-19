@@ -15,6 +15,7 @@
 #include "QMenu"
 #include "QAction"
 
+#include "QCloseEvent"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -45,6 +46,7 @@ public:
     ResourceEditor* resourceEditor;
     RenderEditor* renderEditor;
     ConsoleEditor* consoleEditor;
+    bool isClose = false;
 
 
 private:
@@ -53,7 +55,11 @@ private:
     void InitSubWidget();
     void InitSubWidgetLayoutAndShow();
 
-
+    void closeEvent(QCloseEvent *event) override
+    {
+        isClose = true;
+        event->accept();      // 接受关闭事件
+    }
     //ToolBar
     QMenuBar* menuBar;
     QMenu* fileMenu;

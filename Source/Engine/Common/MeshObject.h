@@ -5,7 +5,7 @@
 class MeshObject : public GameObject
 {
 public:
-    MeshObject(entt::entity entity,std::string name);
+    MeshObject(entt::registry* entity,std::string name);
     int count = 5;
 
 };

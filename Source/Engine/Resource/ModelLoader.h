@@ -5,18 +5,23 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 
-#include "Model.h"
+#include "ResModel.h"
 #include "ResMesh.h"
 #include "iostream"
 #include "filesystem"
-#include "Texture.h"
+#include "ResTexture.h"
+#include "ResMaterial.h"
+
+#include "filesystem"
+
 class ModelLoader
 {
 public:
-    static Res::Model* Load(std::string path);
+    static Res::ResModel* Load(std::string path);
 private:
-    static void ProcessNode(Res::Model* modelNeedLoad,aiNode* node,const aiScene* scene);
-    static Res::ResMesh ProcessMesh(Res::Model* modelNeedLoad, aiMesh* mesh, const aiScene* scene);
+    static void ProcessNode(Res::ResModel* modelNeedLoad,aiNode* node,const aiScene* scene);
+    static Res::ResMesh ProcessMesh(Res::ResModel* modelNeedLoad, aiMesh* mesh, const aiScene* scene);
+    static Res::ResMaterial ProcessMaterial(aiMesh* mesh,const aiScene* scene);
     static void LoadMaterialTexture(aiMaterial *mat, aiTextureType type,std::string typeName);
     static std::string AnalyzePath(std::string filePath,std::string modelInputPath);
 };

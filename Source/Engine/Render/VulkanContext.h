@@ -15,7 +15,7 @@
 #include "RHI/Swapchain.h"
 #include "vma/vk_mem_alloc.h"
 
-#include "RHI/AllocatedImage.h"
+#include "Buffer/AllocatedImage.h"
 #include "PresentManager.h"
 #include "Buffer/Buffer.h"
 #include "Buffer/BufferAllocator.h"

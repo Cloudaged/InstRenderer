@@ -1,5 +1,5 @@
 
-#include "Texture.h"
+#include "ResModel.h"
 
 namespace Res
 {

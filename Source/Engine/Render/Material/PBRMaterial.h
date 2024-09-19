@@ -9,9 +9,11 @@ class PBRMaterial : public Material
 {
 public:
     PBRMaterial();
-    Buffer buffer;
+    void Setup();
+    void AddTexture(Texture* texture);
+    //Buffer buffer;
     std::vector<VkDescriptorBufferInfo> bufferInfos;
-    std::vector<Texture> textures;
+    std::vector<Texture*> textures;
     std::vector<VkDescriptorImageInfo> imageInfos;
 
 };

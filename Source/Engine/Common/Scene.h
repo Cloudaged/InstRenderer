@@ -38,6 +38,7 @@ public:
     entt::meta_any CreateObject(std::string name,std::string type,int parent);
 
     void InitGlobalSet();
+    void InitSceneData();
 
     GameObject* GetGameObject(int id);
 

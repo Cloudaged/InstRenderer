@@ -38,7 +38,8 @@ void MaterialManager::AllocatePBRDes(PBRMaterial& material)
     //Get write
     std::vector<VkWriteDescriptorSet> writes;
     int index=0;
-    for (auto& bufferInfo:material.bufferInfos)
+
+    for (auto& imgInfo:material.imageInfos)
     {
         VkWriteDescriptorSet descriptorWrites{};
         descriptorWrites.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -47,13 +48,29 @@ void MaterialManager::AllocatePBRDes(PBRMaterial& material)
         descriptorWrites.dstArrayElement = 0;
         descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptorWrites.descriptorCount = 1;
+        descriptorWrites.pImageInfo = &imgInfo;
+        index++;
+        writes.push_back(descriptorWrites);
+    }
+
+    for (auto& bufferInfo:material.bufferInfos)
+    {
+        VkWriteDescriptorSet descriptorWrites{};
+        descriptorWrites.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites.dstSet = material.set;
+        descriptorWrites.dstBinding = index;
+        descriptorWrites.dstArrayElement = 0;
+        descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites.descriptorCount = 1;
         descriptorWrites.pBufferInfo = &bufferInfo;
         index++;
+        writes.push_back(descriptorWrites);
     }
+
 
     vkUpdateDescriptorSets(VulkanContext::GetContext().device,writes.size(),writes.data(),0, nullptr);
     int a =3;
-    memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(material.buffer),&a,sizeof(int));
+    //memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(material.buffer),&a,sizeof(int));
 }
 
 

@@ -5,7 +5,7 @@
 void RenderSystem::BeginSystem(RenderSysBeginInfo info)
 {
 
-    passManager.view = info.registry->view<Renderable>();
+    passManager.view = info.registry->view<Renderable,Transform>();
     passManager.globalDescriptorData = info.globalData;
     passManager.Setup();
     passManager.Build();

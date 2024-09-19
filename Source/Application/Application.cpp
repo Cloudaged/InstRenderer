@@ -19,10 +19,11 @@ Application::Application(MainEditor* editor,std::string title, WindowSize size,i
 
 void Application::Run()
 {
-    while (1)
+    while (!editor->isClose)
     {
         gameInstance->Tick();
     }
+    std::cout<<"QUIT\n";
 }
 
 int Application::Quit()

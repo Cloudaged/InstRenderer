@@ -1,6 +1,6 @@
 
-#ifndef INSTRENDERER_MODEL_H
-#define INSTRENDERER_MODEL_H
+#ifndef INSTRENDERER_RESMODEL_H
+#define INSTRENDERER_RESMODEL_H
 
 #include "vector"
 #include "ResMesh.h"
@@ -9,7 +9,7 @@
 namespace Res
 {
 
-    class Model
+    class ResModel
     {
     public:
         std::vector<ResMesh> meshes;
@@ -18,4 +18,4 @@ namespace Res
 
 } // Res
 
-#endif //INSTRENDERER_MODEL_H
+#endif //INSTRENDERER_RESMODEL_H

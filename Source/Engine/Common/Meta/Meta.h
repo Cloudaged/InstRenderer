@@ -11,7 +11,7 @@ static void RegisterMeta()
             .data<&GameObject::entityID>("entityID"_hs)
             .data<&GameObject::name>("name"_hs)
             .data<&GameObject::parent>("parent"_hs)
-            .ctor<entt::entity,std::string>();
+            .ctor<entt::registry*,std::string>();
 
     entt::meta<MeshObject>()
             .type("MeshObject"_hs)
@@ -19,7 +19,7 @@ static void RegisterMeta()
             .data<&MeshObject::entityID>("entityID"_hs)
             .data<&MeshObject::name>("name"_hs)
             .data<&MeshObject::count>("count"_hs)
-            .ctor<entt::entity,std::string>();
+            .ctor<entt::registry*,std::string>();
 
     entt::meta<Transform>()
             .type("Transform"_hs)

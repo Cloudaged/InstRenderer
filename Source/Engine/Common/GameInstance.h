@@ -11,6 +11,9 @@
 #include "System/RenderSystem.h"
 #include "EntityManager.h"
 #include "../Resource/ModelLoader.h"
+#include "../Resource/ResTexture.h"
+
+#include "../Resource/ImageLoader.h"
 
 class GameInstance
 {
@@ -22,6 +25,7 @@ public:
     EntityManager* entityManager;
     //entt::registry reg;
     SDL_Window* window = nullptr;
+    WindowSize size;
 private:
     RenderSystem renderSystem;
     void InitCore();

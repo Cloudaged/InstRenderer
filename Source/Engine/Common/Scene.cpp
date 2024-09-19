@@ -5,12 +5,8 @@
 #include "../Render/VulkanContext.h"
 
 
-Scene::Scene():
-        mainCamera(reg.create(),"mainCamera",
-                   glm::vec3{0,0,0},glm::vec3{0,0,0},glm::vec3{0,1,0},
-                   VulkanContext::GetContext().windowExtent.width/VulkanContext::GetContext().windowExtent.height)
+Scene::Scene():mainCamera(&reg,"mainCamera")
 {
-
 }
 
 Scene::~Scene()
@@ -25,7 +21,7 @@ entt::meta_any& Scene::CreateObject(std::string name,std::string type)
 
     auto type_meta = entt::resolve(type_hash);
 
-    auto instance = type_meta.construct(reg.create(),name);
+    auto instance = type_meta.construct(&reg,name);
 
     GameObject* go= (GameObject*)instance.data();
 
@@ -47,7 +43,7 @@ entt::meta_any Scene::CreateObject(std::string name, std::string type, int paren
     auto parent_meta = entt::resolve(type_hash).data("parent"_hs);
 
 
-    auto instance = type_meta.construct(reg.create(),name);
+    auto instance = type_meta.construct(&reg,name);
 
     parent_meta.set(instance,parent);
 
@@ -144,12 +140,12 @@ void Scene::InitGlobalSet()
         throw std::runtime_error("failed to allocate ds");
     }
     //Allocate
-    globalData.buffer= VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(globalData),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
+    globalData.buffer= VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(globUniform),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
 
     VkDescriptorBufferInfo bufferInfo{};
     bufferInfo.buffer =globalData.buffer.vk_buffer;
     bufferInfo.offset = 0;
-    bufferInfo.range = sizeof(globalData);
+    bufferInfo.range = sizeof(globUniform);
 
     std::vector<VkWriteDescriptorSet> writes;
     VkWriteDescriptorSet descriptorWrites{};
@@ -157,9 +153,10 @@ void Scene::InitGlobalSet()
     descriptorWrites.dstSet =globalData.globalDes;
     descriptorWrites.dstBinding = 0;
     descriptorWrites.dstArrayElement = 0;
-    descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptorWrites.descriptorCount = 1;
     descriptorWrites.pBufferInfo = &bufferInfo;
+    writes.push_back(descriptorWrites);
 
     vkUpdateDescriptorSets(VulkanContext::GetContext().device,writes.size(),writes.data(),0, nullptr);
 
@@ -172,6 +169,11 @@ void Scene::UpdateScene()
     globUniform.proj = mainCamera.vpMat.proj;
 
     memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.buffer),&globUniform,sizeof(globUniform));
+}
+
+void Scene::InitSceneData()
+{
+    mainCamera.InitCamera(glm::vec3{0,0,30},glm::vec3{0,0,0},{0,1,0});
 }
 
 template<typename T>

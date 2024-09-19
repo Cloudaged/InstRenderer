@@ -9,14 +9,14 @@
 class Camera:public GameObject
 {
 public:
-    Camera(entt::entity id,std::string name,glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir,float Aspect);
+    Camera(entt::registry* reg,std::string name);
 
     glm::mat4 GetViewMatrix(entt::registry reg);
 
     float pitch=0;
     float yaw = 90;
 
-    void InitCamera();
+    void InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir);
     glm::vec3 viewPoint;
     glm::vec3 position;
     glm::vec3 upDir;

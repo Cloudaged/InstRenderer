@@ -3,21 +3,15 @@
 #define INSTRENDERER_TEXTURE_H
 #include "vulkan/vulkan.h"
 #include "vma/vk_mem_alloc.h"
+#include "AllocatedImage.h"
 class Texture
 {
 public:
+    Texture(AllocatedImage image);
     const char *name = nullptr;
-    VkImage vk_image;
-    VkImageView view;
-    VkDescriptorImageInfo srv{};
-    VkImageLayout imageLayout;
-    VkImageUsageFlags usage;
-    VkFormat format;
+    VkDescriptorImageInfo desInfo;
     VkSampler sampler;
-    uint32_t width : 16;
-    uint32_t height : 16;
-    VmaAllocationInfo allocInfo;
-    VmaAllocation allocation;
+    AllocatedImage allocatedImage;
 };
 
 

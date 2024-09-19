@@ -20,7 +20,7 @@ void GeometryPass::SetupAttachments()
 
 }
 
-void GeometryPass::Execute(entt::view<entt::get_t<Renderable>> view)
+void GeometryPass::Execute(entt::view<entt::get_t<Renderable,Transform>> view)
 {
     auto presentM = VulkanContext::GetContext().presentManager;
 
@@ -56,14 +56,15 @@ void GeometryPass::Execute(entt::view<entt::get_t<Renderable>> view)
     //BeginRender pass
     for (auto& entity:view)
     {
-        auto components = view.get<Renderable>(entity);
+        auto renderComponents = view.get<Renderable>(entity);
+        auto transComponents = view.get<Transform>(entity);
 
-        perData = {components.color};
+        perData = {GetModelMatrixFromTrans(transComponents)};
         //Update
         memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(renderState.perObjDesBuffer),
                &perData,
                sizeof(perData));
-        std::vector<VkDescriptorSet> sets = {globalData.globalDes,components.material.set,renderState.perObjDes};
+        std::vector<VkDescriptorSet> sets = {globalData.globalDes,renderComponents.material.set,renderState.perObjDes};
         //Bind
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 renderState.pipelineLayout,
@@ -71,11 +72,11 @@ void GeometryPass::Execute(entt::view<entt::get_t<Renderable>> view)
 
         VkDeviceSize offsets[] = {0};
 
-        vkCmdBindVertexBuffers(cmd,0,1,&components.mesh.vertBuffer.vk_buffer, offsets);
+        vkCmdBindVertexBuffers(cmd,0,1,&renderComponents.mesh.vertBuffer.vk_buffer, offsets);
 
-        vkCmdBindIndexBuffer(cmd,components.mesh.indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(cmd,renderComponents.mesh.indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
         //Draw
-        vkCmdDrawIndexed(cmd,static_cast<uint32_t>(components.mesh.index.size()),1,0,0,0);
+        vkCmdDrawIndexed(cmd,static_cast<uint32_t>(renderComponents.mesh.index.size()),1,0,0,0);
     }
     vkCmdEndRenderPass(cmd);
     presentM.EndRecordCommand(cmd);
@@ -90,20 +91,20 @@ void GeometryPass::SetupRenderState()
     std::vector<DescriptorBindingSlot> bindings(0);
 
     //Material Layout
-    DescriptorBindingSlot b1{0,VK_SHADER_STAGE_FRAGMENT_BIT,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER};
+    DescriptorBindingSlot b1{0,VK_SHADER_STAGE_FRAGMENT_BIT,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER};
     bindings.push_back(b1);
     renderState.CreatePerMaterialLayout(bindings);
 
     bindings.clear();
     //per Obj layout
-    DescriptorBindingSlot b2{0,VK_SHADER_STAGE_FRAGMENT_BIT,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER};
+    DescriptorBindingSlot b2{0,VK_SHADER_STAGE_VERTEX_BIT,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER};
     bindings.push_back(b2);
     renderState.CreatePerObjLayout(bindings);
     //Pipeline
     renderState.CreatePipeline(PipelineType::Mesh,passHandle,attDes.size(),{"D:\\code_lib\\AGProject\\InstRenderer\\Asset\\vert.spv","D:\\code_lib\\AGProject\\InstRenderer\\Asset\\frag.spv"});
 
     //Create perObj descriptor
-    perData = {{1.0,0.0,0.0}};
+    perData = {};
     renderState.CreatePerObjDescriptor(sizeof(GeoPassPerObjData));
 
 }
@@ -111,6 +112,16 @@ void GeometryPass::SetupRenderState()
 GeometryPass::GeometryPass(GlobalDescriptorData data): globalData(data)
 {
 
+}
+
+glm::mat4 GeometryPass::GetModelMatrixFromTrans(Transform trans)
+{
+    auto mat =  glm::translate(glm::mat4(1),trans.pos);
+    mat = glm::scale(mat,trans.scale);
+    mat = glm::rotate(mat,trans.rotation.x,{1,0,0});
+    mat = glm::rotate(mat,trans.rotation.y,{0,1,0});
+    mat = glm::rotate(mat,trans.rotation.z,{0,0,1});
+    return mat;
 }
 
 

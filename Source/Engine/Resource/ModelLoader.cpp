@@ -1,7 +1,7 @@
 
 #include "ModelLoader.h"
 
-Res::Model *ModelLoader::Load(std::string path)
+Res::ResModel *ModelLoader::Load(std::string path)
 {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate|aiProcess_FlipUVs|aiProcess_PreTransformVertices|aiProcess_CalcTangentSpace);
@@ -10,14 +10,14 @@ Res::Model *ModelLoader::Load(std::string path)
         std::cout<<"Assimp error: "<<importer.GetErrorString()<<"\n";
     }
     auto name = std::filesystem::path(path).stem().string();
-    Res::Model* model = new Res::Model;
+    Res::ResModel* model = new Res::ResModel;
     model->path = path;
     ProcessNode(model,scene->mRootNode,scene);
     return model;
 
 }
 
-void ModelLoader::ProcessNode(Res::Model *modelNeedLoad, aiNode *node, const aiScene *scene)
+void ModelLoader::ProcessNode(Res::ResModel *modelNeedLoad, aiNode *node, const aiScene *scene)
 {
     for (int i = 0; i < node->mNumMeshes; ++i)
     {
@@ -31,11 +31,11 @@ void ModelLoader::ProcessNode(Res::Model *modelNeedLoad, aiNode *node, const aiS
     }
 }
 
-Res::ResMesh ModelLoader::ProcessMesh(Res::Model *modelNeedLoad, aiMesh *mesh, const aiScene *scene)
+Res::ResMesh ModelLoader::ProcessMesh(Res::ResModel *modelNeedLoad, aiMesh *mesh, const aiScene *scene)
 {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
-    std::vector<Res::Texture*> textures;
+    std::vector<Res::ResTexture*> textures;
 
     //Vertex Buffer
     for (int i = 0; i < mesh->mNumVertices; ++i)
@@ -85,6 +85,30 @@ Res::ResMesh ModelLoader::ProcessMesh(Res::Model *modelNeedLoad, aiMesh *mesh, c
         }
     }
 
+    ProcessMaterial(mesh,scene);
+
     Res::ResMesh meshToVector(vertices, indices);
     return meshToVector;
+}
+
+Res::ResMaterial ModelLoader::ProcessMaterial(aiMesh *mesh,const aiScene* scene)
+{
+    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+    for (int i = 0; i < AI_TEXTURE_TYPE_MAX; ++i)
+    {
+        aiString texturePath;
+        aiTextureType aiType = (aiTextureType)i;
+        int count = material->GetTextureCount(aiType);
+        if(count > 0 && material->GetTexture(aiType, 0, &texturePath) == AI_SUCCESS)
+        {
+            std::cout<<texturePath.C_Str()<<"\n";
+
+            std::filesystem::path absPath = std::filesystem::absolute(texturePath.C_Str());
+            std::cout<<absPath<<"\n";
+
+        }
+    }
+
+    return Res::ResMaterial();
 }

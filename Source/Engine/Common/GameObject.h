@@ -5,13 +5,14 @@
 #include "entt.hpp"
 #include "string"
 #include "vector"
-
+#include "Component/Components.h"
 #include "bitset"
 class GameObject
 {
 public:
-    GameObject(entt::entity entity,std::string name);
+    GameObject(entt::registry* reg,std::string name);
     entt::entity entityID;
+    entt::registry* reg;
     std::string name;
     int parent=-1;
     std::bitset<8> componentBits;

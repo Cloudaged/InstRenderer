@@ -3,8 +3,9 @@
 #include "iostream"
 
 
-GameObject::GameObject(entt::entity entity, const std::string name):entityID(entity),name(name)
+GameObject::GameObject(entt::registry* reg, const std::string name):reg(reg),name(name)
 {
+    entityID = reg->create();
     std::cout<<"Object Created!: "<<name<<"\n";
 }
 
