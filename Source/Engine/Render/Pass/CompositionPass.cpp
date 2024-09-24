@@ -1,8 +1,8 @@
 
-#include "GeometryPass.h"
+#include "CompositionPass.h"
 #include "../VulkanContext.h"
 
-void GeometryPass::SetupAttachments()
+void CompositionPass::SetupAttachments()
 {
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
@@ -20,19 +20,21 @@ void GeometryPass::SetupAttachments()
 
 }
 
-void GeometryPass::Execute(entt::view<entt::get_t<Renderable,Transform>> view)
+void CompositionPass::Execute(entt::view<entt::get_t<Renderable,Transform>> view)
 {
     auto presentM = VulkanContext::GetContext().presentManager;
 
     auto cmd = presentM.BeginRecordCommand();
 
-    VkClearValue renderClearValue = {1.0,0.0,1.0,1.0};
+    VkExtent2D extent = VulkanContext::GetContext().windowExtent;
+
+    VkClearValue renderClearValue = {0.0,0.0,0.0,1.0};
     VkRenderPassBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     beginInfo.renderPass = passHandle;
     beginInfo.framebuffer = presentM.presentFrames[presentM.currentFrame].framebuffer;
     beginInfo.renderArea.offset ={0,0};
-    beginInfo.renderArea.extent = {(uint32_t)width,(uint32_t)height};
+    beginInfo.renderArea.extent = extent;
     beginInfo.clearValueCount =1;
     beginInfo.pClearValues = &renderClearValue;
 
@@ -40,15 +42,17 @@ void GeometryPass::Execute(entt::view<entt::get_t<Renderable,Transform>> view)
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float) width;
-    viewport.height = (float) height;
+    viewport.width = extent.width;
+    viewport.height = extent.height;
+    //viewport.width =width;
+    //viewport.height =height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(cmd, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = {(uint32_t)width,(uint32_t)height};
+    scissor.extent = extent;
     vkCmdSetScissor(cmd, 0, 1, &scissor);
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, renderState.pipeline);
@@ -82,7 +86,7 @@ void GeometryPass::Execute(entt::view<entt::get_t<Renderable,Transform>> view)
     presentM.EndRecordCommand(cmd);
 }
 
-void GeometryPass::SetupRenderState()
+void CompositionPass::SetupRenderState()
 {
     //DescriptorLayout
     //Global Layout
@@ -105,16 +109,16 @@ void GeometryPass::SetupRenderState()
 
     //Create perObj descriptor
     perData = {};
-    renderState.CreatePerObjDescriptor(sizeof(GeoPassPerObjData));
+    renderState.CreatePerObjDescriptor(sizeof(CompPassPerObjData));
 
 }
 
-GeometryPass::GeometryPass(GlobalDescriptorData data): globalData(data)
+CompositionPass::CompositionPass(GlobalDescriptorData data): globalData(data)
 {
 
 }
 
-glm::mat4 GeometryPass::GetModelMatrixFromTrans(Transform trans)
+glm::mat4 CompositionPass::GetModelMatrixFromTrans(Transform trans)
 {
     auto mat =  glm::translate(glm::mat4(1),trans.pos);
     mat = glm::scale(mat,trans.scale);

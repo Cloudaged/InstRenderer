@@ -3,6 +3,7 @@
 #define INSTRENDERER_CONTROLLER_H
 #include "SDL2/SDL.h"
 #include "Camera.h"
+#include "iostream"
 class Controller
 {
 public:
@@ -10,9 +11,9 @@ public:
     void ViewInteract(Camera* cam);
     struct InteractInfo
     {
-        bool isSpace;
+        bool isSpace= false;
         float distance;
-        bool isDrag;
+        bool isDrag= false;
         glm::vec2 dragStartPos;
     }interactInfo;
 

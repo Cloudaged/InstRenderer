@@ -4,8 +4,7 @@
 
 #include <QThread>
 #include "iostream"
-#include "Application.h"
-
+#include "../Engine/Common/GameInstance.h"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -18,14 +17,15 @@ class GameThread : public QThread
 Q_OBJECT
 
 public:
-    explicit GameThread(Application* application,QThread *parent = nullptr);
+    GameThread(GameInstance* instance,bool* closeTrigger,QThread *parent = nullptr);
 
     ~GameThread() override;
 
     void run() override;
 
 private:
-    Application* application;
+    bool* isClose;
+    GameInstance* instance;
 };
 
 

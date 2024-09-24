@@ -14,8 +14,6 @@ struct SwapChainSupportDetails
 struct SwapchainData
 {
     VkSwapchainKHR swapchain;
-
-
     VkFormat format;
     VkExtent2D extent;
 };

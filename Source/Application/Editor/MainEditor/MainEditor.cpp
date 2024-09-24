@@ -5,8 +5,8 @@
 #include "ui_MainEditor.h"
 
 
-MainEditor::MainEditor(QWidget *parent) :
-        QMainWindow(parent), ui(new Ui::MainEditor)
+MainEditor::MainEditor(SDL_Window* window,QWidget *parent) :
+        QMainWindow(parent),ui(new Ui::MainEditor),window(window)
 {
     ui->setupUi(this);
     DeleteCentralWidget();
@@ -32,7 +32,7 @@ void MainEditor::InitSubWidget()
     componentEditor = new ComponentEditor();
 
     //Render Editor
-    renderEditor = new RenderEditor();
+    renderEditor = new RenderEditor(window);
 
     //Resource Editor
     resourceEditor = new ResourceEditor();

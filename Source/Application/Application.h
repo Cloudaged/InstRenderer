@@ -8,23 +8,25 @@
 #include "Common/GameInstance.h"
 #include "Common/GameType.h"
 #include <string>
+#include "QThread"
+#include "GameThread.h"
 
-
-class  Application
+class Application
 {
 public:
-    Application(MainEditor* editor,std::string title,WindowSize size,int argc,char** argv);
+    Application(std::string title,WindowSize size,int argc,char** argv);
     void Run();
     int Quit();
     std::string title;
     WindowSize windowSize;
 private:
+    bool isClose = false;
     void InitEditor();
     QApplication* qApplication;
     MainEditor* editor;
     GameInstance* gameInstance;
     Presenter* presenter;
-
+    GameThread* gameThread;
 };
 
 

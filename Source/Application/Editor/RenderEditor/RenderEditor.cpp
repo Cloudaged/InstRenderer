@@ -5,13 +5,25 @@
 #include "ui_RenderEditor.h"
 
 
-RenderEditor::RenderEditor(QDockWidget *parent) :
-        QDockWidget(parent), ui(new Ui::RenderEditor)
+RenderEditor::RenderEditor(SDL_Window* window,QDockWidget *parent) :
+        QDockWidget(parent), ui(new Ui::RenderEditor),sdlWindow(window)
 {
     ui->setupUi(this);
+
+    SDL_SysWMinfo systemInfo;
+    SDL_VERSION(&systemInfo.version);
+    SDL_GetWindowWMInfo(sdlWindow, &systemInfo);
+    HWND SDLHandle = systemInfo.info.win.window;
+    ::SetParent(SDLHandle, (HWND)this->winId());
 }
 
 RenderEditor::~RenderEditor()
 {
     delete ui;
+}
+
+void RenderEditor::resizeEvent(QResizeEvent *event)
+{
+    SDL_RestoreWindow(this->sdlWindow);
+    SDL_MaximizeWindow(this->sdlWindow);
 }

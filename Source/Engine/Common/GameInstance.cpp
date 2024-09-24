@@ -6,6 +6,7 @@ GameInstance::GameInstance(WindowSize size): size(size)
 {
     InitCore();
     InitWindow(size);
+    controller = new Controller(&event);
     InitVulkanContext();
     InitEntity();
     mainScene->InitGlobalSet();
@@ -20,7 +21,11 @@ void GameInstance::InitWindow(WindowSize size)
         std::cout<<"Failed to create sdl window\n";
     }
 
-    window = SDL_CreateWindow("GameInstance",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,size.width,size.height,SDL_WINDOW_SHOWN|SDL_WINDOW_VULKAN);
+    window = SDL_CreateWindow("GameInstance",
+                              SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,
+                              size.width,size.height,
+                              SDL_WINDOW_SHOWN|SDL_WINDOW_VULKAN|SDL_WINDOW_RESIZABLE);
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
 }
 
@@ -36,7 +41,7 @@ void GameInstance::InitCore()
 
 void GameInstance::InitVulkanContext()
 {
-    VulkanContext::Init(window);
+    VulkanContext::Init(window,&event);
 }
 
 void GameInstance::InitSystem()
@@ -51,6 +56,9 @@ void GameInstance::InitSystem()
 
 void GameInstance::Tick()
 {
+    SDLEvent();
+    if(!isRun)
+        return;
     mainScene->UpdateScene();
     renderSystem.Execute();
 }
@@ -76,9 +84,44 @@ void GameInstance::InitEntity()
     glm::vec3 color = {1.0,0.0,0.0};
     entt::entity e1 = mainScene->reg.create();
     mainScene->reg.emplace<Renderable>(e1,mesh,material,color);
-    mainScene->reg.emplace<Transform>(e1, glm::vec3{1.0,1.0,-300.0},
-                                      glm::vec3{20.0,30.0,0.0},
+    mainScene->reg.emplace<Transform>(e1, glm::vec3{0.0,0.0,0.0},
+                                      glm::vec3{0,0.0,0.0},
                                       glm::vec3{1.0,1.0,1.0});
+}
+
+void GameInstance::Run(bool* isClose)
+{
+    while ((!(*isClose)))
+    {
+        Tick();
+    }
+}
+
+void GameInstance::SDLEvent()
+{
+    while (SDL_PollEvent(&event))
+    {
+        controller->ViewInteract(&mainScene->mainCamera);
+
+        if(event.type==SDL_WINDOWEVENT)
+        {
+            if(event.window.event==SDL_WINDOWEVENT_RESIZED)
+            {
+                size.width= event.window.data1;
+                size.height = event.window.data2;
+                mainScene->mainCamera.UpdateAspect();
+                //VulkanContext::GetContext().windowExtent = VkExtent2D{(uint32_t)size.width,(uint32_t)size.height};
+            }
+            else if(event.window.event ==SDL_WINDOWEVENT_MINIMIZED)
+            {
+                isRun= false;
+            }
+            else if(event.window.event==SDL_WINDOWEVENT_RESTORED)
+            {
+                isRun= true;
+            }
+        }
+    }
 }
 
 

@@ -28,10 +28,14 @@ public:
     uint32_t currentFrame=0;
     uint32_t swapChainImageIndex;
 
+    VkRenderPass lastRenderpass;
+
     std::vector<VkImage> swapchainImage;
     std::vector<VkImageView> swapchainView;
+    void RecreateSwapChain();
 private:
     void InitSyncStructures();
+    void ClearSwapChain();
 };
 
 

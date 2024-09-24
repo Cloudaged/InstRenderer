@@ -8,6 +8,8 @@ void PresentManager::InitFrameData(VkRenderPass renderPass,int width,int height)
     VmaAllocation allocation;
     VmaAllocationInfo info;
 
+    this->lastRenderpass = renderPass;
+
     presentFrames.resize(INFLIGHT_COUNT);
 
     for (int i = 0; i < presentFrames.size(); ++i)
@@ -90,5 +92,42 @@ VkCommandBuffer PresentManager::BeginRecordCommand()
 void PresentManager::EndRecordCommand(VkCommandBuffer cmd)
 {
     vkEndCommandBuffer(cmd);
+
+}
+
+void PresentManager::RecreateSwapChain()
+{
+    SwapChainSupportDetails swapChainSupportDetails = VulkanFuncs::QuerySwapChainSupport(VulkanContext::GetContext().gpu);
+    VkExtent2D extent = VulkanFuncs::ChooseSwapExtent(swapChainSupportDetails.capabilities);
+
+    while (extent.width==0||extent.height==0)
+    {
+        SwapChainSupportDetails swapChainSupportDetails = VulkanFuncs::QuerySwapChainSupport(VulkanContext::GetContext().gpu);
+        extent = VulkanFuncs::ChooseSwapExtent(swapChainSupportDetails.capabilities);
+        SDL_WaitEvent(VulkanContext::GetContext().sdlEvent);
+        std::cout<<"Wait\n";
+    }
+    vkDeviceWaitIdle(VulkanContext::GetContext().device);
+    ClearSwapChain();
+    VulkanContext::GetContext().CreateSwapchain();
+    extent = VulkanContext::GetContext().windowExtent;
+    InitFrameData(lastRenderpass,(uint32_t)extent.width,(uint32_t)extent.height);
+}
+
+void PresentManager::ClearSwapChain()
+{
+    for (int i = 0; i < presentFrames.size(); ++i)
+    {
+        vkDestroyFramebuffer(VulkanContext::GetContext().device,presentFrames[i].framebuffer, nullptr);
+    }
+
+    for (int i = 0; i < swapchainView.size(); ++i)
+    {
+        vkDestroyImageView(VulkanContext::GetContext().device,swapchainView[i], nullptr);
+    }
+
+    vkDestroySwapchainKHR(VulkanContext::GetContext().device,
+                          VulkanContext::GetContext().swapchainData.swapchain,
+                          nullptr);
 
 }

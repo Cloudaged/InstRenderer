@@ -8,19 +8,19 @@ RenderPassManager::RenderPassManager()
 
 void RenderPassManager::ExecuteAllPass()
 {
-    geometryPass->Execute(view);
+    compositionPass->Execute(view);
 
 }
 
 void RenderPassManager::Build()
 {
-    geometryPass->Build();
+    compositionPass->Build();
 
 }
 
 void RenderPassManager::Setup()
 {
 
-    this->geometryPass = new GeometryPass(globalDescriptorData);
-    geometryPass->SetupAttachments();
+    this->compositionPass = new CompositionPass(globalDescriptorData);
+    compositionPass->SetupAttachments();
 }

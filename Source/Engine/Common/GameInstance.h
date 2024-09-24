@@ -14,18 +14,21 @@
 #include "../Resource/ResTexture.h"
 
 #include "../Resource/ImageLoader.h"
-
+#include "Controller.h"
 class GameInstance
 {
 public:
     GameInstance(WindowSize size);
     Scene* mainScene;
     void Tick();
-
+    void Run(bool* isClose);
     EntityManager* entityManager;
     //entt::registry reg;
     SDL_Window* window = nullptr;
+    SDL_Event event;
     WindowSize size;
+    Controller* controller;
+    bool isRun = true;
 private:
     RenderSystem renderSystem;
     void InitCore();
@@ -33,6 +36,7 @@ private:
     void InitEntity();
     void InitWindow(WindowSize size);
     void InitVulkanContext();
+    void SDLEvent();
 };
 
 

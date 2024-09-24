@@ -34,7 +34,7 @@ class  MainEditor : public QMainWindow
 Q_OBJECT
 
 public:
-    explicit MainEditor(QWidget *parent = nullptr);
+    explicit MainEditor(SDL_Window* window,QWidget *parent = nullptr);
 
 
     ~MainEditor() override;
@@ -46,7 +46,7 @@ public:
     ResourceEditor* resourceEditor;
     RenderEditor* renderEditor;
     ConsoleEditor* consoleEditor;
-    bool isClose = false;
+    bool* isClose;
 
 
 private:
@@ -57,13 +57,14 @@ private:
 
     void closeEvent(QCloseEvent *event) override
     {
-        isClose = true;
+        *isClose = true;
         event->accept();      // 接受关闭事件
     }
     //ToolBar
     QMenuBar* menuBar;
     QMenu* fileMenu;
     QAction* loadAction;
+    SDL_Window* window;
 
     Ui::MainEditor *ui;
 

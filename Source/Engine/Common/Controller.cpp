@@ -8,16 +8,7 @@ Controller::Controller(SDL_Event *event):event(event)
 
 void Controller::ViewInteract(Camera* cam)
 {
-    if (event->type == SDL_KEYDOWN)
-    {
-        switch (event->key.keysym.sym)
-        {
-            case SDLK_SPACE:
-                interactInfo.isSpace = true;
-                break;
-        }
-    }
-    else if(event->type == SDL_KEYUP)
+    if(event->type == SDL_KEYUP)
     {
         switch (event->key.keysym.sym)
         {
@@ -26,18 +17,27 @@ void Controller::ViewInteract(Camera* cam)
                 break;
         }
     }
+    else if(event->type == SDL_KEYDOWN)
+    {
+        switch (event->key.keysym.sym)
+        {
+            case SDLK_SPACE:
+                interactInfo.isSpace = true;
+                break;
+        }
+    }
     else if(event->type == SDL_MOUSEWHEEL)
     {
         if(event->wheel.y>0)
-            cam->position =cam->position+10.0f*cam->viewPoint;
+            cam->SetCameraPos((cam->GetCameraPos()+10.0f*cam->GetCameraTarget()));
         if(event->wheel.y<0)
-            cam->position =cam->position-10.0f*cam->viewPoint;
+            cam->SetCameraPos((cam->GetCameraPos()-10.0f*cam->GetCameraTarget()));
     }
     else if(event->type == SDL_MOUSEBUTTONDOWN)
     {
         if(event->button.button == SDL_BUTTON_RIGHT)
         {
-            glm::vec3 pos= cam->position;
+            glm::vec3 pos= cam->GetCameraPos();
             float xSquare = pow((pos.x-0),2);
             float ySquare = pow((pos.y-0),2);
             float zSquare = pow((pos.z-0),2);
@@ -62,14 +62,14 @@ void Controller::ViewInteract(Camera* cam)
             cam->pitch =89.0f;
         if(cam->pitch<-89.0f)
             cam->pitch =-89.0f;
-        glm::vec3 front =cam->viewPoint;
+        glm::vec3 front =cam->GetCameraTarget();
 
         front.x += cos(glm::radians(cam->yaw))* cos(glm::radians(cam->pitch)) ;
         front.y += sin(glm::radians(cam->pitch));
         front.z += sin(glm::radians(cam->yaw))* cos(glm::radians(cam->pitch)) ;
 
         front = glm::normalize(front);
-        cam->viewPoint = front;
+        cam->SetCameraTarget(front);
     }
     else if (event->type == SDL_MOUSEMOTION && interactInfo.isDrag)
     {
@@ -79,12 +79,12 @@ void Controller::ViewInteract(Camera* cam)
         interactInfo.dragStartPos.x = event->motion.x;
         interactInfo.dragStartPos.y = event->motion.y;
 
-        deltaX *= interactInfo.distance;
+        deltaX *=interactInfo.distance;
         deltaY *= interactInfo.distance;
 
 
-        cam->position = cam->position+cam->xAxis*deltaX;
-        cam->position = cam->position+cam->yAxis*deltaY;
+        cam->SetCameraPos(cam->GetCameraPos()+cam->xAxis*deltaX);
+        cam->SetCameraPos(cam->GetCameraPos()+cam->yAxis*deltaY);
 
 
     }
@@ -96,4 +96,6 @@ void Controller::ViewInteract(Camera* cam)
             interactInfo.isDrag = false;
         }
     }
+    cam->ResetViewMatrix();
+
 }

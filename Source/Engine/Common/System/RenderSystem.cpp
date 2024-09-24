@@ -10,7 +10,7 @@ void RenderSystem::BeginSystem(RenderSysBeginInfo info)
     passManager.Setup();
     passManager.Build();
 
-    materialManager.Setup(&passManager.geometryPass->renderState.materialLayout,info.registry->view<Renderable>());
+    materialManager.Setup(&passManager.compositionPass->renderState.materialLayout,info.registry->view<Renderable>());
 
 }
 
@@ -24,4 +24,9 @@ void RenderSystem::Execute()
 RenderSystem::RenderSystem()
 {
     passManager = RenderPassManager();
+}
+
+void RenderSystem::ResizeSwapChain()
+{
+    VulkanContext::GetContext().presentManager.RecreateSwapChain();
 }

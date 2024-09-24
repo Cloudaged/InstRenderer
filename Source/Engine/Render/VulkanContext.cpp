@@ -4,12 +4,13 @@
 
 
 std::unique_ptr<VulkanContext> VulkanContext::Pcontext = nullptr;
-void VulkanContext::Init(SDL_Window* window)
+void VulkanContext::Init(SDL_Window* window,SDL_Event* event)
 {
     if(!Pcontext)
     {
         Pcontext.reset(new VulkanContext(window));
     }
+    Pcontext->sdlEvent = event;
     int width,height;
     SDL_GetWindowSize(Pcontext.get()->sdlWindow,&width,&height);
     Pcontext->windowExtent = VkExtent2D {(uint32_t)width,(uint32_t)height};
@@ -186,6 +187,7 @@ void VulkanContext::CreateVMAAllocator()
 
 void VulkanContext::CreateSwapchain()
 {
+
     SwapChainSupportDetails swapChainSupportDetails = VulkanFuncs::QuerySwapChainSupport(gpu);
 
     VkSurfaceFormatKHR surfaceFormat = VulkanFuncs::ChooseSwapSurfaceFormat(swapChainSupportDetails.formats,VK_FORMAT_B8G8R8A8_SRGB,VK_COLORSPACE_SRGB_NONLINEAR_KHR);
@@ -200,7 +202,7 @@ void VulkanContext::CreateSwapchain()
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
-    createInfo.imageExtent = extent;
+    createInfo.imageExtent =extent;
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
@@ -266,6 +268,7 @@ void VulkanContext::CreateSwapchain()
 
     swapchainData.format = surfaceFormat.format;
     swapchainData.extent = extent;
+    this->windowExtent = extent;
 }
 
 void VulkanContext::CreateDrawImage()
@@ -305,9 +308,17 @@ void VulkanContext::DrawPrepare()
     vkResetFences(device,1,&presentManager.presentFrames[presentManager.currentFrame].renderFence);
 
 
-    vkAcquireNextImageKHR(device, swapchainData.swapchain, 1000000000,
+    auto result = vkAcquireNextImageKHR(device, swapchainData.swapchain, 1000000000,
                           presentManager.presentFrames[presentManager.currentFrame].swapChainSemaphore, nullptr,
                           &presentManager.swapChainImageIndex);
+    if(result==VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        presentManager.RecreateSwapChain();
+        isResize = true;
+        return;
+    }else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
 
     VkCommandBuffer cmd = presentManager.presentFrames[presentManager.currentFrame].cmd;
     vkResetCommandBuffer(cmd, 0);
@@ -319,6 +330,12 @@ void VulkanContext::Submit()
     VkCommandBuffer cmd = presentManager.presentFrames[presentManager.currentFrame].cmd;
     auto waitSemaphore = presentManager.presentFrames[presentManager.currentFrame].swapChainSemaphore;
     auto renderSemaphore = presentManager.presentFrames[presentManager.currentFrame].renderSemaphore;
+
+    if(isResize)
+    {
+        isResize = false;
+        return;
+    }
 
     //*************** submit
     VkCommandBufferSubmitInfo cmdInfo{};
@@ -358,8 +375,13 @@ void VulkanContext::Submit()
     submitInfo.pCommandBufferInfos = &cmdInfo;
 
 
-    vkQueueSubmit2(queues.graphicsQueue, 1, &submitInfo,
+    auto result = vkQueueSubmit2(queues.graphicsQueue, 1, &submitInfo,
                    presentManager.presentFrames[presentManager.currentFrame].renderFence);
+
+    if(result!=VK_SUCCESS)
+    {
+        std::cout<<"Failed to submit\n";
+    }
     //********************************
     //***************Present
     VkPresentInfoKHR presentInfo = {};
@@ -373,9 +395,14 @@ void VulkanContext::Submit()
 
     presentInfo.pImageIndices = &presentManager.swapChainImageIndex;
 
-    if(vkQueuePresentKHR(queues.graphicsQueue, &presentInfo)!=VK_SUCCESS)
+    auto result1 = vkQueuePresentKHR(queues.graphicsQueue, &presentInfo);
+
+    if(result==VK_ERROR_OUT_OF_DATE_KHR)
     {
-        throw std::runtime_error("failed to present!");
+        presentManager.RecreateSwapChain();
+        isResize = true;
+    }else if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to present swap chain image!");
     }
 
     presentManager.currentFrame = ++presentManager.currentFrame%INFLIGHT_COUNT;

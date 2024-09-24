@@ -23,7 +23,7 @@ class VulkanContext
 {
 public:
     static VulkanContext& GetContext();
-    static void Init(SDL_Window* window);
+    static void Init(SDL_Window* window,SDL_Event* event);
 
 
     //Vulkan Object
@@ -43,10 +43,14 @@ public:
     PresentManager presentManager;
     VkDescriptorPool pool;
     BufferAllocator bufferAllocator;
-
+    bool isResize = false;
+    SDL_Window* sdlWindow;
+    SDL_Event* sdlEvent;
 
     void DrawPrepare();
     void Submit();
+
+    void CreateSwapchain();
 
     VkCommandBuffer BeginSingleTimeCommands();
     void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -54,7 +58,6 @@ private:
     VulkanContext(SDL_Window* window);
     void InitVulkanBackend();
     static std::unique_ptr<VulkanContext> Pcontext;
-    SDL_Window* sdlWindow;
 
     //Init
     void CreateInstance();
@@ -62,7 +65,6 @@ private:
     void PickupPhysicalDevice();
     void CreateQueueAndDevice();
     void CreateVMAAllocator();
-    void CreateSwapchain();
     void CreateDrawImage();
     void CreateCommandPool();
     void CreateDescriptorPool();

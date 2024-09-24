@@ -12,6 +12,16 @@ public:
     Camera(entt::registry* reg,std::string name);
 
     glm::mat4 GetViewMatrix(entt::registry reg);
+    void ResetViewMatrix();
+    void UpdateAspect();
+
+    glm::vec3 GetCameraPos();
+    void SetCameraPos(glm::vec3 newPos);
+
+    glm::vec3 GetCameraTarget();
+    void SetCameraTarget(glm::vec3 newTarget);
+
+    glm::vec3 GetCameraUpDir();
 
     float pitch=0;
     float yaw = 90;

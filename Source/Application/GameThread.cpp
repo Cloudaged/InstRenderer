@@ -3,8 +3,8 @@
 
 #include "GameThread.h"
 
-GameThread::GameThread(Application* application,QThread *parent) :
-        application(application),QThread(parent)
+GameThread::GameThread(GameInstance* instance,bool* closeTrigger,QThread *parent) :
+        instance(instance),isClose(closeTrigger),QThread(parent)
 {
 
 }
@@ -15,6 +15,6 @@ GameThread::~GameThread()
 
 void GameThread::run()
 {
-   application->Run();
+    instance->Run(isClose);
     QThread::run();
 }
