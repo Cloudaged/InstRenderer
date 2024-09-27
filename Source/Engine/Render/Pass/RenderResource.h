@@ -3,6 +3,12 @@
 #define INSTRENDERER_RENDERRESOURCE_H
 #include "vulkan/vulkan.h"
 #include "string"
+
+#include "../Buffer/AllocatedImage.h"
+#include "unordered_map"
+
+
+
 enum class ResourceType
 {
     Uniform,
@@ -36,14 +42,15 @@ struct AttachmentData
 struct AttachmentDes
 {
     int width,height;
-    std::string name;
     AttachmentUsage usage;
     AttachmentOP op;
     VkFormat format;
     bool isDepthBuffer = false;
-    AttachmentData* data;
+    AllocatedImage** data;
 };
 
+typedef std::unordered_map<std::string,AttachmentDes> AttachmentMap;
 
+static AttachmentMap attachmentMap;
 
 #endif //INSTRENDERER_RENDERRESOURCE_H

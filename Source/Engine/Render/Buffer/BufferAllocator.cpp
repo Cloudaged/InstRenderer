@@ -26,7 +26,7 @@ Buffer BufferAllocator::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage,
     return *buffer;
 }
 
-AllocatedImage BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format, VkImageUsageFlags usage)
+AllocatedImage& BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format, VkImageUsageFlags usage)
 {
     AllocatedImage* allocatedImage  = new AllocatedImage();
     allocatedImage->imageFormat = format;
@@ -51,8 +51,10 @@ AllocatedImage BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat 
     info.usage = usage;
     info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    if(vmaCreateImage(VulkanContext::GetContext().allocator,&info,&imageAllocateInfo,&allocatedImage->vk_image,
-                      &allocatedImage->allocation, &allocatedImage->allocationInfo) != VK_SUCCESS)
+    auto result = vmaCreateImage(VulkanContext::GetContext().allocator,&info,&imageAllocateInfo,&allocatedImage->vk_image,
+                                 &allocatedImage->allocation, &allocatedImage->allocationInfo);
+
+    if(result != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create allocatedImage");
     }

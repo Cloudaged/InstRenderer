@@ -2,7 +2,7 @@
 #ifndef INSTRENDERER_RENDERPASSMANAGER_H
 #define INSTRENDERER_RENDERPASSMANAGER_H
 #include "Pass/CompositionPass.h"
-
+#include "Pass/GeoPass.h"
 #include "../Common/Scene.h"
 
 class RenderPassManager
@@ -17,7 +17,7 @@ public:
     GlobalDescriptorData globalDescriptorData;
 
     CompositionPass* compositionPass;
-
+    GeoPass* geoPass;
 };
 
 

@@ -2,6 +2,8 @@
 #include "GameInstance.h"
 #include "iostream"
 
+
+
 GameInstance::GameInstance(WindowSize size): size(size)
 {
     InitCore();
@@ -25,7 +27,9 @@ void GameInstance::InitWindow(WindowSize size)
                               SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,
                               size.width,size.height,
                               SDL_WINDOW_SHOWN|SDL_WINDOW_VULKAN|SDL_WINDOW_RESIZABLE);
+
     SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+
 
 }
 
@@ -37,6 +41,7 @@ void GameInstance::InitCore()
     mainScene = new Scene;
     //Registry
     entityManager = new EntityManager(&mainScene->reg);
+    //Locker
 }
 
 void GameInstance::InitVulkanContext()
@@ -59,6 +64,11 @@ void GameInstance::Tick()
     SDLEvent();
     if(!isRun)
         return;
+    if(!isReady)
+    {
+        isReady = true;
+        return;
+    }
     mainScene->UpdateScene();
     renderSystem.Execute();
 }
@@ -107,10 +117,11 @@ void GameInstance::SDLEvent()
         {
             if(event.window.event==SDL_WINDOWEVENT_RESIZED)
             {
+                std::lock_guard<std::mutex> lock(Locker::Get().resizeMtx);
+
                 size.width= event.window.data1;
                 size.height = event.window.data2;
                 mainScene->mainCamera.UpdateAspect();
-                //VulkanContext::GetContext().windowExtent = VkExtent2D{(uint32_t)size.width,(uint32_t)size.height};
             }
             else if(event.window.event ==SDL_WINDOWEVENT_MINIMIZED)
             {

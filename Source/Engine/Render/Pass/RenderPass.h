@@ -24,7 +24,7 @@ public:
     void Build();
     VkRenderPass passHandle;
     VkFramebuffer framebufferHandle;
-    int width,height;
+    uint32_t width,height;
     std::string name;
     RenderState renderState;
 protected:
@@ -32,7 +32,8 @@ protected:
     VkImageLayout GetLayout(AttachmentUsage usage);
     LoadStoreOP GetLSOP(AttachmentOP op);
     virtual void SetupRenderState()=0;
-    std::vector<AttachmentDes> attDes;
+    std::vector<AttachmentDes> inputAttDes;
+    std::vector<AttachmentDes> outputAttDes;
 
 private:
     void BuildPresentFrame();

@@ -43,7 +43,7 @@ void RenderPass::Build()
     std::vector<VkAttachmentDescription> attDescriptions;
     std::vector<VkAttachmentReference> refs;
     int refIndex = 0;
-    for (auto& att:attDes)
+    for (auto& att:outputAttDes)
     {
         if(att.usage==AttachmentUsage::Present)
         {
@@ -59,6 +59,10 @@ void RenderPass::Build()
         VkImageLayout layout = GetLayout(att.usage);
         auto lsop = GetLSOP(att.op);
 
+        *att.data = new AllocatedImage(format,usage,VkExtent2D{width,height},1,VK_IMAGE_ASPECT_COLOR_BIT);
+
+        auto data = *att.data;
+
         //Attachment
         VkAttachmentDescription attachmentDes{};
         attachmentDes.format =format;
@@ -69,6 +73,7 @@ void RenderPass::Build()
         attachmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attachmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachmentDes.finalLayout = layout;
+
 
         VkAttachmentReference ref{};
         ref.attachment = refIndex;
@@ -83,60 +88,8 @@ void RenderPass::Build()
 
         attDescriptions.push_back(attachmentDes);
 
+        views.push_back(data->imageView);
         refIndex++;
-
-        //Frame Buffer
-        VkImageCreateInfo imageCreateInfo{};
-        imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageCreateInfo.format = att.format;
-        imageCreateInfo.extent.width = att.width;
-        imageCreateInfo.extent.height = att.height;
-        imageCreateInfo.extent.depth = 1;
-        imageCreateInfo.mipLevels = 1;
-        imageCreateInfo.arrayLayers = 1;
-        imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        imageCreateInfo.usage = usage;
-        imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-        VmaAllocationCreateInfo allocCreateInfo = {};
-        allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-        VmaAllocation allocation;
-        VmaAllocationInfo info;
-
-        if(vmaCreateImage(VulkanContext::GetContext().allocator,&imageCreateInfo, &allocCreateInfo,&att.data->image,&allocation ,
-                          &info)!=VK_SUCCESS)
-        {
-            std::cout<<"Failed to create Image in FrameBuffer\n";
-        }
-
-        VkImageViewCreateInfo viewCreateInfo{};
-        viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewCreateInfo.image = att.data->image;
-        viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewCreateInfo.format = att.format;
-        if(!att.isDepthBuffer)
-        {
-            viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        } else
-        {
-            viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-        }
-        viewCreateInfo.subresourceRange.baseMipLevel = 0;
-        viewCreateInfo.subresourceRange.levelCount = 1;
-        viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-        viewCreateInfo.subresourceRange.layerCount = 1;
-
-        if(vkCreateImageView(VulkanContext::GetContext().device,&viewCreateInfo, nullptr,&att.data->view)!=VK_SUCCESS)
-        {
-            std::cout<<"Failed to Create view in FrameBuffer\n";
-        }
-
-        views.push_back(att.data->view);
     }
     //RenderPass
     VkSubpassDescription subpass{};
@@ -174,7 +127,7 @@ void RenderPass::Build()
     fbInfo.renderPass = passHandle;
     fbInfo.width = width;
     fbInfo.height = height;
-    fbInfo.attachmentCount = attDes.size();
+    fbInfo.attachmentCount = outputAttDes.size();
     fbInfo.pAttachments = views.data();
     fbInfo.layers =1;
 
@@ -204,7 +157,7 @@ RenderPass::LoadStoreOP RenderPass::GetLSOP(AttachmentOP op)
 
 void RenderPass::BuildPresentFrame()
 {
-    auto& att = attDes[0];
+    auto& att = outputAttDes[0];
 
     std::vector<VkImageView> views;
     std::vector<VkAttachmentDescription> attDescriptions;

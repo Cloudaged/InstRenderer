@@ -97,15 +97,15 @@ void PresentManager::EndRecordCommand(VkCommandBuffer cmd)
 
 void PresentManager::RecreateSwapChain()
 {
+    std::lock_guard<std::mutex> lock(Locker::Get().resizeMtx);
+
     SwapChainSupportDetails swapChainSupportDetails = VulkanFuncs::QuerySwapChainSupport(VulkanContext::GetContext().gpu);
     VkExtent2D extent = VulkanFuncs::ChooseSwapExtent(swapChainSupportDetails.capabilities);
-
     while (extent.width==0||extent.height==0)
     {
         SwapChainSupportDetails swapChainSupportDetails = VulkanFuncs::QuerySwapChainSupport(VulkanContext::GetContext().gpu);
         extent = VulkanFuncs::ChooseSwapExtent(swapChainSupportDetails.capabilities);
         SDL_WaitEvent(VulkanContext::GetContext().sdlEvent);
-        std::cout<<"Wait\n";
     }
     vkDeviceWaitIdle(VulkanContext::GetContext().device);
     ClearSwapChain();

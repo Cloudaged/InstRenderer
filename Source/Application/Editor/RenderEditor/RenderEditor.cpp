@@ -3,7 +3,7 @@
 
 #include "RenderEditor.h"
 #include "ui_RenderEditor.h"
-
+#include "iostream"
 
 RenderEditor::RenderEditor(SDL_Window* window,QDockWidget *parent) :
         QDockWidget(parent), ui(new Ui::RenderEditor),sdlWindow(window)
@@ -24,6 +24,8 @@ RenderEditor::~RenderEditor()
 
 void RenderEditor::resizeEvent(QResizeEvent *event)
 {
+    std::lock_guard<std::mutex> lock(Locker::Get().resizeMtx);
+
     SDL_RestoreWindow(this->sdlWindow);
     SDL_MaximizeWindow(this->sdlWindow);
 }

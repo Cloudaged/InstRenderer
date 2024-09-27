@@ -4,6 +4,8 @@
 #include "vulkan/vulkan.h"
 #include "vector"
 #include "Pass/RenderResource.h"
+#include "../../Application/GlobalValue.h"
+#include "../Common/Locker.h"
 struct PresentFrame
 {
     VkCommandBuffer cmd;

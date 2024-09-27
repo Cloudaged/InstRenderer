@@ -10,6 +10,7 @@
 #include <string>
 #include "QThread"
 #include "GameThread.h"
+#include "GlobalValue.h"
 
 class Application
 {

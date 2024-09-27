@@ -12,6 +12,7 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
+
 class GameThread : public QThread
 {
 Q_OBJECT

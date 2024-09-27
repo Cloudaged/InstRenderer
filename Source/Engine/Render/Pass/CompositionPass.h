@@ -17,7 +17,6 @@ public:
 private:
     void SetupRenderState() override;
     glm::mat4 GetModelMatrixFromTrans(Transform trans);
-    AttachmentData presentData;
     GlobalDescriptorData globalData;
     CompPassPerObjData perData;
 };

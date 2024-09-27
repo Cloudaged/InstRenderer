@@ -14,8 +14,8 @@ void RenderPassManager::ExecuteAllPass()
 
 void RenderPassManager::Build()
 {
+    geoPass->Build();
     compositionPass->Build();
-
 }
 
 void RenderPassManager::Setup()
@@ -23,4 +23,7 @@ void RenderPassManager::Setup()
 
     this->compositionPass = new CompositionPass(globalDescriptorData);
     compositionPass->SetupAttachments();
+
+    this->geoPass = new GeoPass(globalDescriptorData);
+    geoPass->SetupAttachments();
 }

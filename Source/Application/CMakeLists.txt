@@ -11,6 +11,7 @@ file(GLOB_RECURSE EDITOR_SOURCE
 
 
 add_executable(${PROJECT_NAME} main.cpp Application.h Application.cpp Presenter.cpp Presenter.h GameThread.h GameThread.cpp
+        GlobalValue.h GlobalValue.cpp
         ${EDITOR_HEADER} ${EDITOR_SOURCE}
         )
 

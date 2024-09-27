@@ -15,6 +15,8 @@
 
 #include "../Resource/ImageLoader.h"
 #include "Controller.h"
+#include "Locker.h"
+
 class GameInstance
 {
 public:
@@ -29,6 +31,8 @@ public:
     WindowSize size;
     Controller* controller;
     bool isRun = true;
+    bool isReady = false;
+
 private:
     RenderSystem renderSystem;
     void InitCore();

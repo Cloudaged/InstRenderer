@@ -7,16 +7,16 @@ void CompositionPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    AttachmentDes presentAtt{};
-    presentAtt.name = "Present";
-    presentAtt.width = winWidth;
-    presentAtt.height = winHeight;
-    presentAtt.usage = AttachmentUsage::Present;
-    presentAtt.op = AttachmentOP::DontCare;
-    presentAtt.format = VK_FORMAT_B8G8R8A8_SRGB;
-    presentAtt.data = &this->presentData;
+    inputAttDes.push_back(attachmentMap["BaseColor"]);
+    inputAttDes.push_back(attachmentMap["Normal"]);
+    inputAttDes.push_back(attachmentMap["Position"]);
 
-    attDes.push_back(presentAtt);
+
+    attachmentMap["Present"] = AttachmentDes{winWidth,winHeight,
+                                             AttachmentUsage::Present,AttachmentOP::DontCare,
+                                             VK_FORMAT_B8G8R8A8_SRGB, false, nullptr};
+
+    outputAttDes.push_back(attachmentMap["Present"]);
 
 }
 
@@ -105,7 +105,7 @@ void CompositionPass::SetupRenderState()
     bindings.push_back(b2);
     renderState.CreatePerObjLayout(bindings);
     //Pipeline
-    renderState.CreatePipeline(PipelineType::Mesh,passHandle,attDes.size(),{"D:\\code_lib\\AGProject\\InstRenderer\\Asset\\vert.spv","D:\\code_lib\\AGProject\\InstRenderer\\Asset\\frag.spv"});
+    renderState.CreatePipeline(PipelineType::Mesh,passHandle,outputAttDes.size(),{"D:\\code_lib\\AGProject\\InstRenderer\\Asset\\vert.spv","D:\\code_lib\\AGProject\\InstRenderer\\Asset\\frag.spv"});
 
     //Create perObj descriptor
     perData = {};

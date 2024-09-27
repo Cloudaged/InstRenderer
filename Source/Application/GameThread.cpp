@@ -3,6 +3,7 @@
 
 #include "GameThread.h"
 
+
 GameThread::GameThread(GameInstance* instance,bool* closeTrigger,QThread *parent) :
         instance(instance),isClose(closeTrigger),QThread(parent)
 {
