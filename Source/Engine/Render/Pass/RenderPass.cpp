@@ -34,15 +34,59 @@ VkImageLayout RenderPass::GetLayout(AttachmentUsage usage)
             return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         case AttachmentUsage::Present:
             return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        default:
+            return VK_IMAGE_LAYOUT_UNDEFINED;
     }
 }
 
 void RenderPass::Build()
 {
-    std::vector<VkImageView> views;
     std::vector<VkAttachmentDescription> attDescriptions;
-    std::vector<VkAttachmentReference> refs;
+
+    std::vector<VkAttachmentReference> inputRefs;
+    std::vector<VkAttachmentReference> outputRefs;
+    std::vector<VkImageView> views;
+
     int refIndex = 0;
+    //Input
+    for (auto& att:inputAttDes)
+    {
+        //Get data
+        width = att.width;
+        height = att.height;
+        VkFormat format = att.format;
+        VkImageLayout layout = GetLayout(att.usage);
+        auto lsop = GetLSOP(att.op);
+        //Get data(need descriptor)
+
+        //Attachment
+        VkAttachmentDescription attachmentDes{};
+        attachmentDes.format =format;
+        attachmentDes.samples = VK_SAMPLE_COUNT_1_BIT;
+        attachmentDes.loadOp = lsop.loadOp;
+        attachmentDes.storeOp = lsop.storeOp;
+        attachmentDes.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachmentDes.finalLayout = layout;
+
+        VkAttachmentReference ref{};
+        ref.attachment = refIndex;
+        if(!att.isDepthBuffer)
+        {
+            ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        } else
+        {
+            ref.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+        }
+
+        inputRefs.push_back(ref);
+
+        attDescriptions.push_back(attachmentDes);
+        refIndex++;
+    }
+
+    //Output
     for (auto& att:outputAttDes)
     {
         if(att.usage==AttachmentUsage::Present)
@@ -51,16 +95,16 @@ void RenderPass::Build()
             return;
         }
 
+        //Get data
         width = att.width;
         height = att.height;
-
         VkFormat format = att.format;
         VkImageUsageFlagBits usage = GetUsage(att.usage);
         VkImageLayout layout = GetLayout(att.usage);
         auto lsop = GetLSOP(att.op);
 
+        //Allocate image
         *att.data = new AllocatedImage(format,usage,VkExtent2D{width,height},1,VK_IMAGE_ASPECT_COLOR_BIT);
-
         auto data = *att.data;
 
         //Attachment
@@ -84,7 +128,7 @@ void RenderPass::Build()
         {
             ref.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
         }
-        refs.push_back(ref);
+        outputRefs.push_back(ref);
 
         attDescriptions.push_back(attachmentDes);
 
@@ -94,8 +138,10 @@ void RenderPass::Build()
     //RenderPass
     VkSubpassDescription subpass{};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = refs.data();
+    subpass.colorAttachmentCount = outputRefs.size();
+    subpass.pColorAttachments = outputRefs.data();
+    subpass.inputAttachmentCount = inputRefs.size();
+    subpass.pInputAttachments = inputRefs.data();
 
     VkSubpassDependency dependency = {};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -114,13 +160,10 @@ void RenderPass::Build()
     passCreateInfo.dependencyCount = 1;
     passCreateInfo.pDependencies = &dependency;
 
-
-
     if(vkCreateRenderPass(VulkanContext::GetContext().device,&passCreateInfo, nullptr,&passHandle)!=VK_SUCCESS)
     {
         std::cout<<"failed to create pass\n";
     }
-
 
     VkFramebufferCreateInfo fbInfo{};
     fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -136,7 +179,6 @@ void RenderPass::Build()
         std::cout<<"Failed to build FrameBuffer\n";
     }
     SetupRenderState();
-
 }
 
 RenderPass::LoadStoreOP RenderPass::GetLSOP(AttachmentOP op)

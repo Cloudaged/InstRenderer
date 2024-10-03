@@ -2,6 +2,10 @@
 #ifndef INSTRENDERER_GEOPASS_H
 #define INSTRENDERER_GEOPASS_H
 #include "RenderPass.h"
+struct GeoPassPerObjData
+{
+    glm::mat4 modelMatrix;
+};
 
 class GeoPass : public RenderPass
 {
@@ -16,7 +20,11 @@ private:
     AllocatedImage* normalAttachment;
     AllocatedImage* positionAttachment;
 
+    glm::mat4 GetModelMatrixFromTrans(Transform trans);
+    GlobalDescriptorData globalData;
+    GeoPassPerObjData perData;
 };
+
 
 
 #endif //INSTRENDERER_GEOPASS_H

@@ -1,6 +1,6 @@
 
 #include "RenderPassManager.h"
-
+#include "iostream"
 RenderPassManager::RenderPassManager()
 {
 

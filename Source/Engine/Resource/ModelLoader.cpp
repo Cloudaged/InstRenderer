@@ -102,10 +102,10 @@ Res::ResMaterial ModelLoader::ProcessMaterial(aiMesh *mesh,const aiScene* scene)
         int count = material->GetTextureCount(aiType);
         if(count > 0 && material->GetTexture(aiType, 0, &texturePath) == AI_SUCCESS)
         {
-            std::cout<<texturePath.C_Str()<<"\n";
+           // std::cout<<texturePath.C_Str()<<"\n";
 
             std::filesystem::path absPath = std::filesystem::absolute(texturePath.C_Str());
-            std::cout<<absPath<<"\n";
+            //std::cout<<absPath<<"\n";
 
         }
     }

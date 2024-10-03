@@ -56,7 +56,6 @@ void GameInstance::InitSystem()
     renderSysInfo.registry = &mainScene->reg;
     renderSysInfo.globalData = mainScene->globalData;
     renderSystem.BeginSystem(renderSysInfo);
-
 }
 
 void GameInstance::Tick()
