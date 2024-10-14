@@ -24,5 +24,6 @@ void PBRMaterial::Setup()
 
 void PBRMaterial::AddTexture(Texture* texture)
 {
+    texture->TransLayout();
     textures.push_back(texture);
 }

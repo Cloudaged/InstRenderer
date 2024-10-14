@@ -10,6 +10,8 @@
 #include "../../Common/Scene.h"
 #include "../RenderState.h"
 
+typedef std::unordered_map<std::string,AttachmentDes> AttachmentMap;
+
 class RenderPass
 {
 private:
@@ -19,21 +21,29 @@ private:
         VkAttachmentStoreOp storeOp;
     };
 public:
+    static AttachmentMap attachmentMap;
 
     virtual void SetupAttachments() = 0;
     void Build();
     VkRenderPass passHandle;
-    VkFramebuffer framebufferHandle;
+    VkFramebuffer framebufferHandle=VK_NULL_HANDLE;
     uint32_t width,height;
     std::string name;
     RenderState renderState;
+    void ClearRes();
+    void RecreatePassRes();
 protected:
-    VkImageUsageFlagBits GetUsage(AttachmentUsage usage);
+    VkImageUsageFlags GetUsage(AttachmentUsage usage);
     VkImageLayout GetLayout(AttachmentUsage usage);
     LoadStoreOP GetLSOP(AttachmentOP op);
     virtual void SetupRenderState()=0;
+    void InputAttachmentDes(std::vector<std::string> names);
+
     std::vector<AttachmentDes> inputAttDes;
     std::vector<AttachmentDes> outputAttDes;
+
+    VkDescriptorSetLayout inputAttDesLayout;
+    VkDescriptorSet inputAttDesSet;
 
 private:
     void BuildPresentFrame();

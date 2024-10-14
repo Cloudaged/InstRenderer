@@ -6,7 +6,7 @@
 
 #include "../Buffer/AllocatedImage.h"
 #include "unordered_map"
-
+#include "../Buffer/Texture.h"
 
 
 enum class ResourceType
@@ -21,7 +21,8 @@ enum class AttachmentOP
     ReadOnly,
     WriteOnly,
     ReadAndWrite,
-    DontCare
+    DontCare,
+    Clear
 };
 
 enum class AttachmentUsage
@@ -31,7 +32,8 @@ enum class AttachmentUsage
     ColorAttachment,
     TransferSrc,
     TransferDst,
-    Present
+    Present,
+    Depth
 };
 
 struct AttachmentData
@@ -41,16 +43,14 @@ struct AttachmentData
 };
 struct AttachmentDes
 {
+    std::string name;
     int width,height;
     AttachmentUsage usage;
     AttachmentOP op;
     VkFormat format;
     bool isDepthBuffer = false;
-    AllocatedImage** data;
+    Texture** data;
 };
 
-typedef std::unordered_map<std::string,AttachmentDes> AttachmentMap;
-
-static AttachmentMap attachmentMap;
 
 #endif //INSTRENDERER_RENDERRESOURCE_H

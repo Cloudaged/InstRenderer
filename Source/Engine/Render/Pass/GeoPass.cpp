@@ -1,7 +1,7 @@
 
 #include "GeoPass.h"
 #include "../VulkanContext.h"
-GeoPass::GeoPass(GlobalDescriptorData data)
+GeoPass::GeoPass(GlobalDescriptorData data): globalData(data)
 {
 }
 
@@ -11,53 +11,130 @@ void GeoPass::SetupAttachments()
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
 
-
-    attachmentMap["BaseColor"] = AttachmentDes{winWidth,winHeight,
+    attachmentMap["BaseColor"] = AttachmentDes{"BaseColor",winWidth,winHeight,
                                                AttachmentUsage::ColorAttachment,AttachmentOP::WriteOnly,
                                                VK_FORMAT_R8G8B8A8_SRGB, false,&baseColorAttachment};
 
-    attachmentMap["Normal"] = AttachmentDes{winWidth,winHeight,
+    attachmentMap["Normal"] = AttachmentDes{"Normal",winWidth,winHeight,
                                                AttachmentUsage::ColorAttachment,AttachmentOP::WriteOnly,
                                                VK_FORMAT_R8G8B8A8_SRGB, false,&normalAttachment};
 
-    attachmentMap["Position"] = AttachmentDes{winWidth,winHeight,
+    attachmentMap["Position"] = AttachmentDes{"Position",winWidth,winHeight,
                                             AttachmentUsage::ColorAttachment,AttachmentOP::WriteOnly,
                                             VK_FORMAT_R8G8B8A8_SRGB, false,&positionAttachment};
+
+    attachmentMap["Depth"] = AttachmentDes{"Depth",winWidth,winHeight,
+                                           AttachmentUsage::Depth,AttachmentOP::Clear,
+                                           VK_FORMAT_D32_SFLOAT,true,&depthAttachment};
 
     outputAttDes.push_back(attachmentMap["BaseColor"]);
     outputAttDes.push_back(attachmentMap["Normal"]);
     outputAttDes.push_back(attachmentMap["Position"]);
+    outputAttDes.push_back(attachmentMap["Depth"]);
 }
 
 void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
 {
+    auto presentM = VulkanContext::GetContext().presentManager;
 
+    auto cmd = presentM.presentFrames[presentM.currentFrame].cmd;
+
+    VkExtent2D extent = VulkanContext::GetContext().windowExtent;
+
+
+    std::array<VkClearValue,4> clearValues{};
+    clearValues[0].color =  {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[1].color = {{0.0f, 0.0f, 0.0f, 0}};
+    clearValues[2].color =  {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[3].depthStencil = {1.0f, 0};
+
+    VkRenderPassBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    beginInfo.renderPass = passHandle;
+    beginInfo.framebuffer = this->framebufferHandle;
+    beginInfo.renderArea.offset ={0,0};
+    beginInfo.renderArea.extent = extent;
+    beginInfo.clearValueCount =clearValues.size();
+    beginInfo.pClearValues = clearValues.data();
+
+    if(VulkanContext::GetContext().isResize)
+        return;
+
+    vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = extent.width;
+    viewport.height = extent.height;
+    //viewport.width =width;
+    //viewport.height =height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = extent;
+    vkCmdSetScissor(cmd, 0, 1, &scissor);
+
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, renderState.pipeline);
+
+    //BeginRender pass
+    for (auto& entity:view)
+    {
+        auto renderComponents = view.get<Renderable>(entity);
+        auto transComponents = view.get<Transform>(entity);
+
+        perData = {GetModelMatrixFromTrans(transComponents)};
+        //Update
+        memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(perObjDesBuffer),
+               &perData,
+               sizeof(perData));
+        std::vector<VkDescriptorSet> sets = {globalData.globalDes,renderComponents.material.set,perObjDes};
+        //Bind
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                renderState.pipelineLayout,
+                                0, sets.size(),sets.data(),0, nullptr);
+
+        VkDeviceSize offsets[] = {0};
+
+        vkCmdBindVertexBuffers(cmd,0,1,&renderComponents.mesh.vertBuffer.vk_buffer, offsets);
+
+        vkCmdBindIndexBuffer(cmd,renderComponents.mesh.indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
+        //Draw
+        vkCmdDrawIndexed(cmd,static_cast<uint32_t>(renderComponents.mesh.index.size()),1,0,0,0);
+    }
+    vkCmdEndRenderPass(cmd);
 }
 
 void GeoPass::SetupRenderState()
 {
-    /*//DescriptorLayout
+    //DescriptorLayout
     //Global Layout
-    renderState.InputGlobalDesLayout(globalData.globalDesLayout);
+    InputGlobalDesLayout();
 
     std::vector<DescriptorBindingSlot> bindings(0);
 
-    //Material Layout
+    //Material layout
     DescriptorBindingSlot b1{0,VK_SHADER_STAGE_FRAGMENT_BIT,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER};
     bindings.push_back(b1);
-    renderState.CreatePerMaterialLayout(bindings);
-
+    CreatePerMaterialLayout(bindings);
     bindings.clear();
+
     //per Obj layout
     DescriptorBindingSlot b2{0,VK_SHADER_STAGE_VERTEX_BIT,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER};
     bindings.push_back(b2);
-    renderState.CreatePerObjLayout(bindings);
+    CreatePerObjLayout(bindings);
+
     //Pipeline
-    renderState.CreatePipeline(PipelineType::Mesh,passHandle,outputAttDes.size(),{"D:\\code_lib\\AGProject\\InstRenderer\\Asset\\vert.spv","D:\\code_lib\\AGProject\\InstRenderer\\Asset\\frag.spv"});
+    renderState.CreatePipeline(PipelineType::Mesh,
+                               passHandle,outputAttDes.size()-1,
+                               {std::string(PROJECT_ROOT)+"/Asset/Shader/spv/Geo.vert.spv",
+                                std::string(PROJECT_ROOT)+"/Asset/Shader/spv/Geo.frag.spv"});
 
     //Create perObj descriptor
-    perData = {};
-    renderState.CreatePerObjDescriptor(sizeof(GeoPassPerObjData));*/
+    CreatePerObjDescriptor(sizeof(GeoPassPerObjData));
+    renderState.isInit = true;
 }
 
 glm::mat4 GeoPass::GetModelMatrixFromTrans(Transform trans)
@@ -67,4 +144,93 @@ glm::mat4 GeoPass::GetModelMatrixFromTrans(Transform trans)
     mat = glm::rotate(mat,trans.rotation.x,{1,0,0});
     mat = glm::rotate(mat,trans.rotation.y,{0,1,0});
     mat = glm::rotate(mat,trans.rotation.z,{0,0,1});
-    return mat;}
+    return mat;
+}
+
+void GeoPass::InputGlobalDesLayout()
+{
+    this->globalLayout = globalData.globalDesLayout;
+    renderState.layouts.push_back(this->globalLayout);
+}
+
+void GeoPass::CreatePerMaterialLayout(std::vector<DescriptorBindingSlot> bindings)
+{
+    std::vector<VkDescriptorSetLayoutBinding> b(bindings.size());
+
+    for (int i = 0; i < b.size(); ++i)
+    {
+        b[i].binding = bindings[i].bindingPos;
+        b[i].descriptorType = bindings[i].type;
+        b[i].stageFlags = bindings[i].flags;
+        b[i].descriptorCount= 1;
+    }
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = static_cast<uint32_t>(b.size());
+    layoutInfo.pBindings = b.data();
+
+    if (vkCreateDescriptorSetLayout(VulkanContext::GetContext().device, &layoutInfo, nullptr,
+                                    &materialLayout) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create ds layout!");
+    }
+    renderState.layouts.push_back(materialLayout);
+}
+
+void GeoPass::CreatePerObjLayout(std::vector<DescriptorBindingSlot> bindings)
+{
+    std::vector<VkDescriptorSetLayoutBinding> b(bindings.size());
+
+    for (int i = 0; i < b.size(); ++i)
+    {
+        b[i].binding = bindings[i].bindingPos;
+        b[i].descriptorType = bindings[i].type;
+        b[i].stageFlags = bindings[i].flags;
+        b[i].descriptorCount= 1;
+    }
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = static_cast<uint32_t>(b.size());
+    layoutInfo.pBindings = b.data();
+
+    if (vkCreateDescriptorSetLayout(VulkanContext::GetContext().device, &layoutInfo, nullptr,
+                                    &perObjLayout) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create ds layout!");
+    }
+    renderState.layouts.push_back(perObjLayout);
+}
+
+void GeoPass::CreatePerObjDescriptor(size_t uniformSize)
+{
+    //CreateBuffer
+    perObjDesBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(uniformSize,VK_BUFFER_USAGE_2_UNIFORM_BUFFER_BIT_KHR,VMA_MEMORY_USAGE_CPU_ONLY);
+
+    //Allocate
+    VkDescriptorSetAllocateInfo allocateInfo{};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocateInfo.descriptorPool = VulkanContext::GetContext().pool;
+    allocateInfo.descriptorSetCount = 1;
+    allocateInfo.pSetLayouts = &perObjLayout;
+
+    vkAllocateDescriptorSets(VulkanContext::GetContext().device, &allocateInfo,&perObjDes);
+
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = perObjDesBuffer.vk_buffer;
+    bufferInfo.range = uniformSize;
+    bufferInfo.offset = 0;
+
+    VkWriteDescriptorSet descriptorWrite{};
+    descriptorWrite.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrite.dstSet = perObjDes;
+    descriptorWrite.dstBinding = 0;
+    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrite.descriptorCount = 1;
+    descriptorWrite.pBufferInfo = &bufferInfo;
+    descriptorWrite.pImageInfo = nullptr;
+    descriptorWrite.pTexelBufferView = nullptr;
+
+    vkUpdateDescriptorSets(VulkanContext::GetContext().device,1,&descriptorWrite,0, nullptr);
+}

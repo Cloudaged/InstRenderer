@@ -12,6 +12,9 @@ public:
     void ExecuteAllPass();
     void Build();
     void Setup();
+
+    void RecreateAllPass();
+    void ClearAtt();
     entt::view<entt::get_t<Renderable,Transform>> view;
 
     GlobalDescriptorData globalDescriptorData;

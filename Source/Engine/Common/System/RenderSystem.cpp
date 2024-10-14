@@ -8,7 +8,8 @@ void RenderSystem::BeginSystem(RenderSysBeginInfo info)
     passManager.globalDescriptorData = info.globalData;
     passManager.Setup();
     passManager.Build();
-    materialManager.Setup(&passManager.compositionPass->renderState.materialLayout,info.registry->view<Renderable>());
+    materialManager.Setup(&passManager.geoPass->materialLayout,info.registry->view<Renderable>());
+    VulkanContext::GetContext().passManager = &this->passManager;
 }
 
 void RenderSystem::Execute()
@@ -23,7 +24,8 @@ RenderSystem::RenderSystem()
     passManager = RenderPassManager();
 }
 
-void RenderSystem::ResizeSwapChain()
+void RenderSystem::RecreatePassRes()
 {
-    VulkanContext::GetContext().presentManager.RecreateSwapChain();
+    std::cout<<"reCreateD\n";
+    passManager.RecreateAllPass();
 }

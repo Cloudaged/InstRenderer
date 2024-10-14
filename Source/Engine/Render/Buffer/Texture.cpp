@@ -5,11 +5,6 @@
 
 Texture::Texture(AllocatedImage image)
 {
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
-
-    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,image.vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd);
 
     //CreateSampler
     VkSamplerCreateInfo samplerInfo{};
@@ -34,4 +29,13 @@ Texture::Texture(AllocatedImage image)
     desInfo.imageView = allocatedImage.imageView;
     desInfo.imageLayout = allocatedImage.layout;
 
+}
+
+void Texture::TransLayout()
+{
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,allocatedImage.vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd);
 }

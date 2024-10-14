@@ -8,6 +8,7 @@ class Texture
 {
 public:
     Texture(AllocatedImage image);
+    void TransLayout();
     const char *name = nullptr;
     VkDescriptorImageInfo desInfo;
     VkSampler sampler;

@@ -41,25 +41,14 @@ class RenderState
 {
 public:
     RenderState();
-    void InputGlobalDesLayout(VkDescriptorSetLayout layout);
-    void CreatePerMaterialLayout(std::vector<DescriptorBindingSlot> bindings);
-    void CreatePerObjLayout(std::vector<DescriptorBindingSlot> bindings);
     void CreatePipeline(PipelineType type,VkRenderPass renderPass,int attachmentCount,ShaderPath path);
 
-    VkDescriptorSet perObjDes;
-    Buffer perObjDesBuffer;
-
-    void CreatePerObjDescriptor(size_t uniformSize);
     PipelineType type;
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
 
-
-    VkDescriptorSetLayout globalLayout;
-    VkDescriptorSetLayout materialLayout;
-    VkDescriptorSetLayout perObjLayout;
-
     std::vector<VkDescriptorSetLayout> layouts;
+    bool isInit = false;
 private:
     VkShaderModule LoadShaderData(std::string path);
 

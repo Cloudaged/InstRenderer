@@ -11,14 +11,17 @@ struct CompPassPerObjData
 class CompositionPass :public RenderPass
 {
 public:
-    CompositionPass(GlobalDescriptorData data);
+    CompositionPass();
     void SetupAttachments() override;
-    void Execute(entt::view<entt::get_t<Renderable,Transform>> view);
+    void Execute();
 private:
+
+    //VkDescriptorSetLayout
+
     void SetupRenderState() override;
-    glm::mat4 GetModelMatrixFromTrans(Transform trans);
     GlobalDescriptorData globalData;
     CompPassPerObjData perData;
+
 };
 
 

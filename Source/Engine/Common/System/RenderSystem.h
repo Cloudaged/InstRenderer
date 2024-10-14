@@ -19,7 +19,7 @@ public:
     void BeginSystem(RenderSysBeginInfo info);
     void Execute();
 
-    void ResizeSwapChain();
+    void RecreatePassRes();
     MaterialManager materialManager;
     RenderPassManager passManager;
 };

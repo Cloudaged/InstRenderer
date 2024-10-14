@@ -19,6 +19,7 @@
 #include "PresentManager.h"
 #include "Buffer/Buffer.h"
 #include "Buffer/BufferAllocator.h"
+#include "RenderPassManager.h"
 class VulkanContext
 {
 public:
@@ -47,6 +48,9 @@ public:
     SDL_Window* sdlWindow;
     SDL_Event* sdlEvent;
 
+    RenderPassManager* passManager;
+
+    VkCommandBuffer drawCmd;
     void DrawPrepare();
     void Submit();
 

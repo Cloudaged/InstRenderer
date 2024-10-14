@@ -25,7 +25,6 @@ RenderEditor::~RenderEditor()
 void RenderEditor::resizeEvent(QResizeEvent *event)
 {
     std::lock_guard<std::mutex> lock(Locker::Get().resizeMtx);
-
     SDL_RestoreWindow(this->sdlWindow);
     SDL_MaximizeWindow(this->sdlWindow);
 }

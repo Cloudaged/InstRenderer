@@ -13,16 +13,32 @@ public:
     GeoPass(GlobalDescriptorData data);
     void SetupAttachments() override;
     void Execute(entt::view<entt::get_t<Renderable,Transform>> view);
+
+
+    VkDescriptorSetLayout globalLayout;
+    VkDescriptorSetLayout materialLayout;
+    VkDescriptorSetLayout perObjLayout;
 private:
     void SetupRenderState() override;
 
-    AllocatedImage* baseColorAttachment;
-    AllocatedImage* normalAttachment;
-    AllocatedImage* positionAttachment;
+    void InputGlobalDesLayout();
+    void CreatePerMaterialLayout(std::vector<DescriptorBindingSlot> bindings);
+    void CreatePerObjLayout(std::vector<DescriptorBindingSlot> bindings);
+
+    void CreatePerObjDescriptor(size_t uniformSize);
+
+    VkDescriptorSet perObjDes;
+    Buffer perObjDesBuffer;
+
+
+    Texture* baseColorAttachment;
+    Texture* normalAttachment;
+    Texture* positionAttachment;
+    Texture* depthAttachment;
 
     glm::mat4 GetModelMatrixFromTrans(Transform trans);
     GlobalDescriptorData globalData;
-    GeoPassPerObjData perData;
+    GeoPassPerObjData perData={};
 };
 
 

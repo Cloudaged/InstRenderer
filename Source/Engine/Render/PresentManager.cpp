@@ -108,10 +108,14 @@ void PresentManager::RecreateSwapChain()
         SDL_WaitEvent(VulkanContext::GetContext().sdlEvent);
     }
     vkDeviceWaitIdle(VulkanContext::GetContext().device);
+
     ClearSwapChain();
     VulkanContext::GetContext().CreateSwapchain();
     extent = VulkanContext::GetContext().windowExtent;
     InitFrameData(lastRenderpass,(uint32_t)extent.width,(uint32_t)extent.height);
+    VulkanContext::GetContext().passManager->RecreateAllPass();
+    VulkanContext::GetContext().isResize = false;
+
 }
 
 void PresentManager::ClearSwapChain()

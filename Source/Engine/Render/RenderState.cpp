@@ -9,7 +9,7 @@ std::vector<char> ReadFile(const std::string &fileName)
 
     if(!file.is_open())
     {
-        throw std::runtime_error("failed to open file!");
+        throw std::runtime_error("failed to open Shader!");
     }
 
     size_t fileSize = (size_t)file.tellg();
@@ -20,33 +20,6 @@ std::vector<char> ReadFile(const std::string &fileName)
     return buffer;
 }
 
-void RenderState::CreatePerMaterialLayout(std::vector<DescriptorBindingSlot> bindings)
-{
-    std::vector<VkDescriptorSetLayoutBinding> b(bindings.size());
-
-    VkDescriptorSetLayout layout;
-
-    for (int i = 0; i < b.size(); ++i)
-    {
-        b[i].binding = bindings[i].bindingPos;
-        b[i].descriptorType = bindings[i].type;
-        b[i].stageFlags = bindings[i].flags;
-        b[i].descriptorCount= 1;
-    }
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(b.size());
-    layoutInfo.pBindings = b.data();
-
-    if (vkCreateDescriptorSetLayout(VulkanContext::GetContext().device, &layoutInfo, nullptr,
-                                    &layout) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create ds layout!");
-    }
-    materialLayout = layout;
-    layouts.push_back(layout);
-}
 
 void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int attachmentCount,ShaderPath path)
 {
@@ -55,7 +28,11 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
     switch (type)
     {
         case PipelineType::Mesh:
-            settings = {true, true,VK_CULL_MODE_BACK_BIT};
+            settings = {true, true,VK_CULL_MODE_BACK_BIT};break;
+        case PipelineType::RenderQuad:
+            settings = {true, false,VK_CULL_MODE_FRONT_BIT};break;
+        default:
+            settings = {true, true,VK_CULL_MODE_BACK_BIT};break;
     }
 
     VkShaderModule vertModule =LoadShaderData(path.vertPath);
@@ -128,6 +105,8 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
     fragShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,fragShaderStageInfo};
+
+
 
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment;
@@ -231,73 +210,6 @@ VkShaderModule RenderState::LoadShaderData(std::string path)
     return sm;
 }
 
-void RenderState::InputGlobalDesLayout(VkDescriptorSetLayout layout)
-{
-    globalLayout = layout;
-    layouts.push_back(layout);
-}
-
-void RenderState::CreatePerObjLayout(std::vector<DescriptorBindingSlot> bindings)
-{
-
-    std::vector<VkDescriptorSetLayoutBinding> b(bindings.size());
-
-    VkDescriptorSetLayout layout;
-
-    for (int i = 0; i < b.size(); ++i)
-    {
-        b[i].binding = bindings[i].bindingPos;
-        b[i].descriptorType = bindings[i].type;
-        b[i].stageFlags = bindings[i].flags;
-        b[i].descriptorCount= 1;
-    }
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(b.size());
-    layoutInfo.pBindings = b.data();
-
-    if (vkCreateDescriptorSetLayout(VulkanContext::GetContext().device, &layoutInfo, nullptr,
-                                    &layout) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create ds layout!");
-    }
-    perObjLayout=layout;
-    layouts.push_back(layout);
-}
-
-
-void RenderState::CreatePerObjDescriptor(size_t uniformSize)
-{
-    //CreateBuffer
-    perObjDesBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(uniformSize,VK_BUFFER_USAGE_2_UNIFORM_BUFFER_BIT_KHR,VMA_MEMORY_USAGE_CPU_ONLY);
-
-    //Allocate
-    VkDescriptorSetAllocateInfo allocateInfo{};
-    allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocateInfo.descriptorPool = VulkanContext::GetContext().pool;
-    allocateInfo.descriptorSetCount = 1;
-    allocateInfo.pSetLayouts = &perObjLayout;
-
-    vkAllocateDescriptorSets(VulkanContext::GetContext().device, &allocateInfo,&perObjDes);
-
-    VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = perObjDesBuffer.vk_buffer;
-    bufferInfo.range = uniformSize;
-    bufferInfo.offset = 0;
-
-    VkWriteDescriptorSet descriptorWrite{};
-    descriptorWrite.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrite.dstSet = perObjDes;
-    descriptorWrite.dstBinding = 0;
-    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptorWrite.descriptorCount = 1;
-    descriptorWrite.pBufferInfo = &bufferInfo;
-    descriptorWrite.pImageInfo = nullptr;
-    descriptorWrite.pTexelBufferView = nullptr;
-
-    vkUpdateDescriptorSets(VulkanContext::GetContext().device,1,&descriptorWrite,0, nullptr);
-}
 
 
 
