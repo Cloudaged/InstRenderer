@@ -4,11 +4,13 @@
 #include "SceneTree.h"
 #include "ui_SceneTree.h"
 
+#include "../ResourceEditor/ContentWidget.h"
 
 SceneTree::SceneTree(QTreeWidget *parent) :
         QTreeWidget(parent), ui(new Ui::SceneTree)
 {
     ui->setupUi(this);
+    setAcceptDrops(true);
 
     setEditTriggers(QTreeWidget::NoEditTriggers);
 }
@@ -45,4 +47,13 @@ void SceneTree::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint 
         emit ItemRenamed(selectedItems()[0]->text(2).toInt(),selectedItems()[0]->text(0).toStdString());
     }
     QAbstractItemView::closeEditor(editor, hint);
+}
+
+void SceneTree::dropEvent(QDropEvent *event)
+{
+    auto item = ContentWidget::dragItem;
+    if(item)
+    {
+        emit DropResource(item->data(Qt::UserRole).toString().toStdString());
+    }
 }

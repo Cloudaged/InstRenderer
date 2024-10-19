@@ -129,8 +129,8 @@ void GeoPass::SetupRenderState()
     //Pipeline
     renderState.CreatePipeline(PipelineType::Mesh,
                                passHandle,outputAttDes.size()-1,
-                               {std::string(PROJECT_ROOT)+"/Asset/Shader/spv/Geo.vert.spv",
-                                std::string(PROJECT_ROOT)+"/Asset/Shader/spv/Geo.frag.spv"});
+                               {FILE_PATH("Asset/Shader/spv/Geo.vert.spv"),
+                                FILE_PATH("Asset/Shader/spv/Geo.frag.spv")});
 
     //Create perObj descriptor
     CreatePerObjDescriptor(sizeof(GeoPassPerObjData));

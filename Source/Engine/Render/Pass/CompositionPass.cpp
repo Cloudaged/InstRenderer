@@ -81,8 +81,8 @@ void CompositionPass::SetupRenderState()
     InputAttachmentDes({"BaseColor","Normal","Position"});
     //Pipeline
     renderState.CreatePipeline(PipelineType::RenderQuad,passHandle,outputAttDes.size(),
-                               {std::string(PROJECT_ROOT)+"/Asset/Shader/spv/Comp.vert.spv",
-                                std::string(PROJECT_ROOT)+"/Asset/Shader/spv/Comp.frag.spv"});
+                               {FILE_PATH("Asset/Shader/spv/Comp.vert.spv"),
+                                FILE_PATH("Asset/Shader/spv/Comp.frag.spv")});
     renderState.isInit = true;
 }
 

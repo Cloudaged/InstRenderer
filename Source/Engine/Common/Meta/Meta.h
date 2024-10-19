@@ -16,8 +16,9 @@ static void RegisterMeta()
     entt::meta<MeshObject>()
             .type("MeshObject"_hs)
             .base<GameObject>()
-            .data<&MeshObject::entityID>("entityID"_hs)
+           /* .data<&MeshObject::entityID>("entityID"_hs)
             .data<&MeshObject::name>("name"_hs)
+            .data<&MeshObject::parent>("parent"_hs)*/
             .data<&MeshObject::count>("count"_hs)
             .ctor<entt::registry*,std::string>();
 

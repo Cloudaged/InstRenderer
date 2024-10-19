@@ -7,6 +7,7 @@
 #include <QWidget>
 #include "QTreeWidget"
 #include "iostream"
+#include "QMimeData"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -26,6 +27,7 @@ public:
 
     QTreeWidgetItem* curItem= nullptr;
 private:
+    void dropEvent(QDropEvent* event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint) override;
@@ -33,7 +35,7 @@ private:
 
 signals:
     void ItemRenamed(int id,std::string dstName);
-
+    void DropResource(std::string path);
 };
 
 

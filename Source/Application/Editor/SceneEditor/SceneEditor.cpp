@@ -9,6 +9,7 @@ SceneEditor::SceneEditor(QDockWidget *parent) :
         QDockWidget(parent), ui(new Ui::SceneEditor)
 {
     ui->setupUi(this);
+    //setAcceptDrops(true);
     InitTreeWidget();
     ConnectFuncs();
     ItemChanged();
@@ -189,6 +190,7 @@ void SceneEditor::ItemChanged()
 
     });
 }
+
 
 
 

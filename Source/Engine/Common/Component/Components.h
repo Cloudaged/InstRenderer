@@ -24,8 +24,6 @@ struct Renderable
 struct CameraComponent
 {
     float fov;
-
 };
-
 
 #endif //INSTRENDERER_COMPONENTS_H

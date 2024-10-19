@@ -15,6 +15,7 @@
 #include "QContextMenuEvent"
 
 #include "SceneTree.h"
+#include "QDropEvent"
 
 QT_BEGIN_NAMESPACE
 namespace Ui

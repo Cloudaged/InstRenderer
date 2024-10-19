@@ -1,6 +1,6 @@
 
 #include "Presenter.h"
-
+#include "Resource/ResourceManager.h"
 GameObject* go;
 
 Presenter::Presenter(GameInstance *gameInstance, MainEditor *mainEditor):instance(gameInstance),editor(mainEditor)
@@ -10,6 +10,7 @@ Presenter::Presenter(GameInstance *gameInstance, MainEditor *mainEditor):instanc
     RenameGameObject();
     ChangeSelectedItem();
     UpdateComponentData();
+    LoadResource();
 }
 
 void Presenter::AddGameObject()
@@ -72,4 +73,32 @@ void Presenter::UpdateComponentData()
 
         std::cout<<tran2.pos.x<<"\n";
     });
+}
+
+void Presenter::LoadResource()
+{
+    editor->connect(editor->sceneEditor->treeWidget,&SceneTree::DropResource,[&](std::string path)
+    {
+        auto extension= GetExtension(path);
+        if(extension=="fbx")
+        {
+            CreateMeshObject(path);
+        }
+
+    });
+}
+
+void Presenter::CreateMeshObject(std::string path)
+{
+    /*auto name = GetNameFromPath(path);
+    ResourceManager::Get().LoadResource(path);
+    auto model = (Res::ResModel*)ResourceManager::Get().resReg[name];
+
+    auto& ins = instance->mainScene->CreateObject(name,"MeshObject");
+    GameObject& go = ins.cast<GameObject&>();
+    editor->sceneEditor->AddItem(static_cast<int>(go.entityID),name,type);
+
+    glm::vec3 pos = {10.0,20.0,0.0};
+    instance->mainScene->reg.emplace<Transform>(go.entityID,pos,pos,pos);
+    go.componentBits.set(0);*/
 }

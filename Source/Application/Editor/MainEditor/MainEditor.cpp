@@ -79,11 +79,29 @@ void MainEditor::InitSubWidgetLayoutAndShow()
 void MainEditor::InitMenuBar()
 {
     menuBar = new QMenuBar(this);
-    fileMenu = new QMenu("file",menuBar);
+    //File Menu
+    fileMenu = new QMenu("File",menuBar);
+    QAction* loadAction = new QAction("Load Resource",fileMenu);
+    fileMenu->addAction(loadAction);
+    connect(loadAction,&QAction::triggered,[&]()
+    {
+        auto filePath = QFileDialog::getOpenFileName(nullptr,"Load File",
+                                                     QString::fromStdString(FILE_PATH("Asset")),
+                                                     "所有文件(*.*)");
+        if(!filePath.isEmpty())
+        {
+            emit LoadAction(filePath.toStdString());
+        }
+
+    });
+
+
+
     menuBar->addMenu(fileMenu);
 
     this->setMenuBar(menuBar);
 }
+
 
 
 

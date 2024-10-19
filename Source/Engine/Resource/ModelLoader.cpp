@@ -10,8 +10,7 @@ Res::ResModel *ModelLoader::Load(std::string path)
         std::cout<<"Assimp error: "<<importer.GetErrorString()<<"\n";
     }
     auto name = std::filesystem::path(path).stem().string();
-    Res::ResModel* model = new Res::ResModel;
-    model->path = path;
+    Res::ResModel* model = new Res::ResModel(path);
     ProcessNode(model,scene->mRootNode,scene);
     return model;
 

@@ -14,6 +14,8 @@
 #include "QMenuBar"
 #include "QMenu"
 #include "QAction"
+#include "QFileDialog"
+#include "Common/Core/PathDefine.h"
 
 #include "QCloseEvent"
 QT_BEGIN_NAMESPACE
@@ -71,6 +73,7 @@ private:
 signals:
     void AddNewNode(std::string name, std::string type);
     void DeleteNode();
+    void LoadAction(std::string path);
 
 };
 

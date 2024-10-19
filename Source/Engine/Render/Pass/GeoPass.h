@@ -2,6 +2,7 @@
 #ifndef INSTRENDERER_GEOPASS_H
 #define INSTRENDERER_GEOPASS_H
 #include "RenderPass.h"
+#include "../../Common/Core/PathDefine.h"
 struct GeoPassPerObjData
 {
     glm::mat4 modelMatrix;

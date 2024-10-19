@@ -4,14 +4,15 @@
 
 #include "vector"
 #include "ResMesh.h"
-
+#include "ResBase.h"
 #include "string"
 namespace Res
 {
 
-    class ResModel
+    class ResModel :public ResBase
     {
     public:
+        ResModel(std::string path);
         std::vector<ResMesh> meshes;
         std::string path;
     };

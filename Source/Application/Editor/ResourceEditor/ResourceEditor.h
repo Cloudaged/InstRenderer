@@ -5,7 +5,14 @@
 #include <QWidget>
 #include "QDockWidget"
 #include "QListWidget"
-
+#include "QTreeWidget"
+#include "../Engine/Common/Core/PathDefine.h"
+#include "QHBoxLayout"
+#include "QSplitter"
+#include "QDir"
+#include "iostream"
+#include "../IconManager.h"
+#include "ContentWidget.h"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -24,9 +31,14 @@ public:
 
 private:
     void InitListWidget();
+    void InitFolderWidget();
+    void ShowFileOfPath(std::string path);
+    std::string selectedPath;
 
     Ui::ResourceEditor *ui;
-    QListWidget* listWidget;
+    ContentWidget* contentWidget;
+    QTreeWidget* folderWidget;
+    void SetIcon(QListWidgetItem* item,QString extension);
 
 };
 

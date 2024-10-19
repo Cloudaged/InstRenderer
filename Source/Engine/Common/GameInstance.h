@@ -9,6 +9,8 @@
 
 #include "../Render/VulkanContext.h"
 #include "System/RenderSystem.h"
+#include "System/ResourceSystem.h"
+
 #include "EntityManager.h"
 #include "../Resource/ModelLoader.h"
 #include "../Resource/ResTexture.h"
@@ -35,6 +37,7 @@ public:
 
 private:
     RenderSystem renderSystem;
+    ResourceSystem resourceSystem;
     void InitCore();
     void InitSystem();
     void InitEntity();

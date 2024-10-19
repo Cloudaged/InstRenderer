@@ -17,6 +17,9 @@ private:
     void AddGameObject();
     void DeleteGameObject();
     void RenameGameObject();
+    void LoadResource();
+
+    void CreateMeshObject(std::string path);
 };
 
 

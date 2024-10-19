@@ -2,6 +2,7 @@
 #include "GameInstance.h"
 #include "iostream"
 
+#include "../Resource/ResourceManager.h"
 
 
 GameInstance::GameInstance(WindowSize size): size(size)
@@ -42,6 +43,10 @@ void GameInstance::InitCore()
     //Registry
     entityManager = new EntityManager(&mainScene->reg);
     //Locker
+
+    //Resource Manager
+    ResourceManager::Init();
+
 }
 
 void GameInstance::InitVulkanContext()
@@ -56,6 +61,8 @@ void GameInstance::InitSystem()
     renderSysInfo.registry = &mainScene->reg;
     renderSysInfo.globalData = mainScene->globalData;
     renderSystem.BeginSystem(renderSysInfo);
+
+    resourceSystem.BeginSystem();
 }
 
 void GameInstance::Tick()
@@ -74,7 +81,8 @@ void GameInstance::Tick()
 
 void GameInstance::InitEntity()
 {
-    auto model = ModelLoader::Load("D:\\code_lib\\AGProject\\InstRenderer\\Asset\\CratesAndBarrels.fbx");
+    ResourceManager::Get().LoadResource("D:\\code_lib\\AGProject\\InstRenderer\\Asset\\CratesAndBarrels.fbx");
+    auto model = (Res::ResModel*)ResourceManager::Get().resReg["CratesAndBarrels.fbx"];
 
 
     auto t = Res::ImageLoader::Load("D:\\code_lib\\AGProject\\InstRenderer\\Asset\\Crate_Base_Color.png");

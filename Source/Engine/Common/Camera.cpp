@@ -6,7 +6,6 @@ Camera::Camera(entt::registry* reg,std::string name):GameObject(reg,name)
 {
 
 
-
 }
 
 void Camera::InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir)

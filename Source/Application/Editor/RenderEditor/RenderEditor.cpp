@@ -9,6 +9,7 @@ RenderEditor::RenderEditor(SDL_Window* window,QDockWidget *parent) :
         QDockWidget(parent), ui(new Ui::RenderEditor),sdlWindow(window)
 {
     ui->setupUi(this);
+    setAcceptDrops(true);
 
     SDL_SysWMinfo systemInfo;
     SDL_VERSION(&systemInfo.version);
