@@ -28,6 +28,9 @@ FILE(COPY ${CMAKE_SOURCE_DIR}/ThirdParty/Assimp/bin/libassimp-5.dll DESTINATION 
 #stb_image
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/stb_image)
 
+#tinygltf
+include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/tinygltf)
+
 #Entt
 include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/entt)
 

@@ -368,6 +368,14 @@ void RenderPass::BuildPresentFrame()
 
 void RenderPass::InputAttachmentDes(std::vector<std::string> names)
 {
+    if(inputAttDesLayout!=VK_NULL_HANDLE)
+    {
+        auto& device= VulkanContext::GetContext().device;
+        vkFreeDescriptorSets(device,VulkanContext::GetContext().pool,1, &this->inputAttDesSet);
+        vkDestroyDescriptorSetLayout(device, this->inputAttDesLayout, nullptr);
+    }
+
+
     std::vector<VkDescriptorSetLayoutBinding> bindings(names.size());
     for (int i = 0; i < names.size(); ++i)
     {

@@ -47,6 +47,7 @@ void GameInstance::InitCore()
     //Resource Manager
     ResourceManager::Init();
 
+
 }
 
 void GameInstance::InitVulkanContext()
@@ -81,19 +82,19 @@ void GameInstance::Tick()
 
 void GameInstance::InitEntity()
 {
-    ResourceManager::Get().LoadResource("D:\\code_lib\\AGProject\\InstRenderer\\Asset\\CratesAndBarrels.fbx");
+    /*ResourceManager::Get().LoadResource("D:\\code_lib\\AGProject\\InstRenderer\\Asset\\Model\\crates-and-barrels\\CratesAndBarrels.fbx");
     auto model = (Res::ResModel*)ResourceManager::Get().resReg["CratesAndBarrels.fbx"];
 
 
-    auto t = Res::ImageLoader::Load("D:\\code_lib\\AGProject\\InstRenderer\\Asset\\Crate_Base_Color.png");
+    auto t = ImageLoader::Load("D:\\code_lib\\AGProject\\InstRenderer\\Asset\\Model\\crates-and-barrels\\Crate_Base_Color.png");
     AllocatedImage img(VK_FORMAT_R8G8B8A8_SRGB,VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,
                        {(uint32_t)t->width,(uint32_t)t->height},1,VK_IMAGE_ASPECT_COLOR_BIT);
 
     img.LoadData(t);
 
 
-    PBRMaterial material;
-    material.AddTexture(new Texture(img));
+    StandardMaterial material;
+    material.AddTexture(new Texture(img),TextureType::DontCare);
     material.Setup();
 
     Mesh mesh(model->meshes[0].verts, model->meshes[0].index);
@@ -103,7 +104,7 @@ void GameInstance::InitEntity()
     mainScene->reg.emplace<Renderable>(e1,mesh,material,color);
     mainScene->reg.emplace<Transform>(e1, glm::vec3{0.0,0.0,0.0},
                                       glm::vec3{0,0.0,0.0},
-                                      glm::vec3{1.0,1.0,1.0});
+                                      glm::vec3{1.0,1.0,1.0});*/
 }
 
 void GameInstance::Run(bool* isClose)

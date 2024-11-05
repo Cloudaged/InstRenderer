@@ -7,6 +7,11 @@
 #include "ModelLoader.h"
 #include "memory"
 #include "../Common/Core/PathDefine.h"
+#include "ImageLoader.h"
+#include "../Render/Mesh.h"
+#include "../Render/Material/StandardMaterial.h"
+#include "thread"
+#include "../Common/GameInstance.h"
 typedef std::map<std::string,Res::ResBase*> ResReg;
 
 class ResourceManager
@@ -14,10 +19,15 @@ class ResourceManager
 public:
     static ResourceManager& Get();
     static void Init();
+    Mesh* TransMesh(Res::ResMesh* resMesh);
+    StandardMaterial* TransMaterial(Res::ResMaterial* resMaterial);
+    Texture* TransTexture(Res::ResTexture* resTexture);
     ResReg resReg;
-    void LoadResource(std::string path);
+    std::string LoadResource(std::string path);
     static std::unique_ptr<ResourceManager> Pinstance;
+    void CompileModel(GameInstance* instance,Res::ResModel* model);
 private:
+    void AsynCompile(GameInstance* instance,Res::ResModel* model);
     ResourceManager();
 
 };

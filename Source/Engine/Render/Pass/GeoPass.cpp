@@ -35,6 +35,8 @@ void GeoPass::SetupAttachments()
 
 void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
 {
+    std::lock_guard<std::mutex> guard(Locker::Get().loadResourceMtx);
+
     auto presentM = VulkanContext::GetContext().presentManager;
 
     auto cmd = presentM.presentFrames[presentM.currentFrame].cmd;
@@ -90,7 +92,7 @@ void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
         memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(perObjDesBuffer),
                &perData,
                sizeof(perData));
-        std::vector<VkDescriptorSet> sets = {globalData.globalDes,renderComponents.material.set,perObjDes};
+        std::vector<VkDescriptorSet> sets = {globalData.globalDes,renderComponents.material->set,perObjDes};
         //Bind
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 renderState.pipelineLayout,
@@ -98,12 +100,13 @@ void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
 
         VkDeviceSize offsets[] = {0};
 
-        vkCmdBindVertexBuffers(cmd,0,1,&renderComponents.mesh.vertBuffer.vk_buffer, offsets);
+        vkCmdBindVertexBuffers(cmd,0,1,&renderComponents.mesh->vertBuffer.vk_buffer, offsets);
 
-        vkCmdBindIndexBuffer(cmd,renderComponents.mesh.indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(cmd,renderComponents.mesh->indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
         //Draw
-        vkCmdDrawIndexed(cmd,static_cast<uint32_t>(renderComponents.mesh.index.size()),1,0,0,0);
+        vkCmdDrawIndexed(cmd,static_cast<uint32_t>(renderComponents.mesh->index.size()),1,0,0,0);
     }
+
     vkCmdEndRenderPass(cmd);
 }
 
@@ -116,8 +119,16 @@ void GeoPass::SetupRenderState()
     std::vector<DescriptorBindingSlot> bindings(0);
 
     //Material layout
-    DescriptorBindingSlot b1{0,VK_SHADER_STAGE_FRAGMENT_BIT,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER};
-    bindings.push_back(b1);
+    DescriptorBindingSlot slotBuffer{0,VK_SHADER_STAGE_FRAGMENT_BIT,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER};
+    DescriptorBindingSlot baseColor{1,VK_SHADER_STAGE_FRAGMENT_BIT,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER};
+    DescriptorBindingSlot normal{2,VK_SHADER_STAGE_FRAGMENT_BIT,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER};
+    DescriptorBindingSlot roughnessMetallic{3,VK_SHADER_STAGE_FRAGMENT_BIT,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER};
+
+    bindings.push_back(slotBuffer);
+    bindings.push_back(baseColor);
+    bindings.push_back(normal);
+    bindings.push_back(roughnessMetallic);
+
     CreatePerMaterialLayout(bindings);
     bindings.clear();
 
@@ -206,7 +217,7 @@ void GeoPass::CreatePerObjLayout(std::vector<DescriptorBindingSlot> bindings)
 void GeoPass::CreatePerObjDescriptor(size_t uniformSize)
 {
     //CreateBuffer
-    perObjDesBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(uniformSize,VK_BUFFER_USAGE_2_UNIFORM_BUFFER_BIT_KHR,VMA_MEMORY_USAGE_CPU_ONLY);
+    perObjDesBuffer = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(uniformSize,VK_BUFFER_USAGE_2_UNIFORM_BUFFER_BIT_KHR,VMA_MEMORY_USAGE_CPU_ONLY);
 
     //Allocate
     VkDescriptorSetAllocateInfo allocateInfo{};

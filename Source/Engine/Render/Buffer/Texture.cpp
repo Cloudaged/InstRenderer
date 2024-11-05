@@ -3,7 +3,7 @@
 #include "../VulkanContext.h"
 
 
-Texture::Texture(AllocatedImage image)
+Texture::Texture(AllocatedImage image,TextureType type)
 {
 
     //CreateSampler
@@ -33,9 +33,9 @@ Texture::Texture(AllocatedImage image)
 
 void Texture::TransLayout()
 {
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
 
     VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,allocatedImage.vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
 }

@@ -19,9 +19,9 @@ public:
     void BeginSystem(RenderSysBeginInfo info);
     void Execute();
 
-    void RecreatePassRes();
     MaterialManager materialManager;
     RenderPassManager passManager;
+private:
 };
 
 

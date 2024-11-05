@@ -14,28 +14,25 @@ Scene::~Scene()
 
 }
 
-entt::meta_any& Scene::CreateObject(std::string name,std::string type)
+GameObject* Scene::CreateObject(std::string name)
 {
-    auto type_hash = entt::hashed_string::value(type.c_str());
+    /*auto type_hash = entt::hashed_string::value(type.c_str());
     auto name_hash = entt::hashed_string::value(name.c_str());
 
     auto type_meta = entt::resolve(type_hash);
 
-    auto instance = type_meta.construct(&reg,name);
+    auto instance = type_meta.construct(&reg,name);*/
 
-    GameObject* go= (GameObject*)instance.data();
+    GameObject* go= new GameObject(&reg,name);
 
+    objects.push_back(go);
 
-    std::cout<<static_cast<int>(go->entityID)<<'\n';
-
-    objects.push_back(instance);
-
-    return objects[objects.size()-1];
+    return go;
 }
 
-entt::meta_any Scene::CreateObject(std::string name, std::string type, int parent)
+GameObject* Scene::CreateObject(std::string name, int parent)
 {
-    using namespace entt::literals;
+   /* using namespace entt::literals;
     auto type_hash = entt::hashed_string::value(type.c_str());
     auto name_hash = entt::hashed_string::value(name.c_str());
 
@@ -45,16 +42,14 @@ entt::meta_any Scene::CreateObject(std::string name, std::string type, int paren
 
     auto instance = type_meta.construct(&reg,name);
 
-    parent_meta.set(instance,parent);
+    parent_meta.set(instance,parent);*/
 
-    GameObject* go= (GameObject*)instance.data();
+    GameObject* go= new GameObject(&reg,name);
+    go->parent = parent;
 
+    objects.push_back(go);
 
-    objects.push_back(instance);
-
-
-
-    return instance;
+    return go;
 }
 
 
@@ -63,7 +58,7 @@ void Scene::DeleteObject(int id)
     //Delete Child
     for (int i = 0; i < objects.size(); ++i)
     {
-        GameObject* go = (GameObject*)objects[i].data();
+        GameObject* go = objects[i];
         if (go->parent==id)
         {
             Destroy(i);
@@ -73,17 +68,17 @@ void Scene::DeleteObject(int id)
 
 void Scene::Destroy(int i)
 {
-    GameObject* go =  (GameObject*)objects[i].data();
+    GameObject* go =  objects[i];
     reg.destroy(go->entityID);
-    objects[i].reset();
     objects.erase(objects.cbegin()+i);
+    delete go;
 }
 
 void Scene::RenameObject(int id, std::string dstName)
 {
     for (int i = 0; i < objects.size(); ++i)
     {
-        GameObject* go =  (GameObject*)objects[i].data();
+        GameObject* go =  (GameObject*)objects[i];
         if(static_cast<int>(go->entityID)==id)
         {
             go->name = dstName;
@@ -96,7 +91,7 @@ GameObject *Scene::GetGameObject(int id)
 {
     for (auto& meta:objects)
     {
-        GameObject* go = (GameObject*)meta.data();
+        GameObject* go = (GameObject*)meta;
         if(static_cast<int>(go->entityID)==id)
         {
             return go;
@@ -140,7 +135,7 @@ void Scene::InitGlobalSet()
         throw std::runtime_error("failed to allocate ds");
     }
     //Allocate
-    globalData.buffer= VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(globUniform),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
+    globalData.buffer= *VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(globUniform),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
 
     VkDescriptorBufferInfo bufferInfo{};
     bufferInfo.buffer =globalData.buffer.vk_buffer;
@@ -182,7 +177,7 @@ void Scene::AddComponent(int objID)
     GameObject* go;
     for (int i = 0; i < objects.size(); ++i)
     {
-        GameObject* tempGo =  (GameObject*)objects[i].data();
+        GameObject* tempGo =  objects[i];
         if(static_cast<int>(go->entityID)==objID)
         {
             go = tempGo;

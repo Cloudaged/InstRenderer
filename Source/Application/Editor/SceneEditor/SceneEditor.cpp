@@ -32,7 +32,7 @@ void SceneEditor::InitTreeWidget()
 
 }
 
-void SceneEditor::AddItem(int id,std::string name, std::string type)
+QTreeWidgetItem* SceneEditor::AddItem(int id,std::string name, std::string type)
 {
     int idWithoutVersion = id & 0xFFFFF;
 
@@ -44,28 +44,33 @@ void SceneEditor::AddItem(int id,std::string name, std::string type)
     item->setFlags(item->flags() | Qt::ItemIsEditable);
 
 
-    QIcon* icon = new QIcon("D:\\code_lib\\AGProject\\InstRenderer\\Source\\Application\\Editor\\icons\\GameObject.png");
-    std::cout<<icon->name().toStdString();
+    QIcon* icon = new QIcon(QString::fromStdString(FILE_PATH("\\Source\\Application\\Editor\\icons\\GameObject.png")));
     item->setIcon(0,*icon);
-
+    return item;
 }
 
-void SceneEditor::AddItem(int id, std::string name, std::string type, int parent)
+QTreeWidgetItem* SceneEditor::AddItem(int id, std::string name, std::string type, int parent)
 {
     QTreeWidgetItem* item = new QTreeWidgetItem;
     item->setText(0,QString::fromStdString(name));
     item->setText(1,QString::fromStdString(type));
     item->setText(2,QString::fromStdString(std::to_string(id)));
-
     item->setFlags(item->flags() | Qt::ItemIsEditable);
-
     QIcon* icon = new QIcon("D:\\code_lib\\AGProject\\InstRenderer\\Source\\Application\\Editor\\icons\\GameObject.png");
     std::cout<<icon->name().toStdString();
     item->setIcon(0,*icon);
-    treeWidget->selectedItems()[0]->addChild(item);
 
+    auto root = this->treeWidget->invisibleRootItem();
+
+    auto parentItem = FindItemsWithColumnValue(root,2,QString::number(parent));
+
+    parentItem->addChild(item);
+
+    if(!treeWidget->selectedItems().isEmpty())
+        treeWidget->selectedItems()[0]->addChild(item);
+
+    return item;
 }
-
 
 void SceneEditor::DeleteItem(int id)
 {
@@ -98,7 +103,6 @@ void SceneEditor::contextMenuEvent(QContextMenuEvent *event)
 
 
     QAction *gameObjectAction = addMenu.addAction("GameObject");
-    QAction *meshObjectAction = addMenu.addAction("MeshObject");
     QAction *lightAction = addMenu.addAction("Light");
     QAction *cameraAction = addMenu.addAction("Camera");
 
@@ -107,10 +111,6 @@ void SceneEditor::contextMenuEvent(QContextMenuEvent *event)
         connect(gameObjectAction, &QAction::triggered, this, [&]()
         {
             emit AddObjAction(GetUniqueName("GameObject"), "GameObject");
-        });
-        connect(meshObjectAction, &QAction::triggered, this, [&]()
-        {
-            emit AddObjAction("PewObj", "MeshObject");
         });
         connect(lightAction, &QAction::triggered, this, [&]()
         {
@@ -128,10 +128,7 @@ void SceneEditor::contextMenuEvent(QContextMenuEvent *event)
         {
             emit AddSubObjAction("Object","GameObject",treeWidget->curItem->text(2).toInt());
         });
-        connect(meshObjectAction, &QAction::triggered, this, [&]()
-        {
-            emit AddSubObjAction("meshObject","GameObject",treeWidget->curItem->text(2).toInt());
-        });
+
         connect(lightAction, &QAction::triggered, this, [&]()
         {
             emit AddSubObjAction("Object","GameObject",treeWidget->curItem->text(2).toInt());
@@ -189,6 +186,46 @@ void SceneEditor::ItemChanged()
         }
 
     });
+}
+
+void SceneEditor::UpdateTree(std::vector<GameObject *> objs)
+{
+    for (auto obj:objs)
+    {
+        if(obj->parent<0)
+        {
+            AddItem(static_cast<int>(obj->entityID),obj->name,"GameObject");
+        }
+    }
+    for (auto obj:objs)
+    {
+        if(obj->parent>=0)
+        {
+            AddItem(static_cast<int>(obj->entityID),obj->name,"GameObject",obj->parent);
+        }
+    }
+
+
+}
+
+QTreeWidgetItem *SceneEditor::FindItemsWithColumnValue(QTreeWidgetItem *parent, int column, const QString &value)
+{
+    if (parent->text(column) == value)
+    {
+        return parent;
+    }
+
+    // 遍历所有子项
+    for (int i = 0; i < parent->childCount(); ++i)
+    {
+        QTreeWidgetItem* found = FindItemsWithColumnValue(parent->child(i), column, value);
+        if(found!= nullptr)
+        {
+            return found;
+        }
+    }
+    std::cout<<"Can't find value(columnFind)";
+    return nullptr;
 }
 
 

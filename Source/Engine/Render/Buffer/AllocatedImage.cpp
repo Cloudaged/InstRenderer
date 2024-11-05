@@ -6,6 +6,8 @@
 AllocatedImage::AllocatedImage(VkFormat format, VkImageUsageFlags usageFlags, VkExtent2D extent, int mipLevel,
                                VkImageAspectFlags aspectFlags)
 {
+
+
     VkImageCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     info.pNext = nullptr;
@@ -63,14 +65,17 @@ AllocatedImage::AllocatedImage()
 
 void AllocatedImage::LoadData(Res::ResTexture* resTexture)
 {
-    Buffer staging = VulkanContext::GetContext().bufferAllocator.CreateBuffer(resTexture->size,VK_BUFFER_USAGE_TRANSFER_SRC_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
+    Buffer* staging = VulkanContext::GetContext().bufferAllocator.CreateBuffer(resTexture->size,VK_BUFFER_USAGE_TRANSFER_SRC_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
 
-    void* stagingData = VulkanContext::GetContext().bufferAllocator.GetMappedMemory(staging);
+    void* stagingData = VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*staging);
 
+    /*unsigned char* i = ((unsigned char*)resTexture->data);
+    int vecSize = resTexture->size;
+    std::vector<unsigned char> vec(i,i+vecSize);
+    vec.size();*/
+    memcpy(stagingData,resTexture->data.data(),resTexture->size);
 
-    memcpy(stagingData,resTexture->data,resTexture->size);
-
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
     VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd, this->vk_image,VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     VkBufferImageCopy region{};
@@ -85,9 +90,9 @@ void AllocatedImage::LoadData(Res::ResTexture* resTexture)
     region.imageExtent = {imageExtent.width,imageExtent.height,1};
 
 
-    vkCmdCopyBufferToImage(cmd, staging.vk_buffer, vk_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    vkCmdCopyBufferToImage(cmd, (*staging).vk_buffer, vk_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd,true);
 
 
 

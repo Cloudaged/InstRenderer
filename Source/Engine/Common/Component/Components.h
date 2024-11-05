@@ -4,7 +4,7 @@
 
 #include "glm/glm.hpp"
 #include "string"
-#include "../../Render/Material/PBRMaterial.h"
+#include "../../Render/Material/StandardMaterial.h"
 #include "../../Render/Mesh.h"
 
 struct Transform
@@ -16,9 +16,8 @@ struct Transform
 
 struct Renderable
 {
-    Mesh mesh;
-    PBRMaterial material;
-    glm::vec3 color;
+    Mesh* mesh;
+    StandardMaterial* material;
 };
 
 struct CameraComponent

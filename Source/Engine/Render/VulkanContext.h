@@ -41,6 +41,7 @@ public:
     QueueFamilyIndices familyIndices;
     VmaAllocator allocator;
     VkCommandPool cmdPool;
+    VkCommandPool resourceCmdpool;
     PresentManager presentManager;
     VkDescriptorPool pool;
     BufferAllocator bufferAllocator;
@@ -56,8 +57,8 @@ public:
 
     void CreateSwapchain();
 
-    VkCommandBuffer BeginSingleTimeCommands();
-    void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+    VkCommandBuffer BeginSingleTimeCommands(bool isResourceThread= false);
+    void EndSingleTimeCommands(VkCommandBuffer commandBuffer,bool isResourceThread= false);
 private:
     VulkanContext(SDL_Window* window);
     void InitVulkanBackend();

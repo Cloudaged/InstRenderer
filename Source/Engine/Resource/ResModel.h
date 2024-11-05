@@ -13,8 +13,7 @@ namespace Res
     {
     public:
         ResModel(std::string path);
-        std::vector<ResMesh> meshes;
-        std::string path;
+        std::vector<ResMesh*> meshes;
     };
 
 } // Res

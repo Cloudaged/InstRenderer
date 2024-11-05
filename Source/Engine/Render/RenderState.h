@@ -17,6 +17,7 @@ struct PipelineSettings
 {
     bool depthTest;
     bool depthWrite;
+    bool hasVertAtt;
     VkCullModeFlags cullMode;
 
 };

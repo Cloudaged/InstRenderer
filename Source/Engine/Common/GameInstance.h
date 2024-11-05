@@ -34,10 +34,10 @@ public:
     Controller* controller;
     bool isRun = true;
     bool isReady = false;
-
-private:
     RenderSystem renderSystem;
     ResourceSystem resourceSystem;
+private:
+
     void InitCore();
     void InitSystem();
     void InitEntity();

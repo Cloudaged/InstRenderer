@@ -4,10 +4,12 @@
 #include "vulkan/vulkan.h"
 #include "vma/vk_mem_alloc.h"
 #include "AllocatedImage.h"
+#include "../../Resource/ResTexture.h"
 class Texture
 {
 public:
-    Texture(AllocatedImage image);
+    Texture(AllocatedImage image,TextureType type=TextureType::DontCare);
+    TextureType textureType;
     void TransLayout();
     const char *name = nullptr;
     VkDescriptorImageInfo desInfo;

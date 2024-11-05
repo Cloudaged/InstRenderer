@@ -5,7 +5,7 @@
 #define VMA_IMPLEMENTATION
 #include "VMA/vk_mem_alloc.h"
 
-Buffer BufferAllocator::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
+Buffer* BufferAllocator::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
 {
     Buffer* buffer = new Buffer;
 
@@ -23,10 +23,10 @@ Buffer BufferAllocator::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage,
     {
         throw std::runtime_error("failed to create allocatedBuffer!");
     }
-    return *buffer;
+    return buffer;
 }
 
-AllocatedImage& BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format, VkImageUsageFlags usage)
+AllocatedImage* BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format, VkImageUsageFlags usage)
 {
     AllocatedImage* allocatedImage  = new AllocatedImage();
     allocatedImage->imageFormat = format;
@@ -76,7 +76,7 @@ AllocatedImage& BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat
         throw std::runtime_error("failed to create imageview");
     }
 
-    return *allocatedImage;
+    return allocatedImage;
 }
 
 void *BufferAllocator::GetMappedMemory(Buffer allocatedBuffer)

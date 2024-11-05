@@ -19,8 +19,6 @@ public:
     VkImageUsageFlags usage;
     VmaAllocationInfo allocationInfo;
     VkImageLayout layout;
-
-
 };
 
 

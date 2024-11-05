@@ -8,7 +8,7 @@ Mesh::Mesh(std::vector<Vertex> vertData, std::vector<uint32_t> index): vertData(
     uint32_t verticesSize = vertData.size()*sizeof(Vertex);
     uint32_t indicesSize = index.size()*sizeof(int);
 
-    vertBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(verticesSize,
+    vertBuffer = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(verticesSize,
                                                                       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
                                                                       | VK_BUFFER_USAGE_TRANSFER_DST_BIT
                                                                       | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
@@ -21,11 +21,11 @@ Mesh::Mesh(std::vector<Vertex> vertData, std::vector<uint32_t> index): vertData(
 
     vertAddress = vkGetBufferDeviceAddress(VulkanContext::GetContext().device,&deviceAddressInfo);
 
-    indexBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(indicesSize,VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+    indexBuffer = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(indicesSize,VK_BUFFER_USAGE_INDEX_BUFFER_BIT
                                                          |VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                              VMA_MEMORY_USAGE_GPU_ONLY);
 
-    Buffer staging = VulkanContext::GetContext().bufferAllocator.CreateBuffer(verticesSize+indicesSize,
+    Buffer staging = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(verticesSize+indicesSize,
                                                                               VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                                               VMA_MEMORY_USAGE_CPU_ONLY);
 
@@ -39,7 +39,7 @@ Mesh::Mesh(std::vector<Vertex> vertData, std::vector<uint32_t> index): vertData(
     vertexCopy.srcOffset = 0;
     vertexCopy.dstOffset = 0;
 
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
 
     vkCmdCopyBuffer(cmd,staging.vk_buffer,vertBuffer.vk_buffer,1,&vertexCopy);
 
@@ -50,7 +50,7 @@ Mesh::Mesh(std::vector<Vertex> vertData, std::vector<uint32_t> index): vertData(
     vkCmdCopyBuffer(cmd,staging.vk_buffer,indexBuffer.vk_buffer,1,&indexCopy);
 
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
 
     VulkanContext::GetContext().bufferAllocator.DestroyBuffer(staging);
 }

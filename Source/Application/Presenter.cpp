@@ -1,7 +1,6 @@
 
 #include "Presenter.h"
 #include "Resource/ResourceManager.h"
-GameObject* go;
 
 Presenter::Presenter(GameInstance *gameInstance, MainEditor *mainEditor):instance(gameInstance),editor(mainEditor)
 {
@@ -10,7 +9,7 @@ Presenter::Presenter(GameInstance *gameInstance, MainEditor *mainEditor):instanc
     RenameGameObject();
     ChangeSelectedItem();
     UpdateComponentData();
-    LoadResource();
+    LoadResourceToObj();
 }
 
 void Presenter::AddGameObject()
@@ -18,20 +17,18 @@ void Presenter::AddGameObject()
 
     editor->connect(editor->sceneEditor,&SceneEditor::AddObjAction,[&](std::string name,std::string type)
     {
-        auto& ins = instance->mainScene->CreateObject(name,type);
-        GameObject& go = ins.cast<GameObject&>();
-        editor->sceneEditor->AddItem(static_cast<int>(go.entityID),name,type);
+        auto go = instance->mainScene->CreateObject(name);
+        editor->sceneEditor->AddItem(static_cast<int>(go->entityID),name,type);
 
         glm::vec3 pos = {10.0,20.0,0.0};
-        instance->mainScene->reg.emplace<Transform>(go.entityID,pos,pos,pos);
-        go.componentBits.set(0);
+        instance->mainScene->reg.emplace<Transform>(go->entityID,pos,pos,pos);
+        go->componentBits.set(0);
     });
 
     editor->connect(editor->sceneEditor,&SceneEditor::AddSubObjAction,[&](std::string name,std::string type,int parent)
     {
-        auto ins = instance->mainScene->CreateObject(name,type,parent);
-        GameObject go = ins.cast<GameObject>();
-        editor->sceneEditor->AddItem(static_cast<int>(go.entityID),name,type,parent);
+        auto go = instance->mainScene->CreateObject(name,parent);
+        editor->sceneEditor->AddItem(static_cast<int>(go->entityID),name,type,parent);
     });
 
 }
@@ -75,30 +72,45 @@ void Presenter::UpdateComponentData()
     });
 }
 
-void Presenter::LoadResource()
+void Presenter::LoadResourceToObj()
 {
     editor->connect(editor->sceneEditor->treeWidget,&SceneTree::DropResource,[&](std::string path)
     {
         auto extension= GetExtension(path);
-        if(extension=="fbx")
+        if(extension=="fbx"||extension=="gltf")
         {
-            CreateMeshObject(path);
+            CreateMeshObjectsForRes(path);
         }
 
     });
 }
 
-void Presenter::CreateMeshObject(std::string path)
+void Presenter::CreateMeshObjectsForRes(std::string path)
 {
-    /*auto name = GetNameFromPath(path);
-    ResourceManager::Get().LoadResource(path);
-    auto model = (Res::ResModel*)ResourceManager::Get().resReg[name];
+    auto resName = ResourceManager::Get().LoadResource(path);
+    auto model= (Res::ResModel*)ResourceManager::Get().resReg[resName];
+    auto modelGo =instance->mainScene->CreateObject(resName);
+    auto item= editor->sceneEditor->AddItem(static_cast<int>(modelGo->entityID),resName,"GameObject");
+    item->setSelected(true);
+    editor->sceneEditor->treeWidget->setCurrentItem(item);
+   /* for (auto& mesh:model->meshes)
+    {
+        //Backend
+        auto meshGo =instance->mainScene->CreateObject(mesh->name);
+        glm::vec3 pos = {10.0,20.0,0.0};
+        instance->mainScene->reg.emplace<Transform>(meshGo->entityID,pos,pos,pos);
+        meshGo->componentBits.set(0);
 
-    auto& ins = instance->mainScene->CreateObject(name,"MeshObject");
-    GameObject& go = ins.cast<GameObject&>();
-    editor->sceneEditor->AddItem(static_cast<int>(go.entityID),name,type);
+        auto meshData= ResourceManager::Get().TransMesh(mesh);
+        auto materialData = ResourceManager::Get().TransMaterial(mesh->material);
+        instance->mainScene->reg.emplace<Renderable>(meshGo->entityID,meshData,materialData);
 
-    glm::vec3 pos = {10.0,20.0,0.0};
-    instance->mainScene->reg.emplace<Transform>(go.entityID,pos,pos,pos);
-    go.componentBits.set(0);*/
+        //Frontend
+        editor->sceneEditor->AddItem(static_cast<int>(meshGo->entityID),mesh->name,"GameObject",(static_cast<int>(modelGo->entityID)));
+    }
+    instance->renderSystem.materialManager.AllocateDescriptorSets();*/
+
+   ResourceManager::Get().CompileModel(instance,model);
+   editor->sceneEditor->UpdateTree(instance->mainScene->objects);
+
 }

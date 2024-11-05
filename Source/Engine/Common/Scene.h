@@ -32,10 +32,10 @@ public:
     ~Scene();
     entt::registry reg;
 
-    std::vector<entt::meta_any> objects;
+    std::vector<GameObject*> objects;
     Camera mainCamera;
-    entt::meta_any& CreateObject(std::string name,std::string type);
-    entt::meta_any CreateObject(std::string name,std::string type,int parent);
+    GameObject* CreateObject(std::string name);
+    GameObject* CreateObject(std::string name,int parent);
 
     void InitGlobalSet();
     void InitSceneData();

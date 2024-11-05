@@ -24,8 +24,3 @@ RenderSystem::RenderSystem()
     passManager = RenderPassManager();
 }
 
-void RenderSystem::RecreatePassRes()
-{
-    std::cout<<"reCreateD\n";
-    passManager.RecreateAllPass();
-}

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Office Desk_7_MB
+* source:	https://sketchfab.com/3d-models/office-desk-7-mb-18abda12d33b4231aa13f92a291c717e
+* author:	Mehdi Shahsavan (https://sketchfab.com/ahmagh2e)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Office Desk_7_MB" (https://sketchfab.com/3d-models/office-desk-7-mb-18abda12d33b4231aa13f92a291c717e) by Mehdi Shahsavan (https://sketchfab.com/ahmagh2e) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

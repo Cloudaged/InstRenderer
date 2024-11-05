@@ -58,6 +58,7 @@ void RenderPassManager::ClearAtt()
         auto& data = *(att.second.data);
         vkDestroyImageView(device,data->allocatedImage.imageView, nullptr);
         vkDestroyImage(device,data->allocatedImage.vk_image, nullptr);
+        vkDestroySampler(device,data->sampler, nullptr);
     }
     RenderPass::attachmentMap.clear();
 }

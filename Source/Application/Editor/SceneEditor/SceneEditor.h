@@ -16,6 +16,8 @@
 
 #include "SceneTree.h"
 #include "QDropEvent"
+#include "../../../Source/Engine/Common/Core/PathDefine.h"
+#include "../../../Source/Engine/Common/GameObject.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -32,8 +34,12 @@ Q_OBJECT
 public:
     explicit SceneEditor(QDockWidget *parent = nullptr);
 
-    void AddItem(int id,std::string name,std::string type);
-    void AddItem(int id,std::string name,std::string type,int parent);
+    QTreeWidgetItem* AddItem(int id,std::string name,std::string type);
+    QTreeWidgetItem* AddItem(int id,std::string name,std::string type,int parent);
+
+    QTreeWidgetItem* FindItemsWithColumnValue(QTreeWidgetItem* parent, int column, const QString& value);
+
+    void UpdateTree(std::vector<GameObject*> objs);
 
     void DeleteItem(int id);
 

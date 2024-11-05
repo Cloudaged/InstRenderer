@@ -3,15 +3,61 @@ layout (location = 0) in vec3 inWorldPos;
 layout (location = 1) in vec2 inUV;
 layout (location = 2) in vec3 inNormal;
 
-layout(set =1,binding =0) uniform sampler2D basecolor;
+layout(set=1,binding =0) uniform Slots
+{
+    int albedo;
+    int normal;
+    int mr;
+}slot;
+
+layout(set =1,binding =1) uniform sampler2D basecolor;
+layout(set =1,binding =2) uniform sampler2D normal;
+layout(set =1,binding =3) uniform sampler2D metallicRoughness;
+
 
 layout(location = 0) out vec4 outPosition;
 layout(location = 1) out vec4 outNormal;
 layout(location = 2) out vec4 outBaseColor;
 
+
 void main()
 {
-    outPosition = vec4(inWorldPos,1.0);
-    outNormal =  vec4(normalize(inNormal),1.0);
-    outBaseColor = texture(basecolor,inUV);
+    /*vec4 basecolor = texture(basecolor,inUV);
+    vec4 normal = texture(normal,inUV);
+    vec4 metallicRoughness = texture(metallicRoughness,inUV);*/
+
+   /* outBaseColor = slot.albedo==1?texture(basecolor,inUV):vec4(0.0,1.0,1.0,0.0);
+    outPosition = slot.mr==1?texture(metallicRoughness,inUV):vec4(0,0,0,0);
+    outNormal = slot.normal==1?texture(normal,inUV):vec4(inNormal,0.0);*/
+
+    if(slot.albedo==1)
+    {
+        outBaseColor = texture(basecolor,inUV);
+    }
+    else
+    {
+        outBaseColor = vec4(0,1,1,0);
+    }
+
+    if(slot.normal==1)
+    {
+        outNormal = texture(normal,inUV);
+    }
+    else
+    {
+        outNormal= vec4(inNormal,0.0);
+    }
+
+    if(slot.mr==1)
+    {
+        outPosition = texture(metallicRoughness,inUV);
+    }
+    else
+    {
+        outPosition= vec4(0.0,0.0,0.0,0.0);
+    }
+
+
+
+
 }

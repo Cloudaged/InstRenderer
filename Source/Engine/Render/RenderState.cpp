@@ -28,11 +28,11 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
     switch (type)
     {
         case PipelineType::Mesh:
-            settings = {true, true,VK_CULL_MODE_BACK_BIT};break;
+            settings = {true, true, true,VK_CULL_MODE_BACK_BIT};break;
         case PipelineType::RenderQuad:
-            settings = {true, false,VK_CULL_MODE_FRONT_BIT};break;
+            settings = {true, false, false,VK_CULL_MODE_FRONT_BIT};break;
         default:
-            settings = {true, true,VK_CULL_MODE_BACK_BIT};break;
+            settings = {true, true, true,VK_CULL_MODE_BACK_BIT};break;
     }
 
     VkShaderModule vertModule =LoadShaderData(path.vertPath);
@@ -54,11 +54,20 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)attriDescription.size();
 
-    vertexInputInfo.pVertexBindingDescriptions =&bindingDescription;
-    vertexInputInfo.pVertexAttributeDescriptions = attriDescription.data();
+    if(settings.hasVertAtt)
+    {
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)attriDescription.size();
+        vertexInputInfo.pVertexBindingDescriptions =&bindingDescription;
+        vertexInputInfo.pVertexAttributeDescriptions = attriDescription.data();
+    } else
+    {
+        vertexInputInfo.vertexBindingDescriptionCount = 0;
+        vertexInputInfo.pVertexBindingDescriptions = nullptr;
+        vertexInputInfo.vertexAttributeDescriptionCount = 0;
+        vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+    }
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

@@ -300,10 +300,17 @@ void VulkanContext::CreateCommandPool()
     {
         std::cout<<"Failed to create pool\n";
     }
+
+    if(vkCreateCommandPool(VulkanContext::GetContext().device,&poolInfo, nullptr,&VulkanContext::GetContext().resourceCmdpool)!=VK_SUCCESS)
+    {
+        std::cout<<"Failed to create pool\n";
+    }
 }
 
 void VulkanContext::DrawPrepare()
 {
+    //std::lock_guard<std::mutex> guard(Locker::Get().loadResourceMtx);
+
     vkWaitForFences(device, 1, &presentManager.presentFrames[presentManager.currentFrame].renderFence, VK_TRUE, UINT64_MAX);
     vkResetFences(device,1,&presentManager.presentFrames[presentManager.currentFrame].renderFence);
 
@@ -327,6 +334,7 @@ void VulkanContext::DrawPrepare()
 
 void VulkanContext::Submit()
 {
+    std::lock_guard<std::mutex> guard(Locker::Get().queueMtx);
     VkCommandBuffer cmd = presentManager.presentFrames[presentManager.currentFrame].cmd;
     auto waitSemaphore = presentManager.presentFrames[presentManager.currentFrame].swapChainSemaphore;
     auto renderSemaphore = presentManager.presentFrames[presentManager.currentFrame].renderSemaphore;
@@ -414,15 +422,16 @@ void VulkanContext::CreateDescriptorPool()
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(100);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(100);
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(200);
     poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     poolSizes[2].descriptorCount = static_cast<uint32_t>(100);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(300);
+    poolInfo.maxSets = static_cast<uint32_t>(400);
 
 
     if(vkCreateDescriptorPool(VulkanContext::GetContext().device,&poolInfo, nullptr,&pool)!=VK_SUCCESS)
@@ -431,17 +440,21 @@ void VulkanContext::CreateDescriptorPool()
     }
 }
 
-VkCommandBuffer VulkanContext::BeginSingleTimeCommands()
+VkCommandBuffer VulkanContext::BeginSingleTimeCommands(bool isResourceThread)
 {
-
-    auto cr = presentManager.currentFrame;
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = 1;
 
-    allocInfo.commandPool =  cmdPool;
+    if(!isResourceThread)
+    {
+        allocInfo.commandPool =  cmdPool;
+    } else
+    {
+        allocInfo.commandPool = resourceCmdpool;
+    }
 
     VkCommandBuffer commandBuffer;
     vkAllocateCommandBuffers(VulkanContext::GetContext().device, &allocInfo, &commandBuffer);
@@ -455,9 +468,9 @@ VkCommandBuffer VulkanContext::BeginSingleTimeCommands()
 
 }
 
-void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer,bool isResourceThread)
 {
-    auto cr = presentManager.currentFrame;
+    std::lock_guard<std::mutex> guard(Locker::Get().queueMtx);
 
     vkEndCommandBuffer(commandBuffer);
 
@@ -469,9 +482,19 @@ void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkQueueSubmit(VulkanContext::GetContext().queues.graphicsQueue,1,&submitInfo,VK_NULL_HANDLE);
     vkQueueWaitIdle(VulkanContext::GetContext().queues.graphicsQueue);
 
-    vkFreeCommandBuffers(VulkanContext::GetContext().device,
-                         cmdPool,
-                         1,&commandBuffer);
+
+    if(!isResourceThread)
+    {
+        vkFreeCommandBuffers(VulkanContext::GetContext().device,
+                             cmdPool,
+                             1,&commandBuffer);
+    } else
+    {
+        vkFreeCommandBuffers(VulkanContext::GetContext().device,
+                             resourceCmdpool,
+                             1,&commandBuffer);
+    }
+
 }
 
 

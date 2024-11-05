@@ -3,9 +3,8 @@
 
 namespace Res
 {
-    ResTexture::ResTexture(int width, int height, int channel, void *data):
-    width(width),height(height),channel(channel),data(data)
+    ResTexture::ResTexture(int width, int height, int size, std::vector<unsigned char> data,std::string path):
+            ResBase(path,ResType::Texture),width(width),height(height),data(data),size(size)
     {
-        size = width*height*channel;
     }
 } // Res

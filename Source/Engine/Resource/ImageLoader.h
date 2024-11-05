@@ -6,16 +6,15 @@
 #include "vulkan/vulkan.h"
 #include "string"
 #include "ResTexture.h"
-namespace Res
+using namespace Res;
+
+class ImageLoader
 {
+public:
+    static ResTexture* Load(std::string path);
 
-    class ImageLoader
-    {
-    public:
-        static ResTexture* Load(std::string path);
+};
 
-    };
 
-} // Res
 
 #endif //INSTRENDERER_IMAGELOADER_H

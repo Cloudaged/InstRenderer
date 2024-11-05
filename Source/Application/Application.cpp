@@ -5,6 +5,7 @@ Application::Application(std::string title, WindowSize size,int argc,char** argv
 {
     //Locker
     Locker::Init();
+
     //Editor
     qApplication = new QApplication(argc,argv);
     gameInstance = new GameInstance(windowSize);
