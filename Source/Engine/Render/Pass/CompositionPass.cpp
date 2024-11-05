@@ -12,11 +12,11 @@ void CompositionPass::SetupAttachments()
     inputAttDes.push_back(attachmentMap["Position"]);
 
 
-    attachmentMap["Present"] = AttachmentDes{"Present",winWidth,winHeight,
-                                             AttachmentUsage::Present,AttachmentOP::DontCare,
-                                             VK_FORMAT_B8G8R8A8_SRGB, false, nullptr};
+    attachmentMap["Lighted"] = AttachmentDes{"Lighted",winWidth,winHeight,
+                                             AttachmentUsage::ColorAttachment,AttachmentOP::ReadAndWrite,
+                                             VK_FORMAT_R8G8B8A8_SRGB, false, nullptr};
 
-    outputAttDes.push_back(attachmentMap["Present"]);
+    outputAttDes.push_back(attachmentMap["Lighted"]);
 
 }
 
