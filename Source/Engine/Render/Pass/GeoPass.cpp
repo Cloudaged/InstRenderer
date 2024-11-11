@@ -92,7 +92,7 @@ void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
         memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(perObjDesBuffer),
                &perData,
                sizeof(perData));
-        std::vector<VkDescriptorSet> sets = {globalData.globalDes,renderComponents.material->set,perObjDes};
+        std::vector<VkDescriptorSet> sets = {globalData.globalDes,renderComponents.material->set,perObjDes,inputAttDesSet};
         //Bind
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 renderState.pipelineLayout,
@@ -137,6 +137,9 @@ void GeoPass::SetupRenderState()
     bindings.push_back(b2);
     CreatePerObjLayout(bindings);
 
+    //Input layout
+    renderState.layouts[3] = inputAttDesLayout;
+
     //Pipeline
     renderState.CreatePipeline(PipelineType::Mesh,
                                passHandle,outputAttDes.size()-1,
@@ -145,7 +148,6 @@ void GeoPass::SetupRenderState()
 
     //Create perObj descriptor
     CreatePerObjDescriptor(sizeof(GeoPassPerObjData));
-    renderState.isInit = true;
 }
 
 glm::mat4 GeoPass::GetModelMatrixFromTrans(Transform trans)
@@ -161,7 +163,7 @@ glm::mat4 GeoPass::GetModelMatrixFromTrans(Transform trans)
 void GeoPass::InputGlobalDesLayout()
 {
     this->globalLayout = globalData.globalDesLayout;
-    renderState.layouts.push_back(this->globalLayout);
+    renderState.layouts[0] = this->globalLayout;
 }
 
 void GeoPass::CreatePerMaterialLayout(std::vector<DescriptorBindingSlot> bindings)
@@ -186,7 +188,7 @@ void GeoPass::CreatePerMaterialLayout(std::vector<DescriptorBindingSlot> binding
     {
         throw std::runtime_error("failed to create ds layout!");
     }
-    renderState.layouts.push_back(materialLayout);
+    renderState.layouts[1] = materialLayout;
 }
 
 void GeoPass::CreatePerObjLayout(std::vector<DescriptorBindingSlot> bindings)
@@ -211,7 +213,7 @@ void GeoPass::CreatePerObjLayout(std::vector<DescriptorBindingSlot> bindings)
     {
         throw std::runtime_error("failed to create ds layout!");
     }
-    renderState.layouts.push_back(perObjLayout);
+    renderState.layouts[2]=perObjLayout;
 }
 
 void GeoPass::CreatePerObjDescriptor(size_t uniformSize)

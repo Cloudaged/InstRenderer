@@ -6,6 +6,7 @@
 #include "fstream"
 #include "Buffer/BufferAllocator.h"
 #include "Vertex.h"
+#include "map"
 enum class PipelineType
 {
     Mesh,
@@ -35,6 +36,7 @@ struct ShaderPath
     std::string fragPath;
 };
 
+typedef std::map<int,VkDescriptorSetLayout> SetLayoutMap;
 
 
 
@@ -48,7 +50,7 @@ public:
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
 
-    std::vector<VkDescriptorSetLayout> layouts;
+    SetLayoutMap layouts;
     bool isInit = false;
 private:
     VkShaderModule LoadShaderData(std::string path);

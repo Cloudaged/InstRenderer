@@ -12,6 +12,7 @@ public:
 private:
 
     void SetupRenderState() override;
+    Texture* lightAttachment;
 
 };
 

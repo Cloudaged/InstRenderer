@@ -152,11 +152,15 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
     depthStencil.front = {};
     depthStencil.back = {};
 
+    std::vector<VkDescriptorSetLayout> values;
+    for (const auto& pair : layouts) {
+        values.push_back(pair.second);
+    }
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount= layouts.size();
-    pipelineLayoutInfo.pSetLayouts = layouts.data();
+    pipelineLayoutInfo.setLayoutCount= values.size();
+    pipelineLayoutInfo.pSetLayouts = values.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
     if(vkCreatePipelineLayout(VulkanContext::GetContext().device,&pipelineLayoutInfo, nullptr,&pipelineLayout) != VK_SUCCESS)

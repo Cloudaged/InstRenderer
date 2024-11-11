@@ -46,19 +46,37 @@ VkImageLayout RenderPass::GetLayout(AttachmentUsage usage)
     }
 }
 
+RenderPass::LoadStoreOP RenderPass::GetLSOP(AttachmentOP op)
+{
+    switch (op)
+    {
+        case AttachmentOP::ReadOnly:
+            return {VK_ATTACHMENT_LOAD_OP_LOAD,VK_ATTACHMENT_STORE_OP_DONT_CARE};
+        case AttachmentOP::ReadAndWrite:
+            return {VK_ATTACHMENT_LOAD_OP_LOAD,VK_ATTACHMENT_STORE_OP_STORE};
+        case AttachmentOP::WriteOnly:
+            return{VK_ATTACHMENT_LOAD_OP_CLEAR,VK_ATTACHMENT_STORE_OP_STORE};
+        case AttachmentOP::Clear:
+            return {VK_ATTACHMENT_LOAD_OP_CLEAR,VK_ATTACHMENT_STORE_OP_DONT_CARE};
+        default:
+            return {VK_ATTACHMENT_LOAD_OP_DONT_CARE,VK_ATTACHMENT_STORE_OP_DONT_CARE};
+    }
+
+}
+
 void RenderPass::Build()
 {
     std::vector<VkAttachmentDescription> attDescriptions;
 
-    std::vector<VkAttachmentReference> inputRefs;
     std::vector<VkAttachmentReference> outputRefs;
     std::vector<VkImageView> views;
 
     VkAttachmentReference depthRef = {};
+    bool hasDepth = false;
 
     int refIndex = 0;
-    //Input
-    for (auto& att:inputAttDes)
+    /*//Input
+    for (auto& att:inputResource)
     {
         //Get data
         width = att.width;
@@ -72,19 +90,17 @@ void RenderPass::Build()
         VkAttachmentDescription attachmentDes{};
         attachmentDes.format =format;
         attachmentDes.samples = VK_SAMPLE_COUNT_1_BIT;
-        attachmentDes.loadOp = lsop.loadOp;
-        attachmentDes.storeOp = lsop.storeOp;
+        attachmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        attachmentDes.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attachmentDes.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachmentDes.finalLayout = layout;
-
+        attachmentDes.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attachmentDes.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         VkAttachmentReference ref{};
         ref.attachment = refIndex;
         if(!att.isDepthBuffer)
         {
-            ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            inputRefs.push_back(ref);
+            ref.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         } else
         {
             ref.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
@@ -93,7 +109,7 @@ void RenderPass::Build()
 
         attDescriptions.push_back(attachmentDes);
         refIndex++;
-    }
+    }*/
 
     //Output
     for (auto& att:outputAttDes)
@@ -162,16 +178,17 @@ void RenderPass::Build()
         VkAttachmentDescription attachmentDes{};
         attachmentDes.format =format;
         attachmentDes.samples = VK_SAMPLE_COUNT_1_BIT;
-        attachmentDes.loadOp = lsop.loadOp;
-        attachmentDes.storeOp = lsop.storeOp;
         attachmentDes.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachmentDes.finalLayout = layout;
 
 
         if(!att.isDepthBuffer)
         {
+            attachmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;//Clear
+            attachmentDes.storeOp = VK_ATTACHMENT_STORE_OP_STORE;//Store
+            attachmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;//undefine
+            attachmentDes.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;//Read Only
+
             VkAttachmentReference ref{};
             ref.attachment = refIndex;
             ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -179,8 +196,15 @@ void RenderPass::Build()
 
         } else
         {
+            attachmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;//Clear
+            attachmentDes.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;//Store
+            attachmentDes.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;//undefine
+            attachmentDes.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;//Read Only
+
             depthRef.attachment = refIndex;
             depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            hasDepth = true;
+
         }
 
 
@@ -194,9 +218,14 @@ void RenderPass::Build()
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = outputRefs.size();
     subpass.pColorAttachments = outputRefs.data();
-    subpass.inputAttachmentCount = inputRefs.size();
-    subpass.pInputAttachments = inputRefs.data();
-    subpass.pDepthStencilAttachment = &depthRef;
+    subpass.inputAttachmentCount = 0;
+    if(hasDepth)
+    {
+        subpass.pDepthStencilAttachment = &depthRef;
+    } else
+    {
+        subpass.pDepthStencilAttachment = nullptr;
+    }
 
     VkSubpassDependency dependency = {};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -233,37 +262,23 @@ void RenderPass::Build()
     {
         std::cout<<"Failed to build FrameBuffer\n";
     }
+
+    std::vector<std::string> names;
+    for (auto& att:inputResource)
+    {
+        names.push_back(att.name);
+    }
+    InputAttachmentDes(names);
+
     if(!renderState.isInit)
     {
         SetupRenderState();
-    } else
-    {
-        std::vector<std::string> names;
-        for (auto& att:inputAttDes)
-        {
-            names.push_back(att.name);
-        }
-        InputAttachmentDes(names);
-    }
-}
-
-RenderPass::LoadStoreOP RenderPass::GetLSOP(AttachmentOP op)
-{
-    switch (op)
-    {
-        case AttachmentOP::ReadOnly:
-            return {VK_ATTACHMENT_LOAD_OP_LOAD,VK_ATTACHMENT_STORE_OP_DONT_CARE};
-        case AttachmentOP::ReadAndWrite:
-            return {VK_ATTACHMENT_LOAD_OP_LOAD,VK_ATTACHMENT_STORE_OP_STORE};
-        case AttachmentOP::WriteOnly:
-            return{VK_ATTACHMENT_LOAD_OP_CLEAR,VK_ATTACHMENT_STORE_OP_STORE};
-        case AttachmentOP::Clear:
-            return {VK_ATTACHMENT_LOAD_OP_CLEAR,VK_ATTACHMENT_STORE_OP_DONT_CARE};
-        default:
-            return {VK_ATTACHMENT_LOAD_OP_DONT_CARE,VK_ATTACHMENT_STORE_OP_DONT_CARE};
     }
 
+    renderState.isInit = true;
+
 }
+
 
 void RenderPass::BuildPresentFrame()
 {
@@ -352,23 +367,24 @@ void RenderPass::BuildPresentFrame()
     VulkanContext::GetContext().presentManager.InitFrameData(passHandle,width,height);
 
 
+    std::vector<std::string> names;
+    for (auto& att:inputResource)
+    {
+        names.push_back(att.name);
+    }
+    InputAttachmentDes(names);
+
     if(!renderState.isInit)
     {
         SetupRenderState();
-    } else
-    {
-        std::vector<std::string> names;
-        for (auto& att:inputAttDes)
-        {
-            names.push_back(att.name);
-        }
-        InputAttachmentDes(names);
     }
+
+    renderState.isInit = true;
 }
 
 void RenderPass::InputAttachmentDes(std::vector<std::string> names)
 {
-    if(inputAttDesLayout!=VK_NULL_HANDLE)
+    if(renderState.isInit)
     {
         auto& device= VulkanContext::GetContext().device;
         vkFreeDescriptorSets(device,VulkanContext::GetContext().pool,1, &this->inputAttDesSet);
@@ -396,7 +412,6 @@ void RenderPass::InputAttachmentDes(std::vector<std::string> names)
         throw std::runtime_error("failed to create ds layout!");
     }
 
-    renderState.layouts.push_back(inputAttDesLayout);
 
     VkDescriptorSetAllocateInfo allocateInfo{};
     allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -452,7 +467,7 @@ void RenderPass::ClearRes()
         vkDestroyFramebuffer(device,framebufferHandle, nullptr);
     }
 
-    inputAttDes.clear();
+    inputResource.clear();
     outputAttDes.clear();
 }
 

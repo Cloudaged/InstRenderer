@@ -7,14 +7,14 @@ void CompositionPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    inputAttDes.push_back(attachmentMap["BaseColor"]);
-    inputAttDes.push_back(attachmentMap["Normal"]);
-    inputAttDes.push_back(attachmentMap["Position"]);
+    inputResource.push_back(attachmentMap["BaseColor"]);
+    inputResource.push_back(attachmentMap["Normal"]);
+    inputResource.push_back(attachmentMap["Position"]);
 
 
     attachmentMap["Lighted"] = AttachmentDes{"Lighted",winWidth,winHeight,
-                                             AttachmentUsage::ColorAttachment,AttachmentOP::ReadAndWrite,
-                                             VK_FORMAT_R8G8B8A8_SRGB, false, nullptr};
+                                             AttachmentUsage::ColorAttachment,AttachmentOP::WriteOnly,
+                                             VK_FORMAT_R8G8B8A8_SRGB, false, &lightAttachment};
 
     outputAttDes.push_back(attachmentMap["Lighted"]);
 
@@ -36,7 +36,7 @@ void CompositionPass::Execute()
     VkRenderPassBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     beginInfo.renderPass = passHandle;
-    beginInfo.framebuffer = presentM.presentFrames[presentM.currentFrame].framebuffer;
+    beginInfo.framebuffer = framebufferHandle;
     beginInfo.renderArea.offset ={0,0};
     beginInfo.renderArea.extent = extent;
     beginInfo.clearValueCount =clearValues.size();
@@ -77,13 +77,11 @@ void CompositionPass::Execute()
 void CompositionPass::SetupRenderState()
 {
     //DescriptorLayout
-    //Global Layout
-    InputAttachmentDes({"BaseColor","Normal","Position"});
+    renderState.layouts[0] = inputAttDesLayout;
     //Pipeline
     renderState.CreatePipeline(PipelineType::RenderQuad,passHandle,outputAttDes.size(),
                                {FILE_PATH("Asset/Shader/spv/Comp.vert.spv"),
                                 FILE_PATH("Asset/Shader/spv/Comp.frag.spv")});
-    renderState.isInit = true;
 }
 
 CompositionPass::CompositionPass()

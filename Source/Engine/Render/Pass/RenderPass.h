@@ -12,6 +12,13 @@
 
 typedef std::unordered_map<std::string,AttachmentDes> AttachmentMap;
 
+
+struct RenderResource
+{
+    AttachmentDes attDes;
+    AttachmentOP opt;
+};
+
 class RenderPass
 {
 private:
@@ -20,6 +27,7 @@ private:
         VkAttachmentLoadOp loadOp;
         VkAttachmentStoreOp storeOp;
     };
+
 public:
     static AttachmentMap attachmentMap;
 
@@ -39,7 +47,7 @@ protected:
     virtual void SetupRenderState()=0;
     void InputAttachmentDes(std::vector<std::string> names);
 
-    std::vector<AttachmentDes> inputAttDes;
+    std::vector<AttachmentDes> inputResource;
     std::vector<AttachmentDes> outputAttDes;
 
     VkDescriptorSetLayout inputAttDesLayout;

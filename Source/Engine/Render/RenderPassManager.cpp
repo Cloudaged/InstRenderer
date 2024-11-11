@@ -12,6 +12,7 @@ void RenderPassManager::ExecuteAllPass()
     auto cmd = VulkanContext::GetContext().presentManager.BeginRecordCommand();
     geoPass->Execute(view);
     compositionPass->Execute();
+    presentPass->Execute();
     VulkanContext::GetContext().presentManager.EndRecordCommand(cmd);
 }
 
@@ -19,6 +20,7 @@ void RenderPassManager::Build()
 {
     geoPass->Build();
     compositionPass->Build();
+    presentPass->Build();
 }
 
 void RenderPassManager::Setup()
@@ -28,6 +30,9 @@ void RenderPassManager::Setup()
 
     this->compositionPass = new CompositionPass();
     compositionPass->SetupAttachments();
+
+    this->presentPass =new PresentPass();
+    presentPass->SetupAttachments();
 }
 
 
@@ -35,14 +40,18 @@ void RenderPassManager::RecreateAllPass()
 {
     geoPass->ClearRes();
     compositionPass->ClearRes();
+    presentPass->ClearRes();
     ClearAtt();
 
 
     geoPass->SetupAttachments();
     compositionPass->SetupAttachments();
+    presentPass->SetupAttachments();
+
 
     geoPass->Build();
     compositionPass->Build();
+    presentPass->Build();
 
 
 }
