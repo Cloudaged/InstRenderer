@@ -266,11 +266,13 @@ Res::ResMesh* ModelLoader::LoadMesh(tinygltf::Model* model,tinygltf::Mesh& mesh,
 
             //Albedo Texture
             int albedoTextureIndex = pbr.baseColorTexture.index;
-            auto& albedoTexture = model->textures[albedoTextureIndex];
-            int albedoImageIndex = albedoTexture.source;
 
-            if(albedoImageIndex >= 0 && albedoImageIndex < model->images.size())
+
+            if(albedoTextureIndex >= 0)
             {
+                auto& albedoTexture = model->textures[albedoTextureIndex];
+                int albedoImageIndex = albedoTexture.source;
+
                 const tinygltf::Image &image = model->images[albedoImageIndex];
                 int width = image.width;
                 int height = image.height;
@@ -285,11 +287,12 @@ Res::ResMesh* ModelLoader::LoadMesh(tinygltf::Model* model,tinygltf::Mesh& mesh,
 
             //Normal Texture
             int normalTextureIndex = material.normalTexture.index;
-            auto& normalTexture = model->textures[normalTextureIndex];
-            int normalImageIndex = normalTexture.source;
 
-            if(normalImageIndex >= 0 && normalImageIndex < model->images.size())
+
+            if(normalTextureIndex >= 0)
             {
+                auto& normalTexture = model->textures[normalTextureIndex];
+                int normalImageIndex = normalTexture.source;
                 const tinygltf::Image &image = model->images[normalImageIndex];
                 int width = image.width;
                 int height = image.height;
@@ -305,11 +308,13 @@ Res::ResMesh* ModelLoader::LoadMesh(tinygltf::Model* model,tinygltf::Mesh& mesh,
 
             //M&R Texture
             int mrTextureIndex = pbr.metallicRoughnessTexture.index;
-            auto& mrTexture = model->textures[mrTextureIndex];
-            int mrImageIndex = mrTexture.source;
 
-            if(mrImageIndex >= 0 && mrImageIndex < model->images.size())
+
+            if(mrTextureIndex >= 0)
             {
+                auto& mrTexture = model->textures[mrTextureIndex];
+                int mrImageIndex = mrTexture.source;
+
                 const tinygltf::Image &image = model->images[mrImageIndex];
                 int width = image.width;
                 int height = image.height;

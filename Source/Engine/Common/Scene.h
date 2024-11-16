@@ -8,13 +8,20 @@
 #include "vector"
 #include "../Render/Buffer/Buffer.h"
 #include "glm/gtc/matrix_transform.hpp"
-
+#include "../Resource/ImageLoader.h"
+#include "../Render/Buffer/Skybox.h"
 #include "Camera.h"
 struct GlobalUniform
 {
     glm::mat4 view;
     glm::mat4 proj;
+    glm::mat4 skyboxProj;
+};
 
+
+struct SkyboxData
+{
+    Skybox* skybox;
 };
 
 struct GlobalDescriptorData
@@ -22,8 +29,8 @@ struct GlobalDescriptorData
     Buffer buffer;
     VkDescriptorSetLayout globalDesLayout;
     VkDescriptorSet globalDes;
+    SkyboxData skyboxData;
 };
-
 
 class Scene
 {
@@ -38,11 +45,14 @@ public:
     GameObject* CreateObject(std::string name,int parent);
 
     void InitGlobalSet();
+    void InitSkyboxData();
+
     void InitSceneData();
 
     GameObject* GetGameObject(int id);
 
     GlobalDescriptorData globalData;
+
     GlobalUniform globUniform;
     void UpdateScene();
 

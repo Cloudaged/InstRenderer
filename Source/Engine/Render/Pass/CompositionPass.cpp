@@ -17,6 +17,7 @@ void CompositionPass::SetupAttachments()
                                              VK_FORMAT_R8G8B8A8_SRGB, false, &lightAttachment};
 
     outputAttDes.push_back(attachmentMap["Lighted"]);
+    outputAttDes.push_back(attachmentMap["Depth"]);
 
 }
 
@@ -29,10 +30,10 @@ void CompositionPass::Execute()
     VkExtent2D extent = VulkanContext::GetContext().windowExtent;
 
 
-    std::vector<VkClearValue> clearValues =
-            {
-                    {0.0,0.0,0.0,1.0}
-            };
+    std::vector<VkClearValue> clearValues(2);
+    clearValues[0].color = {{0.0,0.0,0.0,0.0}};
+    clearValues[1].depthStencil = {1.0f,0};
+
     VkRenderPassBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     beginInfo.renderPass = passHandle;
@@ -79,7 +80,7 @@ void CompositionPass::SetupRenderState()
     //DescriptorLayout
     renderState.layouts[0] = inputAttDesLayout;
     //Pipeline
-    renderState.CreatePipeline(PipelineType::RenderQuad,passHandle,outputAttDes.size(),
+    renderState.CreatePipeline(PipelineType::RenderQuad,passHandle,outputAttDes.size()-1,
                                {FILE_PATH("Asset/Shader/spv/Comp.vert.spv"),
                                 FILE_PATH("Asset/Shader/spv/Comp.frag.spv")});
 }

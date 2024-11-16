@@ -11,7 +11,7 @@ void PresentPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    inputResource.push_back(attachmentMap["Lighted"]);
+    inputResource.push_back(attachmentMap["Skyboxed"]);
 
     attachmentMap["Present"] = AttachmentDes{"Present",winWidth,winHeight,
                                              AttachmentUsage::Present,AttachmentOP::DontCare,

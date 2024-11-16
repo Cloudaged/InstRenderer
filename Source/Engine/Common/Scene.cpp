@@ -3,7 +3,7 @@
 #include "iostream"
 
 #include "../Render/VulkanContext.h"
-
+#include "../Resource/ModelLoader.h"
 
 Scene::Scene():mainCamera(&reg,"mainCamera")
 {
@@ -168,7 +168,31 @@ void Scene::UpdateScene()
 
 void Scene::InitSceneData()
 {
-    mainCamera.InitCamera(glm::vec3{0,0,30},glm::vec3{0,0,0},{0,1,0});
+    mainCamera.InitCamera(glm::vec3{0,0,0},glm::vec3{0,0,1},{0,1,0});
+
+    auto tar = mainCamera.GetCameraTarget();
+    globUniform.skyboxProj = glm::perspective(glm::radians(80.0f),
+                                              VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
+                                              0.001f, 256.0f);
+    globUniform.skyboxProj[1][1] *=-1;
+
+}
+
+void Scene::InitSkyboxData()
+{
+    std::string boxPath = FILE_PATH("Asset/Skybox/Box/Box.gltf");
+
+    std::string texturePath = FILE_PATH("Asset/Skybox/Textures/");
+
+    std::vector<std::string> texPaths = {texturePath+"posx.jpg",
+                                         texturePath+"negx.jpg",
+                                         texturePath+"posy.jpg",
+                                         texturePath+"negy.jpg",
+                                         texturePath+"posz.jpg",
+                                         texturePath+"negz.jpg"};
+
+    globalData.skyboxData.skybox = new Skybox(boxPath,texPaths);
+
 }
 
 template<typename T>

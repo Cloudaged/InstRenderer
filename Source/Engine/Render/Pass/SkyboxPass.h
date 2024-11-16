@@ -6,13 +6,17 @@
 class SkyboxPass : public RenderPass
 {
 public:
-    SkyboxPass();
+    SkyboxPass(GlobalDescriptorData data);
     void SetupAttachments() override;
     void Execute();
 private:
+    void CreateDescriptorAndLayout(std::vector<DescriptorBindingSlot> bindings);
     void SetupRenderState() override;
-
-
+    Texture* skyboxAttachment;
+    GlobalDescriptorData globalData;
+    VkDescriptorSetLayout imageLayout;
+    VkDescriptorSet imageSet;
+    Skybox* skybox;
 };
 
 

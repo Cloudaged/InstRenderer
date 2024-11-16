@@ -3,7 +3,7 @@
 #define INSTRENDERER_PATHDEFINE_H
 #include "iostream"
 #include "filesystem"
-#define FILE_PATH(str) (std::string(PROJECT_ROOT) + "\\" + std::string(str))
+#define FILE_PATH(str) (std::string(PROJECT_ROOT) + "/" + std::string(str))
 
 static std::string GetNameFromPath(std::string path)
 {

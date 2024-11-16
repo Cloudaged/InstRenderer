@@ -12,7 +12,7 @@ class ImageLoader
 {
 public:
     static ResTexture* Load(std::string path);
-
+    static ResTexture* Load(std::vector<std::string> path);
 };
 
 

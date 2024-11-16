@@ -131,16 +131,21 @@ void RenderPass::Build()
         //Allocate image
         auto aspect = att.isDepthBuffer?VK_IMAGE_ASPECT_DEPTH_BIT:VK_IMAGE_ASPECT_COLOR_BIT;
 
-        auto img = new AllocatedImage(format,usage,VkExtent2D{width,height},1,aspect);
-        img->layout = layout;
-        *att.data = new Texture(*img);
+        if(attachmentMap.find(att.name) != attachmentMap.end())
+        {
+            auto img = new AllocatedImage(format,usage,VkExtent2D{width,height},1,aspect);
+            img->layout = layout;
+            *att.data = new Texture(*img);
 
-        auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+            auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
 
-        VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,
-                                                                    (*att.data)->allocatedImage.vk_image,VK_IMAGE_LAYOUT_UNDEFINED,layout);
+            VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,
+                                                                        (*att.data)->allocatedImage.vk_image,VK_IMAGE_LAYOUT_UNDEFINED,layout);
 
-        VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+            VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+        }
+
+
         //Sampler
         {
             VkSamplerCreateInfo samplerInfo{};
@@ -197,7 +202,7 @@ void RenderPass::Build()
         } else
         {
             attachmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;//Clear
-            attachmentDes.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;//Store
+            attachmentDes.storeOp = VK_ATTACHMENT_STORE_OP_STORE;//Store
             attachmentDes.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;//undefine
             attachmentDes.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;//Read Only
 

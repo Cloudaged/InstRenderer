@@ -14,6 +14,7 @@ GameInstance::GameInstance(WindowSize size): size(size)
     InitEntity();
     mainScene->InitGlobalSet();
     mainScene->InitSceneData();
+    mainScene->InitSkyboxData();
     InitSystem();
 }
 
