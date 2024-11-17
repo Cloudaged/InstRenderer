@@ -16,7 +16,6 @@ public:
     VkImage vk_image;
     VkImageView imageView;
     VkSampler sampler;
-    VkDescriptorSet skyboxDes;
     VkImageLayout layout;
     VkFormat format;
     VkImageUsageFlags usage;

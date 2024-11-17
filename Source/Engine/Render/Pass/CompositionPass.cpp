@@ -64,6 +64,7 @@ void CompositionPass::Execute()
     scissor.extent = extent;
     vkCmdSetScissor(cmd, 0, 1, &scissor);
 
+
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, renderState.pipeline);
 
     std::vector<VkDescriptorSet> sets = {inputAttDesSet};
@@ -73,6 +74,23 @@ void CompositionPass::Execute()
                             0, sets.size(),sets.data(),0, nullptr);
 
     vkCmdDraw(cmd, 3, 1, 0, 0);
+
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxRenderState.pipeline);
+
+    std::vector<VkDescriptorSet> sets2 = {globData.globalDes,skyboxDescriptor};
+
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            skyboxRenderState.pipelineLayout,
+                            0, sets2.size(),sets2.data(),0, nullptr);
+
+    VkDeviceSize offsets[] = {0};
+
+    vkCmdBindVertexBuffers(cmd,0,1,&globData.skyboxData.skybox->boxVertBuffer.vk_buffer,offsets);
+
+    vkCmdBindIndexBuffer(cmd,globData.skyboxData.skybox->boxIndexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(cmd,static_cast<uint32_t>(globData.skyboxData.skybox->indicesCount),1,0,0,0);
+
+
 
     vkCmdEndRenderPass(cmd);
     UpdateRecordedLayout();
@@ -86,10 +104,74 @@ void CompositionPass::SetupRenderState()
     renderState.CreatePipeline(PipelineType::RenderQuad, passHandle, outputResource.size() - 1,
                                {FILE_PATH("Asset/Shader/spv/Comp.vert.spv"),
                                 FILE_PATH("Asset/Shader/spv/Comp.frag.spv")});
+
+
+    CreateSkyboxDes();
+    skyboxRenderState.layouts[0] = globData.globalDesLayout;
+    skyboxRenderState.layouts[1] = skyboxLayout;
+    skyboxRenderState.CreatePipeline(PipelineType::Skybox, passHandle, outputResource.size()-1,
+                               {FILE_PATH("Asset/Shader/spv/Skybox.vert.spv"),
+                                FILE_PATH("Asset/Shader/spv/Skybox.frag.spv")});
+
 }
 
-CompositionPass::CompositionPass()
+CompositionPass::CompositionPass(GlobalDescriptorData globData): globData(globData)
 {
+
+}
+
+void CompositionPass::CreateSkyboxDes()
+{
+    std::vector<VkDescriptorSetLayoutBinding> b(1);
+
+    b[0].binding = 0;
+    b[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    b[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    b[0].descriptorCount= 1;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = static_cast<uint32_t>(b.size());
+    layoutInfo.pBindings = b.data();
+
+    if (vkCreateDescriptorSetLayout(VulkanContext::GetContext().device, &layoutInfo, nullptr,
+                                    &skyboxLayout) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create ds layout!");
+    }
+
+
+    VkDescriptorSetAllocateInfo allocateInfo{};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocateInfo.descriptorPool = VulkanContext::GetContext().pool;
+    allocateInfo.descriptorSetCount = 1;
+    allocateInfo.pSetLayouts = &skyboxLayout;
+
+    vkAllocateDescriptorSets(VulkanContext::GetContext().device, &allocateInfo,&skyboxDescriptor);
+
+    std::vector<VkWriteDescriptorSet> writes;
+    //Descriptor
+    auto skybox = globData.skyboxData.skybox;
+
+    VkDescriptorImageInfo imageInfos;
+
+    imageInfos.imageView = skybox->imageView;
+    imageInfos.imageLayout = skybox->layout;
+    imageInfos.sampler = skybox->sampler;
+
+
+    VkWriteDescriptorSet descriptorWrite{};
+    descriptorWrite.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrite.dstSet = skyboxDescriptor;
+    descriptorWrite.dstBinding = 0;
+    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptorWrite.descriptorCount = 1;
+    descriptorWrite.pImageInfo = &imageInfos;
+    descriptorWrite.pTexelBufferView = nullptr;
+
+    writes.push_back(descriptorWrite);
+
+    vkUpdateDescriptorSets(VulkanContext::GetContext().device,writes.size(),writes.data(),0, nullptr);
 
 }
 

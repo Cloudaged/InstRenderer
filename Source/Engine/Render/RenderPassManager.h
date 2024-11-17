@@ -5,7 +5,7 @@
 #include "Pass/GeoPass.h"
 #include "../Common/Scene.h"
 #include "Pass/PresentPass.h"
-#include "Pass/SkyboxPass.h"
+
 class RenderPassManager
 {
 public:
@@ -23,7 +23,6 @@ public:
     CompositionPass* compositionPass;
     GeoPass* geoPass;
     PresentPass* presentPass;
-    SkyboxPass* skyboxPass;
 };
 
 

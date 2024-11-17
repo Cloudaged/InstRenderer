@@ -30,7 +30,7 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
         case PipelineType::Mesh:
             settings = {true, true, true,VK_CULL_MODE_BACK_BIT};break;
         case PipelineType::RenderQuad:
-            settings = {false, false, false,VK_CULL_MODE_FRONT_BIT};break;
+            settings = {true, false, false,VK_CULL_MODE_FRONT_BIT};break;
         case PipelineType::Skybox:
             settings = {true, false, true,VK_CULL_MODE_FRONT_BIT};break;
         default:
@@ -146,7 +146,7 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencil.depthTestEnable = settings.depthTest;
     depthStencil.depthWriteEnable = settings.depthWrite;
-    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     depthStencil.depthBoundsTestEnable =VK_FALSE;
     depthStencil.minDepthBounds = 0.0f;
     depthStencil.maxDepthBounds = 1.0f;

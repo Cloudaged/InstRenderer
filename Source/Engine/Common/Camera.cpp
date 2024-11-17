@@ -23,7 +23,7 @@ void Camera::InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir)
 
     this->vpMat.proj = glm::perspective(glm::radians(80.0f),
                                         VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
-                                        500.0f, 2000.0f);
+                                        500.0f, 20000.0f);
     this->vpMat.proj[1][1] *=-1;
 }
 
@@ -69,6 +69,6 @@ void Camera::UpdateAspect()
 {
     this->vpMat.proj = glm::perspective(glm::radians(80.0f),
                                         VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
-                                        5.0f, 2000.0f);
+                                        5.0f, 20000.0f);
     this->vpMat.proj[1][1] *=-1;
 }

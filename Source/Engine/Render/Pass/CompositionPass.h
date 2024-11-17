@@ -6,11 +6,15 @@
 class CompositionPass :public RenderPass
 {
 public:
-    CompositionPass();
+    CompositionPass(GlobalDescriptorData globData);
     void SetupAttachments() override;
     void Execute();
 private:
-
+    void CreateSkyboxDes();
+    GlobalDescriptorData globData;
+    RenderState skyboxRenderState;
+    VkDescriptorSetLayout skyboxLayout;
+    VkDescriptorSet skyboxDescriptor;
     void SetupRenderState() override;
     Texture* lightAttachment;
 
