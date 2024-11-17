@@ -11,13 +11,12 @@ void PresentPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    inputResource.push_back(attachmentMap["Skyboxed"]);
+    inputAttDes.push_back(attachmentMap["Skyboxed"]);
 
     attachmentMap["Present"] = AttachmentDes{"Present",winWidth,winHeight,
-                                             AttachmentUsage::Present,AttachmentOP::DontCare,
-                                             VK_FORMAT_B8G8R8A8_SRGB, false, nullptr};
+                                             AttachmentUsage::Present,VK_FORMAT_B8G8R8A8_SRGB, nullptr};
 
-    outputAttDes.push_back(attachmentMap["Present"]);
+    outputResource.push_back({attachmentMap["Present"], AttachmentOP::Present});
 }
 
 void PresentPass::Execute()
@@ -78,7 +77,7 @@ void PresentPass::SetupRenderState()
 {
     renderState.layouts[0] = inputAttDesLayout;
     //Pipeline
-    renderState.CreatePipeline(PipelineType::RenderQuad,passHandle,outputAttDes.size(),
+    renderState.CreatePipeline(PipelineType::RenderQuad, passHandle, outputResource.size(),
                                {FILE_PATH("Asset/Shader/spv/Present.vert.spv"),
                                 FILE_PATH("Asset/Shader/spv/Present.frag.spv")});
 }

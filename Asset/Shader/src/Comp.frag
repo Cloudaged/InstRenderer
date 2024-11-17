@@ -10,6 +10,7 @@ layout (location = 0) in vec2 inUV;
 layout(location =0) out vec4 outColor;
 void main()
 {
+
     vec3 Pos = texture(inputPosition,inUV).xyz;
     vec4 normal = texture(inputNormal,inUV);
     vec4 baseColor = texture(inputAlbedo,inUV);

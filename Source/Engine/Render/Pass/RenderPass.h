@@ -15,18 +15,21 @@ typedef std::unordered_map<std::string,AttachmentDes> AttachmentMap;
 
 struct RenderResource
 {
-    AttachmentDes attDes;
+    AttachmentDes& attDes;
     AttachmentOP opt;
+};
+
+struct AttachmentState
+{
+    VkAttachmentLoadOp loadOp;
+    VkAttachmentStoreOp storeOp;
+    VkImageLayout initLayout;
+    VkImageLayout finalLayout;
 };
 
 class RenderPass
 {
 private:
-    struct LoadStoreOP
-    {
-        VkAttachmentLoadOp loadOp;
-        VkAttachmentStoreOp storeOp;
-    };
 
 public:
     static AttachmentMap attachmentMap;
@@ -41,14 +44,16 @@ public:
     void ClearRes();
     void RecreatePassRes();
 protected:
+    void TransAttachmentLayout(VkCommandBuffer cmd);
+    void UpdateRecordedLayout();
     VkImageUsageFlags GetUsage(AttachmentUsage usage);
     VkImageLayout GetLayout(AttachmentUsage usage);
-    LoadStoreOP GetLSOP(AttachmentOP op);
+    AttachmentState GetState(AttachmentOP op,AttachmentUsage usage);
     virtual void SetupRenderState()=0;
     void InputAttachmentDes(std::vector<std::string> names);
 
-    std::vector<AttachmentDes> inputResource;
-    std::vector<AttachmentDes> outputAttDes;
+    std::vector<AttachmentDes> inputAttDes;
+    std::vector<RenderResource> outputResource;
 
     VkDescriptorSetLayout inputAttDesLayout;
     VkDescriptorSet inputAttDesSet;

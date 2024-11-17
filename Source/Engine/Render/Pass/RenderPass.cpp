@@ -8,9 +8,7 @@ VkImageUsageFlags RenderPass::GetUsage(AttachmentUsage usage)
 {
     switch (usage)
     {
-        case AttachmentUsage::ShaderReadOnly:
-            return VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-        case AttachmentUsage::ColorAttachment:
+        case AttachmentUsage::Color:
             return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT;
         case AttachmentUsage::TransferSrc:
             return VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -29,9 +27,7 @@ VkImageLayout RenderPass::GetLayout(AttachmentUsage usage)
 {
     switch (usage)
     {
-        case AttachmentUsage::ShaderReadOnly:
-            return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        case AttachmentUsage::ColorAttachment:
+        case AttachmentUsage::Color:
             return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         case AttachmentUsage::TransferSrc:
             return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -46,20 +42,49 @@ VkImageLayout RenderPass::GetLayout(AttachmentUsage usage)
     }
 }
 
-RenderPass::LoadStoreOP RenderPass::GetLSOP(AttachmentOP op)
+AttachmentState RenderPass::GetState(AttachmentOP op,AttachmentUsage usage)
 {
     switch (op)
     {
-        case AttachmentOP::ReadOnly:
-            return {VK_ATTACHMENT_LOAD_OP_LOAD,VK_ATTACHMENT_STORE_OP_DONT_CARE};
-        case AttachmentOP::ReadAndWrite:
-            return {VK_ATTACHMENT_LOAD_OP_LOAD,VK_ATTACHMENT_STORE_OP_STORE};
         case AttachmentOP::WriteOnly:
-            return{VK_ATTACHMENT_LOAD_OP_CLEAR,VK_ATTACHMENT_STORE_OP_STORE};
-        case AttachmentOP::Clear:
-            return {VK_ATTACHMENT_LOAD_OP_CLEAR,VK_ATTACHMENT_STORE_OP_DONT_CARE};
+        {
+            if(usage==AttachmentUsage::Depth)
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+            } else
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+            }
+        }
+        case AttachmentOP::ReadAndWrite:
+        {
+            if(usage==AttachmentUsage::Depth)
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+            } else
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+            }
+        }
         default:
-            return {VK_ATTACHMENT_LOAD_OP_DONT_CARE,VK_ATTACHMENT_STORE_OP_DONT_CARE};
+        {
+            return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                   VK_ATTACHMENT_STORE_OP_STORE,
+                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+        }
     }
 
 }
@@ -75,45 +100,12 @@ void RenderPass::Build()
     bool hasDepth = false;
 
     int refIndex = 0;
-    /*//Input
-    for (auto& att:inputResource)
-    {
-        //Get data
-        width = att.width;
-        height = att.height;
-        VkFormat format = att.format;
-        VkImageLayout layout = GetLayout(att.usage);
-        auto lsop = GetLSOP(att.op);
-        //Get data(need descriptor)
-
-        //Attachment
-        VkAttachmentDescription attachmentDes{};
-        attachmentDes.format =format;
-        attachmentDes.samples = VK_SAMPLE_COUNT_1_BIT;
-        attachmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        attachmentDes.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachmentDes.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attachmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachmentDes.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        attachmentDes.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        VkAttachmentReference ref{};
-        ref.attachment = refIndex;
-        if(!att.isDepthBuffer)
-        {
-            ref.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        } else
-        {
-            ref.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-        }
-
-
-        attDescriptions.push_back(attachmentDes);
-        refIndex++;
-    }*/
 
     //Output
-    for (auto& att:outputAttDes)
+    for (auto& res:outputResource)
     {
+        auto& att = res.attDes;
+
         if(att.usage==AttachmentUsage::Present)
         {
             BuildPresentFrame();
@@ -126,59 +118,61 @@ void RenderPass::Build()
         VkFormat format = att.format;
         VkImageUsageFlags usage = GetUsage(att.usage);
         VkImageLayout layout = GetLayout(att.usage);
-        auto lsop = GetLSOP(att.op);
-
         //Allocate image
-        auto aspect = att.isDepthBuffer?VK_IMAGE_ASPECT_DEPTH_BIT:VK_IMAGE_ASPECT_COLOR_BIT;
+        auto aspect = att.usage==AttachmentUsage::Depth?VK_IMAGE_ASPECT_DEPTH_BIT:VK_IMAGE_ASPECT_COLOR_BIT;
 
-        if(attachmentMap.find(att.name) != attachmentMap.end())
+        if(!att.hasInit)
         {
             auto img = new AllocatedImage(format,usage,VkExtent2D{width,height},1,aspect);
             img->layout = layout;
             *att.data = new Texture(*img);
 
-            auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+            /*auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
 
             VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,
                                                                         (*att.data)->allocatedImage.vk_image,VK_IMAGE_LAYOUT_UNDEFINED,layout);
 
-            VulkanContext::GetContext().EndSingleTimeCommands(cmd);
-        }
+            VulkanContext::GetContext().EndSingleTimeCommands(cmd);*/
 
-
-        //Sampler
-        {
-            VkSamplerCreateInfo samplerInfo{};
-            samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-            samplerInfo.magFilter = VK_FILTER_LINEAR;
-            samplerInfo.minFilter = VK_FILTER_LINEAR;
-
-            samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-
-            VkPhysicalDeviceProperties properties{};
-            vkGetPhysicalDeviceProperties(VulkanContext::GetContext().gpu, &properties);
-            samplerInfo.anisotropyEnable = VK_FALSE;
-            samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-            samplerInfo.borderColor =VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-            samplerInfo.unnormalizedCoordinates = VK_FALSE;
-
-            samplerInfo.compareEnable = VK_FALSE;
-            samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-
-            samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-            samplerInfo.mipLodBias = 0.0f;
-            samplerInfo.minLod = 0.0f;
-            samplerInfo.maxLod = 0.0f;
-
-            if(vkCreateSampler(VulkanContext::GetContext().device,&samplerInfo, nullptr,&(*att.data)->sampler)!=VK_SUCCESS)
+            //Sampler
             {
-                std::cout<<"failed to create attachment sampler\n";
-            }
+                VkSamplerCreateInfo samplerInfo{};
+                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo.magFilter = VK_FILTER_LINEAR;
+                samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+                VkPhysicalDeviceProperties properties{};
+                vkGetPhysicalDeviceProperties(VulkanContext::GetContext().gpu, &properties);
+                samplerInfo.anisotropyEnable = VK_FALSE;
+                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo.borderColor =VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+                samplerInfo.compareEnable = VK_FALSE;
+                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                samplerInfo.maxLod = 0.0f;
+
+                if(vkCreateSampler(VulkanContext::GetContext().device,&samplerInfo, nullptr,&(*att.data)->sampler)!=VK_SUCCESS)
+                {
+                    std::cout<<"failed to create attachment sampler\n";
+                }
+                att.hasInit = true;
+
         }
 
-        attachmentMap;
+
+
+        }
+
+        auto state = GetState(res.opt,att.usage);
         //Attachment
         VkAttachmentDescription attachmentDes{};
         attachmentDes.format =format;
@@ -186,14 +180,14 @@ void RenderPass::Build()
         attachmentDes.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
+        attachmentDes.loadOp = state.loadOp;
+        attachmentDes.storeOp = state.storeOp;
+        attachmentDes.initialLayout = state.initLayout;
+        attachmentDes.finalLayout = state.finalLayout;
 
-        if(!att.isDepthBuffer)
+
+        if(!(att.usage==AttachmentUsage::Depth))
         {
-            attachmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;//Clear
-            attachmentDes.storeOp = VK_ATTACHMENT_STORE_OP_STORE;//Store
-            attachmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;//undefine
-            attachmentDes.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;//Read Only
-
             VkAttachmentReference ref{};
             ref.attachment = refIndex;
             ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -201,15 +195,9 @@ void RenderPass::Build()
 
         } else
         {
-            attachmentDes.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;//Clear
-            attachmentDes.storeOp = VK_ATTACHMENT_STORE_OP_STORE;//Store
-            attachmentDes.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;//undefine
-            attachmentDes.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;//Read Only
-
             depthRef.attachment = refIndex;
             depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             hasDepth = true;
-
         }
 
 
@@ -259,7 +247,7 @@ void RenderPass::Build()
     fbInfo.renderPass = passHandle;
     fbInfo.width = width;
     fbInfo.height = height;
-    fbInfo.attachmentCount = outputAttDes.size();
+    fbInfo.attachmentCount = outputResource.size();
     fbInfo.pAttachments = views.data();
     fbInfo.layers =1;
 
@@ -269,7 +257,7 @@ void RenderPass::Build()
     }
 
     std::vector<std::string> names;
-    for (auto& att:inputResource)
+    for (auto& att:inputAttDes)
     {
         names.push_back(att.name);
     }
@@ -287,7 +275,8 @@ void RenderPass::Build()
 
 void RenderPass::BuildPresentFrame()
 {
-    auto& att = outputAttDes[0];
+    auto& res = outputResource[0];
+    auto& att = res.attDes;
 
     std::vector<VkImageView> views;
     std::vector<VkAttachmentDescription> attDescriptions;
@@ -298,9 +287,7 @@ void RenderPass::BuildPresentFrame()
     height = att.height;
 
     VkFormat format = att.format;
-    VkImageUsageFlags usage = GetUsage(att.usage);
     VkImageLayout layout = GetLayout(att.usage);
-    auto lsop = GetLSOP(att.op);
 
     //Attachment
     VkAttachmentDescription attachmentDes{};
@@ -315,7 +302,7 @@ void RenderPass::BuildPresentFrame()
 
     VkAttachmentReference ref{};
     ref.attachment = refIndex;
-    if(!att.isDepthBuffer)
+    if(!(att.usage==AttachmentUsage::Depth))
     {
         ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     } else
@@ -373,7 +360,7 @@ void RenderPass::BuildPresentFrame()
 
 
     std::vector<std::string> names;
-    for (auto& att:inputResource)
+    for (auto& att:inputAttDes)
     {
         names.push_back(att.name);
     }
@@ -472,8 +459,29 @@ void RenderPass::ClearRes()
         vkDestroyFramebuffer(device,framebufferHandle, nullptr);
     }
 
-    inputResource.clear();
-    outputAttDes.clear();
+    inputAttDes.clear();
+    outputResource.clear();
+}
+
+void RenderPass::TransAttachmentLayout(VkCommandBuffer cmd)
+{
+    for (auto& res:outputResource)
+    {
+        auto state = GetState(res.opt,res.attDes.usage);
+        if(res.attDes.currentLayout!=state.initLayout)
+        {
+            VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,(*res.attDes.data)->allocatedImage.vk_image,res.attDes.currentLayout,state.initLayout);
+        }
+    }
+}
+
+void RenderPass::UpdateRecordedLayout()
+{
+    for (auto& res:outputResource)
+    {
+        auto state = GetState(res.opt,res.attDes.usage);
+        res.attDes.currentLayout=state.finalLayout;
+    }
 }
 
 

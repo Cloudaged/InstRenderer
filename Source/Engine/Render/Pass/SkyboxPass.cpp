@@ -7,13 +7,12 @@ void SkyboxPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    inputResource.push_back(attachmentMap["Lighted"]);
+    inputAttDes.push_back(attachmentMap["Lighted"]);
 
-    attachmentMap["Skyboxed"] = AttachmentDes{"Skyboxed",winWidth,winHeight,
-                                              AttachmentUsage::ColorAttachment,AttachmentOP::WriteOnly,
-                                              VK_FORMAT_R8G8B8A8_SRGB, false, &skyboxAttachment};
-    outputAttDes.push_back(attachmentMap["Skyboxed"]);
-    outputAttDes.push_back(attachmentMap["Depth"]);
+    attachmentMap["Skyboxed"] = AttachmentDes{"Skyboxed", winWidth, winHeight,
+                                              AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB,&skyboxAttachment};
+    outputResource.push_back({attachmentMap["Skyboxed"], AttachmentOP::WriteOnly});
+    outputResource.push_back({attachmentMap["Depth"], AttachmentOP::ReadAndWrite});
 }
 
 void SkyboxPass::Execute()
@@ -21,6 +20,8 @@ void SkyboxPass::Execute()
     auto presentM = VulkanContext::GetContext().presentManager;
 
     auto cmd = presentM.presentFrames[presentM.currentFrame].cmd;
+
+    TransAttachmentLayout(cmd);
 
     VkExtent2D extent = VulkanContext::GetContext().windowExtent;
 
@@ -73,6 +74,7 @@ void SkyboxPass::Execute()
     vkCmdDrawIndexed(cmd,static_cast<uint32_t>(globalData.skyboxData.skybox->indicesCount),1,0,0,0);
 
     vkCmdEndRenderPass(cmd);
+    UpdateRecordedLayout();
 }
 
 void SkyboxPass::SetupRenderState()
@@ -87,7 +89,7 @@ void SkyboxPass::SetupRenderState()
     renderState.layouts[2] = imageLayout;
 
 
-    renderState.CreatePipeline(PipelineType::Skybox,passHandle,outputAttDes.size()-1,
+    renderState.CreatePipeline(PipelineType::Skybox, passHandle, outputResource.size()-1,
                                {FILE_PATH("Asset/Shader/spv/Skybox.vert.spv"),
                                 FILE_PATH("Asset/Shader/spv/Skybox.frag.spv")});
 }

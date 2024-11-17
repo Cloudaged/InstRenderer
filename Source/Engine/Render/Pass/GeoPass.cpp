@@ -11,26 +11,22 @@ void GeoPass::SetupAttachments()
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
 
-    attachmentMap["BaseColor"] = AttachmentDes{"BaseColor",winWidth,winHeight,
-                                               AttachmentUsage::ColorAttachment,AttachmentOP::WriteOnly,
-                                               VK_FORMAT_R8G8B8A8_SRGB, false,&baseColorAttachment};
+    attachmentMap["BaseColor"] = AttachmentDes{"BaseColor", winWidth, winHeight,
+                                               AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB, &baseColorAttachment};
 
-    attachmentMap["Normal"] = AttachmentDes{"Normal",winWidth,winHeight,
-                                               AttachmentUsage::ColorAttachment,AttachmentOP::WriteOnly,
-                                               VK_FORMAT_R8G8B8A8_SRGB, false,&normalAttachment};
+    attachmentMap["Normal"] = AttachmentDes{"Normal", winWidth, winHeight,
+                                            AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB, &normalAttachment};
 
-    attachmentMap["Position"] = AttachmentDes{"Position",winWidth,winHeight,
-                                            AttachmentUsage::ColorAttachment,AttachmentOP::WriteOnly,
-                                            VK_FORMAT_R8G8B8A8_SRGB, false,&positionAttachment};
+    attachmentMap["Position"] = AttachmentDes{"Position", winWidth, winHeight,
+                                              AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB, &positionAttachment};
 
     attachmentMap["Depth"] = AttachmentDes{"Depth",winWidth,winHeight,
-                                           AttachmentUsage::Depth,AttachmentOP::Clear,
-                                           VK_FORMAT_D32_SFLOAT,true,&depthAttachment};
+                                           AttachmentUsage::Depth,VK_FORMAT_D32_SFLOAT,&depthAttachment};
 
-    outputAttDes.push_back(attachmentMap["BaseColor"]);
-    outputAttDes.push_back(attachmentMap["Normal"]);
-    outputAttDes.push_back(attachmentMap["Position"]);
-    outputAttDes.push_back(attachmentMap["Depth"]);
+    outputResource.push_back({attachmentMap["BaseColor"], AttachmentOP::WriteOnly});
+    outputResource.push_back({attachmentMap["Normal"], AttachmentOP::WriteOnly});
+    outputResource.push_back({attachmentMap["Position"], AttachmentOP::WriteOnly});
+    outputResource.push_back({attachmentMap["Depth"], AttachmentOP::WriteOnly});
 }
 
 void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
@@ -40,6 +36,9 @@ void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
     auto presentM = VulkanContext::GetContext().presentManager;
 
     auto cmd = presentM.presentFrames[presentM.currentFrame].cmd;
+
+    TransAttachmentLayout(cmd);
+
 
     VkExtent2D extent = VulkanContext::GetContext().windowExtent;
 
@@ -108,6 +107,7 @@ void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
     }
 
     vkCmdEndRenderPass(cmd);
+    UpdateRecordedLayout();
 }
 
 void GeoPass::SetupRenderState()
@@ -142,7 +142,7 @@ void GeoPass::SetupRenderState()
 
     //Pipeline
     renderState.CreatePipeline(PipelineType::Mesh,
-                               passHandle,outputAttDes.size()-1,
+                               passHandle, outputResource.size() - 1,
                                {FILE_PATH("Asset/Shader/spv/Geo.vert.spv"),
                                 FILE_PATH("Asset/Shader/spv/Geo.frag.spv")});
 

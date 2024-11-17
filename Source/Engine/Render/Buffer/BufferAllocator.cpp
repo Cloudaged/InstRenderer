@@ -107,7 +107,9 @@ BufferAllocator::TransitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayo
     imageBarrier.oldLayout = srcLayout;
     imageBarrier.newLayout = dstLayout;
 
-    VkImageAspectFlags aspectMask = (dstLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+    bool isDepth  = dstLayout==VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL||dstLayout==VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+    VkImageAspectFlags aspectMask = isDepth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
 
     VkImageSubresourceRange subImage {};

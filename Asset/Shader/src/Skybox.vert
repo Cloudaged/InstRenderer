@@ -12,6 +12,7 @@ layout(set=0,binding=0) uniform GlobalUniform
 }globalUniform;
 
 layout(location = 0) out vec3 outUVW;
+layout(location = 1) out vec2 uv2D;
 
 void main()
 {
@@ -20,4 +21,5 @@ void main()
     gl_Position = globalUniform.skyboxProjMat*viewMat*vec4(inPosition.x,inPosition.y,inPosition.z, 1.0);
 
     outUVW = inPosition;
+    uv2D = uv;
 }

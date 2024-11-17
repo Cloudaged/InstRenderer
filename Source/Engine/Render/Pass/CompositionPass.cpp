@@ -7,17 +7,16 @@ void CompositionPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    inputResource.push_back(attachmentMap["BaseColor"]);
-    inputResource.push_back(attachmentMap["Normal"]);
-    inputResource.push_back(attachmentMap["Position"]);
+    inputAttDes.push_back(attachmentMap["BaseColor"]);
+    inputAttDes.push_back(attachmentMap["Normal"]);
+    inputAttDes.push_back(attachmentMap["Position"]);
 
 
-    attachmentMap["Lighted"] = AttachmentDes{"Lighted",winWidth,winHeight,
-                                             AttachmentUsage::ColorAttachment,AttachmentOP::WriteOnly,
-                                             VK_FORMAT_R8G8B8A8_SRGB, false, &lightAttachment};
+    attachmentMap["Lighted"] = AttachmentDes{"Lighted", winWidth, winHeight,
+                                             AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB, &lightAttachment};
 
-    outputAttDes.push_back(attachmentMap["Lighted"]);
-    outputAttDes.push_back(attachmentMap["Depth"]);
+    outputResource.push_back({attachmentMap["Lighted"], AttachmentOP::WriteOnly});
+    outputResource.push_back({attachmentMap["Depth"], AttachmentOP::ReadAndWrite});
 
 }
 
@@ -26,6 +25,9 @@ void CompositionPass::Execute()
     auto presentM = VulkanContext::GetContext().presentManager;
 
     auto cmd = presentM.presentFrames[presentM.currentFrame].cmd;
+
+    TransAttachmentLayout(cmd);
+
 
     VkExtent2D extent = VulkanContext::GetContext().windowExtent;
 
@@ -73,6 +75,7 @@ void CompositionPass::Execute()
     vkCmdDraw(cmd, 3, 1, 0, 0);
 
     vkCmdEndRenderPass(cmd);
+    UpdateRecordedLayout();
 }
 
 void CompositionPass::SetupRenderState()
@@ -80,7 +83,7 @@ void CompositionPass::SetupRenderState()
     //DescriptorLayout
     renderState.layouts[0] = inputAttDesLayout;
     //Pipeline
-    renderState.CreatePipeline(PipelineType::RenderQuad,passHandle,outputAttDes.size()-1,
+    renderState.CreatePipeline(PipelineType::RenderQuad, passHandle, outputResource.size() - 1,
                                {FILE_PATH("Asset/Shader/spv/Comp.vert.spv"),
                                 FILE_PATH("Asset/Shader/spv/Comp.frag.spv")});
 }

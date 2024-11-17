@@ -30,7 +30,7 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
         case PipelineType::Mesh:
             settings = {true, true, true,VK_CULL_MODE_BACK_BIT};break;
         case PipelineType::RenderQuad:
-            settings = {true, false, false,VK_CULL_MODE_FRONT_BIT};break;
+            settings = {false, false, false,VK_CULL_MODE_FRONT_BIT};break;
         case PipelineType::Skybox:
             settings = {true, false, true,VK_CULL_MODE_FRONT_BIT};break;
         default:
