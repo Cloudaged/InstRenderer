@@ -11,6 +11,7 @@ ComponentEditor::ComponentEditor(QDockWidget *parent) :
     ui->setupUi(this);
     InitToolBox();
     transformCompUI = new TransformComponentUI({});
+    lightComponentUI =new LightComponentUI({});
    // transformCompUI->hide();
 }
 
@@ -40,7 +41,7 @@ void ComponentEditor::ChangeGameObject(GameObject *gameObject, entt::registry *r
         delete toolBox;
     toolBox = new MyToolBox(this);
     toolBox->resize(this->width(), this->height());
-    std::vector<QWidget*> contents;
+    std::vector<ContentWithType> contents;
 
     curID = gameObject->entityID;
     auto& bits = gameObject->componentBits;
@@ -52,12 +53,19 @@ void ComponentEditor::ChangeGameObject(GameObject *gameObject, entt::registry *r
 
         transformCompUI->ChangeData(transformComp);
 
-        contents.push_back(transformCompUI);
+        contents.push_back(ContentWithType{transformCompUI,"Transform"});
     }
     if(bits.test(static_cast<size_t>(ComponentType::Renderable)))
     {
         //Renderable
+    }
+    if(bits.test(static_cast<size_t>(ComponentType::Light)))
+    {
+        auto& lightComp = reg->get<LightComponent>(gameObject->entityID);
 
+        lightComponentUI->ChangeData(lightComp);
+
+        contents.push_back(ContentWithType{lightComponentUI,"Light"});
     }
 
     toolBox->Reconstruct(contents);

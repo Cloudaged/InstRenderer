@@ -26,10 +26,10 @@ public:
     ~Transform3D() override;
     QLabel tag;
     QLineEdit* xEdit,*yEdit,*zEdit;
+    glm::vec3 data;
 
     void UpdateData(glm::vec3 data);
 private:
-    glm::vec3 data;
     std::string tagName;
     void InitWidget();
     void InitSignal();

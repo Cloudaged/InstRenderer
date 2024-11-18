@@ -16,12 +16,14 @@
 
 #include "../Engine/Common/Component/Components.h"
 #include "../ComponentUI/TransformComponentUI/TransformComponentUI.h"
+#include "../ComponentUI/LightComponentUI/LightComponentUI.h"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
     class ComponentEditor;
 }
 QT_END_NAMESPACE
+
 
 class  ComponentEditor : public QDockWidget
 {
@@ -36,6 +38,7 @@ public:
 
     entt::entity curID;
     TransformComponentUI* transformCompUI;
+    LightComponentUI* lightComponentUI;
 private:
     void InitToolBox();
     void resizeEvent(QResizeEvent *event) override;

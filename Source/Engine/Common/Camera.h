@@ -13,7 +13,6 @@ public:
 
     glm::mat4 GetViewMatrix(entt::registry reg);
     void ResetViewMatrix();
-    void UpdateAspect();
 
     glm::vec3 GetCameraPos();
     void SetCameraPos(glm::vec3 newPos);

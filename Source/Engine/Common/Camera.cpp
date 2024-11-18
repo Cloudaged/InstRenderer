@@ -65,10 +65,3 @@ glm::vec3 Camera::GetCameraUpDir()
     return this->yAxis;
 }
 
-void Camera::UpdateAspect()
-{
-    this->vpMat.proj = glm::perspective(glm::radians(80.0f),
-                                        VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
-                                        5.0f, 20000.0f);
-    this->vpMat.proj[1][1] *=-1;
-}

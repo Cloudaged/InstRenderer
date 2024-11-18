@@ -14,7 +14,7 @@ Scene::~Scene()
 
 }
 
-GameObject* Scene::CreateObject(std::string name)
+GameObject* Scene::CreateObject(std::string name,std::string type)
 {
     /*auto type_hash = entt::hashed_string::value(type.c_str());
     auto name_hash = entt::hashed_string::value(name.c_str());
@@ -23,14 +23,22 @@ GameObject* Scene::CreateObject(std::string name)
 
     auto instance = type_meta.construct(&reg,name);*/
 
-    GameObject* go= new GameObject(&reg,name);
-
+    GameObject* go;
+    if(type=="GameObject")
+    {
+        go= new GameObject(&reg,name);
+    }
+    if(type=="Light")
+    {
+        Light* lightGo = new Light(&reg,name);
+        go = (GameObject*)lightGo;
+    }
     objects.push_back(go);
 
     return go;
 }
 
-GameObject* Scene::CreateObject(std::string name, int parent)
+GameObject* Scene::CreateObject(std::string name, int parent,std::string type)
 {
    /* using namespace entt::literals;
     auto type_hash = entt::hashed_string::value(type.c_str());
@@ -194,6 +202,20 @@ void Scene::InitSkyboxData()
     globalData.skyboxData.skybox = new Skybox(boxPath,texPaths);
 
 }
+
+void Scene::UpdateAspect()
+{
+    mainCamera.vpMat.proj = glm::perspective(glm::radians(80.0f),
+                                        VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
+                                        5.0f, 20000.0f);
+    mainCamera.vpMat.proj[1][1] *=-1;
+
+    globUniform.skyboxProj = glm::perspective(glm::radians(80.0f),
+                                              VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
+                                              0.001f, 256.0f);
+    globUniform.skyboxProj[1][1] *=-1;
+}
+
 
 template<typename T>
 void Scene::AddComponent(int objID)

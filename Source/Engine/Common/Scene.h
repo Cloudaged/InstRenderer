@@ -41,13 +41,15 @@ public:
 
     std::vector<GameObject*> objects;
     Camera mainCamera;
-    GameObject* CreateObject(std::string name);
-    GameObject* CreateObject(std::string name,int parent);
+    GameObject* CreateObject(std::string name,std::string type="GameObject");
+    GameObject* CreateObject(std::string name,int parent,std::string type="GameObject");
+
 
     void InitGlobalSet();
     void InitSkyboxData();
-
     void InitSceneData();
+
+    void UpdateAspect();
 
     GameObject* GetGameObject(int id);
 

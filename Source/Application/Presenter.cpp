@@ -20,9 +20,7 @@ void Presenter::AddGameObject()
         auto go = instance->mainScene->CreateObject(name);
         editor->sceneEditor->AddItem(static_cast<int>(go->entityID),name,type);
 
-        glm::vec3 pos = {10.0,20.0,0.0};
-        instance->mainScene->reg.emplace<Transform>(go->entityID,pos,pos,pos);
-        go->componentBits.set(0);
+        AddComponentsForGo(type,go);
     });
 
     editor->connect(editor->sceneEditor,&SceneEditor::AddSubObjAction,[&](std::string name,std::string type,int parent)
@@ -66,9 +64,13 @@ void Presenter::UpdateComponentData()
     {
         auto& trans = instance->mainScene->reg.get<Transform>(editor->componentEditor->curID);
         trans = output;
-        auto& tran2 = instance->mainScene->reg.get<Transform>(editor->componentEditor->curID);
+    });
 
-        std::cout<<tran2.pos.x<<"\n";
+    editor->connect(editor->componentEditor->lightComponentUI,&LightComponentUI::LightCompChanged,[&](LightComponent output)
+    {
+        auto& light = instance->mainScene->reg.get<LightComponent>(editor->componentEditor->curID);
+        light = output;
+
     });
 }
 
@@ -98,3 +100,24 @@ void Presenter::CreateMeshObjectsForRes(std::string path)
    editor->sceneEditor->UpdateTree(instance->mainScene->objects);
 
 }
+
+void Presenter::AddComponentsForGo(std::string type, GameObject* go)
+{
+    if(type=="GameObject")
+    {
+        glm::vec3 pos = {0.0,0.0,0.0};
+        instance->mainScene->reg.emplace<Transform>(go->entityID,pos,pos,pos);
+        go->componentBits.set(0);
+    }
+    else if(type=="Light")
+    {
+        glm::vec3 pos = {0.0,0.0,0.0};
+        instance->mainScene->reg.emplace<Transform>(go->entityID,pos,pos,pos);
+        go->componentBits.set(0);
+
+        instance->mainScene->reg.emplace<LightComponent>(go->entityID,"Directional",glm::vec3{1.0,1.0,1.0},1,1);
+        go->componentBits.set(2);
+    }
+}
+
+

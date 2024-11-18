@@ -130,7 +130,7 @@ void GameInstance::SDLEvent()
 
                 size.width= event.window.data1;
                 size.height = event.window.data2;
-                mainScene->mainCamera.UpdateAspect();
+                mainScene->UpdateAspect();
             }
             else if(event.window.event ==SDL_WINDOWEVENT_MINIMIZED)
             {

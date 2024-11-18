@@ -19,6 +19,8 @@ private:
     void RenameGameObject();
     void LoadResourceToObj();
 
+    void AddComponentsForGo(std::string type,GameObject* go);
+
     void CreateMeshObjectsForRes(std::string path);
 };
 

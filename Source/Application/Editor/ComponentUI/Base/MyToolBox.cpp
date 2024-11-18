@@ -17,14 +17,14 @@ MyToolBox::~MyToolBox()
     delete ui;
 }
 
-void MyToolBox::Reconstruct(std::vector<QWidget*> contents)
+void MyToolBox::Reconstruct(std::vector<ContentWithType> contents)
 {
     delete layout;
     layout = new QVBoxLayout(this);
 
     for (auto& content:contents)
     {
-        MyToolPage* page = new MyToolPage(content,"MyName", this);
+        MyToolPage* page = new MyToolPage(content.content,content.name, this);
 
         layout->addWidget(page);
     }

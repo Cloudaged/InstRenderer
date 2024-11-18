@@ -5,8 +5,13 @@
 #include "entt.hpp"
 #include "string"
 #include "vector"
-#include "Component/Components.h"
 #include "bitset"
+enum class GameObjectType
+{
+    GameObject,
+    Light,
+    Camera
+};
 class GameObject
 {
 public:
@@ -16,6 +21,7 @@ public:
     std::string name;
     int parent=-1;
     std::bitset<8> componentBits;
+    GameObjectType type = GameObjectType::GameObject;
 };
 
 

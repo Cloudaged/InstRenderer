@@ -21,7 +21,8 @@ QT_END_NAMESPACE
 enum class ComponentType
 {
     Transform = 0,
-    Renderable = 1
+    Renderable = 1,
+    Light=2
 };
 
 

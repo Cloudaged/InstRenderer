@@ -33,7 +33,6 @@ void TransformComponentUI::Init()
 
 void TransformComponentUI::InitSignal()
 {
-    int i =0;
     for(auto* child:this->findChildren<QLineEdit*>())
     {
         connect(child,&QLineEdit::editingFinished,this,[&]()
@@ -51,7 +50,6 @@ void TransformComponentUI::InitSignal()
                             scaleEditor->zEdit->text().toFloat()};
 
             emit TransformCompChanged({pos,rot,scl});
-            std::cout<<"Trigger inside\n";
         });
     }
 }

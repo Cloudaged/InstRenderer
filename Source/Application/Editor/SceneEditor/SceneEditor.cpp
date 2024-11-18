@@ -43,9 +43,16 @@ QTreeWidgetItem* SceneEditor::AddItem(int id,std::string name, std::string type)
 
     item->setFlags(item->flags() | Qt::ItemIsEditable);
 
-
-    QIcon* icon = new QIcon(QString::fromStdString(FILE_PATH("\\Source\\Application\\Editor\\icons\\GameObject.png")));
-    item->setIcon(0,*icon);
+    if(type=="GameObject")
+    {
+        QIcon* icon = new QIcon(QString::fromStdString(FILE_PATH("\\Source\\Application\\Editor\\icons\\GameObject.png")));
+        item->setIcon(0,*icon);
+    }
+    else if(type=="Light")
+    {
+        QIcon* icon = new QIcon(QString::fromStdString(FILE_PATH("\\Source\\Application\\Editor\\icons\\Light.png")));
+        item->setIcon(0,*icon);
+    }
     return item;
 }
 
