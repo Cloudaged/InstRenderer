@@ -190,6 +190,7 @@ void SceneEditor::ItemChanged()
 
 void SceneEditor::UpdateTree(std::vector<GameObject *> objs)
 {
+    //treeWidget->clear();
     for (auto obj:objs)
     {
         if(obj->parent<0)

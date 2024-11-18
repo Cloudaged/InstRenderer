@@ -24,16 +24,6 @@ void ComponentEditor::InitToolBox()
     scrollArea = new QScrollArea();
     toolBox = new MyToolBox(this);
 
-    //QVBoxLayout* vlayout = new QVBoxLayout(toolBox);
-    //vlayout->addWidget(new TransformComponentUI(toolBox));
-
-    //toolBox->setLayout(vlayout);
-
-
-    //scrollArea->setWidgetResizable(true);
-    //scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
-
-
     scrollArea->setWidget(toolBox);
     this->setWidget(scrollArea);
 }
@@ -49,7 +39,7 @@ void ComponentEditor::ChangeGameObject(GameObject *gameObject, entt::registry *r
     if(toolBox)
         delete toolBox;
     toolBox = new MyToolBox(this);
-
+    toolBox->resize(this->width(), this->height());
     std::vector<QWidget*> contents;
 
     curID = gameObject->entityID;

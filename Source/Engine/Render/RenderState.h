@@ -20,7 +20,7 @@ struct PipelineSettings
     bool depthWrite;
     bool hasVertAtt;
     VkCullModeFlags cullMode;
-
+    size_t pushConstantsSize=0;
 };
 
 struct DescriptorBindingSlot

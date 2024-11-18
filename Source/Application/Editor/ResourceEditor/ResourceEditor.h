@@ -34,9 +34,9 @@ private:
     void InitFolderWidget();
     void ShowFileOfPath(std::string path);
     std::string selectedPath;
+    ContentWidget* contentWidget;
 
     Ui::ResourceEditor *ui;
-    ContentWidget* contentWidget;
     QTreeWidget* folderWidget;
     void SetIcon(QListWidgetItem* item,QString extension);
 

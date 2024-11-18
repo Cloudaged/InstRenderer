@@ -28,7 +28,7 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
     switch (type)
     {
         case PipelineType::Mesh:
-            settings = {true, true, true,VK_CULL_MODE_BACK_BIT};break;
+            settings = {true, true, true,VK_CULL_MODE_BACK_BIT,sizeof(glm::mat4)};break;
         case PipelineType::RenderQuad:
             settings = {true, false, false,VK_CULL_MODE_FRONT_BIT};break;
         case PipelineType::Skybox:
@@ -163,7 +163,16 @@ void RenderState::CreatePipeline(PipelineType type,VkRenderPass renderPass,int a
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount= values.size();
     pipelineLayoutInfo.pSetLayouts = values.data();
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
+    VkPushConstantRange pushConstantRange{};
+    if(settings.pushConstantsSize!=0)
+    {
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = settings.pushConstantsSize;
+
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+    }
 
     if(vkCreatePipelineLayout(VulkanContext::GetContext().device,&pipelineLayoutInfo, nullptr,&pipelineLayout) != VK_SUCCESS)
     {

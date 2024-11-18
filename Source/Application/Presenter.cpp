@@ -89,26 +89,10 @@ void Presenter::CreateMeshObjectsForRes(std::string path)
 {
     auto resName = ResourceManager::Get().LoadResource(path);
     auto model= (Res::ResModel*)ResourceManager::Get().resReg[resName];
-    auto modelGo =instance->mainScene->CreateObject(resName);
+    /*auto modelGo =instance->mainScene->CreateObject(resName);
     auto item= editor->sceneEditor->AddItem(static_cast<int>(modelGo->entityID),resName,"GameObject");
     item->setSelected(true);
-    editor->sceneEditor->treeWidget->setCurrentItem(item);
-   /* for (auto& mesh:model->meshes)
-    {
-        //Backend
-        auto meshGo =instance->mainScene->CreateObject(mesh->name);
-        glm::vec3 pos = {10.0,20.0,0.0};
-        instance->mainScene->reg.emplace<Transform>(meshGo->entityID,pos,pos,pos);
-        meshGo->componentBits.set(0);
-
-        auto meshData= ResourceManager::Get().TransMesh(mesh);
-        auto materialData = ResourceManager::Get().TransMaterial(mesh->material);
-        instance->mainScene->reg.emplace<Renderable>(meshGo->entityID,meshData,materialData);
-
-        //Frontend
-        editor->sceneEditor->AddItem(static_cast<int>(meshGo->entityID),mesh->name,"GameObject",(static_cast<int>(modelGo->entityID)));
-    }
-    instance->renderSystem.materialManager.AllocateDescriptorSets();*/
+    editor->sceneEditor->treeWidget->setCurrentItem(item);*/
 
    ResourceManager::Get().CompileModel(instance,model);
    editor->sceneEditor->UpdateTree(instance->mainScene->objects);

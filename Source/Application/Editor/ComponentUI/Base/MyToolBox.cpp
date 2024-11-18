@@ -24,12 +24,10 @@ void MyToolBox::Reconstruct(std::vector<QWidget*> contents)
 
     for (auto& content:contents)
     {
-        MyToolPage* page = new MyToolPage(content,"MyName",this);
-
+        MyToolPage* page = new MyToolPage(content,"MyName", this);
 
         layout->addWidget(page);
     }
-
     layout->addStretch();
     layout->setSpacing(0);
     this->setLayout(layout);

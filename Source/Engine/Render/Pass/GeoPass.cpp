@@ -91,6 +91,8 @@ void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
         memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(perObjDesBuffer),
                &perData,
                sizeof(perData));
+
+        vkCmdPushConstants(cmd,renderState.pipelineLayout,VK_SHADER_STAGE_VERTEX_BIT,0,sizeof(glm::mat4),&perData);
         std::vector<VkDescriptorSet> sets = {globalData.globalDes,renderComponents.material->set,perObjDes,inputAttDesSet};
         //Bind
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,

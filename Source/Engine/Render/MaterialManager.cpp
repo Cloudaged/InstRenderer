@@ -48,23 +48,6 @@ void MaterialManager::AllocatePBRDes(StandardMaterial* material)
     std::vector<VkWriteDescriptorSet> writes;
     std::vector<VkDescriptorImageInfo> imgInfos(3);
     VkDescriptorBufferInfo bufferInfo;
-    /*for (auto& tex:material->textures)
-    {
-        VkDescriptorImageInfo imgInfo;
-        imgInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imgInfo.imageView = tex->allocatedImage.imageView;
-        imgInfo.sampler = tex->sampler;
-
-        VkWriteDescriptorSet descriptorWrites{};
-        descriptorWrites.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites.dstSet = material->set;
-        descriptorWrites.dstBinding = (uint32_t)tex->textureType;
-        descriptorWrites.dstArrayElement = 0;
-        descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites.descriptorCount = 1;
-        descriptorWrites.pImageInfo = &imgInfo;
-        writes.push_back(descriptorWrites);
-    }*/
     //Detect img
     {
         bufferInfo.buffer = material->slotBuffer->vk_buffer;
