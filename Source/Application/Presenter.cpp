@@ -10,6 +10,9 @@ Presenter::Presenter(GameInstance *gameInstance, MainEditor *mainEditor):instanc
     ChangeSelectedItem();
     UpdateComponentData();
     LoadResourceToObj();
+
+
+    editor->sceneEditor->UpdateTree(instance->mainScene->objects);
 }
 
 void Presenter::AddGameObject()
@@ -17,15 +20,13 @@ void Presenter::AddGameObject()
 
     editor->connect(editor->sceneEditor,&SceneEditor::AddObjAction,[&](std::string name,std::string type)
     {
-        auto go = instance->mainScene->CreateObject(name);
+        auto go = instance->mainScene->CreateObject(name,type);
         editor->sceneEditor->AddItem(static_cast<int>(go->entityID),name,type);
-
-        AddComponentsForGo(type,go);
     });
 
     editor->connect(editor->sceneEditor,&SceneEditor::AddSubObjAction,[&](std::string name,std::string type,int parent)
     {
-        auto go = instance->mainScene->CreateObject(name,parent);
+        auto go = instance->mainScene->CreateObject(name,parent,type);
         editor->sceneEditor->AddItem(static_cast<int>(go->entityID),name,type,parent);
     });
 
@@ -64,13 +65,14 @@ void Presenter::UpdateComponentData()
     {
         auto& trans = instance->mainScene->reg.get<Transform>(editor->componentEditor->curID);
         trans = output;
+        instance->mainScene->UpdateLightData();
     });
 
     editor->connect(editor->componentEditor->lightComponentUI,&LightComponentUI::LightCompChanged,[&](LightComponent output)
     {
         auto& light = instance->mainScene->reg.get<LightComponent>(editor->componentEditor->curID);
         light = output;
-
+        instance->mainScene->UpdateLightData();
     });
 }
 
@@ -91,10 +93,7 @@ void Presenter::CreateMeshObjectsForRes(std::string path)
 {
     auto resName = ResourceManager::Get().LoadResource(path);
     auto model= (Res::ResModel*)ResourceManager::Get().resReg[resName];
-    /*auto modelGo =instance->mainScene->CreateObject(resName);
-    auto item= editor->sceneEditor->AddItem(static_cast<int>(modelGo->entityID),resName,"GameObject");
-    item->setSelected(true);
-    editor->sceneEditor->treeWidget->setCurrentItem(item);*/
+
 
    ResourceManager::Get().CompileModel(instance,model);
    editor->sceneEditor->UpdateTree(instance->mainScene->objects);
@@ -105,18 +104,10 @@ void Presenter::AddComponentsForGo(std::string type, GameObject* go)
 {
     if(type=="GameObject")
     {
-        glm::vec3 pos = {0.0,0.0,0.0};
-        instance->mainScene->reg.emplace<Transform>(go->entityID,pos,pos,pos);
-        go->componentBits.set(0);
     }
     else if(type=="Light")
     {
-        glm::vec3 pos = {0.0,0.0,0.0};
-        instance->mainScene->reg.emplace<Transform>(go->entityID,pos,pos,pos);
-        go->componentBits.set(0);
 
-        instance->mainScene->reg.emplace<LightComponent>(go->entityID,"Directional",glm::vec3{1.0,1.0,1.0},1,1);
-        go->componentBits.set(2);
     }
 }
 

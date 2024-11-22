@@ -41,9 +41,9 @@ void TransformComponentUI::InitSignal()
                              positionEditor->yEdit->text().toFloat(),
                              positionEditor->zEdit->text().toFloat()};
 
-            glm::vec3 rot = {rotationEditor->xEdit->text().toFloat(),
-                             rotationEditor->yEdit->text().toFloat(),
-                             rotationEditor->zEdit->text().toFloat()};
+            glm::vec3 rot = {glm::radians(rotationEditor->xEdit->text().toFloat()),
+                             glm::radians(rotationEditor->yEdit->text().toFloat()),
+                             glm::radians(rotationEditor->zEdit->text().toFloat())};
 
             glm::vec3 scl= {scaleEditor->xEdit->text().toFloat(),
                             scaleEditor->yEdit->text().toFloat(),
@@ -52,6 +52,53 @@ void TransformComponentUI::InitSignal()
             emit TransformCompChanged({pos,rot,scl});
         });
     }
+    connect(positionEditor,&Transform3D::DragEditFinished,[&]()
+    {
+        glm::vec3 pos = {positionEditor->xEdit->text().toFloat(),
+                         positionEditor->yEdit->text().toFloat(),
+                         positionEditor->zEdit->text().toFloat()};
+
+        glm::vec3 rot = {glm::radians(rotationEditor->xEdit->text().toFloat()),
+                         glm::radians(rotationEditor->yEdit->text().toFloat()),
+                         glm::radians(rotationEditor->zEdit->text().toFloat())};
+
+        glm::vec3 scl= {scaleEditor->xEdit->text().toFloat(),
+                        scaleEditor->yEdit->text().toFloat(),
+                        scaleEditor->zEdit->text().toFloat()};
+        emit TransformCompChanged({pos,rot,scl});
+    });
+    connect(rotationEditor,&Transform3D::DragEditFinished,[&]()
+    {
+        glm::vec3 pos = {positionEditor->xEdit->text().toFloat(),
+                         positionEditor->yEdit->text().toFloat(),
+                         positionEditor->zEdit->text().toFloat()};
+
+        glm::vec3 rot = {glm::radians(rotationEditor->xEdit->text().toFloat()),
+                         glm::radians(rotationEditor->yEdit->text().toFloat()),
+                         glm::radians(rotationEditor->zEdit->text().toFloat())};
+
+        glm::vec3 scl= {scaleEditor->xEdit->text().toFloat(),
+                        scaleEditor->yEdit->text().toFloat(),
+                        scaleEditor->zEdit->text().toFloat()};
+        emit TransformCompChanged({pos,rot,scl});
+    });
+    connect(scaleEditor,&Transform3D::DragEditFinished,[&]()
+    {
+        glm::vec3 pos = {positionEditor->xEdit->text().toFloat(),
+                         positionEditor->yEdit->text().toFloat(),
+                         positionEditor->zEdit->text().toFloat()};
+
+        glm::vec3 rot = {glm::radians(rotationEditor->xEdit->text().toFloat()),
+                         glm::radians(rotationEditor->yEdit->text().toFloat()),
+                         glm::radians(rotationEditor->zEdit->text().toFloat())};
+
+        glm::vec3 scl= {scaleEditor->xEdit->text().toFloat(),
+                        scaleEditor->yEdit->text().toFloat(),
+                        scaleEditor->zEdit->text().toFloat()};
+        emit TransformCompChanged({pos,rot,scl});
+    });
+
+
 }
 
 void TransformComponentUI::ChangeData(Transform trans)

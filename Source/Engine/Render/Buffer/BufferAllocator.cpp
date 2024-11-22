@@ -19,6 +19,7 @@ Buffer* BufferAllocator::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage
     vmaallocInfo.usage = memoryUsage;
     vmaallocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
+
     if(vmaCreateBuffer(VulkanContext::GetContext().allocator,&bufferInfo,&vmaallocInfo,&buffer->vk_buffer,&buffer->allocation,&buffer->info)!=VK_SUCCESS)
     {
         throw std::runtime_error("failed to create allocatedBuffer!");

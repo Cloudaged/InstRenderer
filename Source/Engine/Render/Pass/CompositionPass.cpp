@@ -67,7 +67,7 @@ void CompositionPass::Execute()
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, renderState.pipeline);
 
-    std::vector<VkDescriptorSet> sets = {inputAttDesSet};
+    std::vector<VkDescriptorSet> sets = {inputAttDesSet,globData.globalDes};
 
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                             renderState.pipelineLayout,
@@ -100,6 +100,7 @@ void CompositionPass::SetupRenderState()
 {
     //DescriptorLayout
     renderState.layouts[0] = inputAttDesLayout;
+    renderState.layouts[1] = globData.globalDesLayout;
     //Pipeline
     renderState.CreatePipeline(PipelineType::RenderQuad, passHandle, outputResource.size() - 1,
                                {FILE_PATH("Asset/Shader/spv/Comp.vert.spv"),

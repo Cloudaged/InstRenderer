@@ -2,17 +2,12 @@
 #ifndef INSTRENDERER_LIGHT_H
 #define INSTRENDERER_LIGHT_H
 #include "GameObject.h"
-
-enum class LightType
-{
-    Directional,
-    Point
-};
+#include "Component/Components.h"
 
 class Light:public GameObject
 {
 public:
-    Light(entt::registry* reg,std::string name);
+    Light(entt::registry* reg,std::string name,std::string type);
 };
 
 

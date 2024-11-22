@@ -121,8 +121,8 @@ void ResourceManager::AsynCompile(GameInstance *instance, Res::ResModel *model)
         glm::vec3 rotation = {0.0,0.0,0.0};
         glm::vec3 scale = {1.0,1.0,1.0};
 
-        instance->mainScene->reg.emplace<Transform>(meshGo->entityID,pos,rotation,scale);
-        meshGo->componentBits.set(0);
+        auto& transComp = instance->mainScene->reg.get<Transform>(meshGo->entityID);
+        transComp = {pos,rotation,scale};
 
         auto meshData= ResourceManager::Get().TransMesh(mesh);
         auto materialData = ResourceManager::Get().TransMaterial(mesh->material);

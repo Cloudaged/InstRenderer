@@ -24,13 +24,20 @@ void Transform3D::InitWidget()
 
     tag.setText(tagName.c_str());
 
-    xLabel = new QLabel("x");
-    yLabel = new QLabel("y");
-    zLabel = new QLabel("z");
+    xLabel = new DragableLabel("x");
+    yLabel = new DragableLabel("y");
+    zLabel = new DragableLabel("z");
+
+    QRegularExpression regExp("^-?[0-9]+$");
+    QRegularExpressionValidator *regExpValidator = new QRegularExpressionValidator(regExp, this);
 
     xEdit = new QLineEdit(QString::number(data.x), this);
     yEdit = new QLineEdit(QString::number(data.y), this);
     zEdit = new QLineEdit(QString::number(data.z), this);
+
+    xEdit->setValidator(regExpValidator);
+    yEdit->setValidator(regExpValidator);
+    zEdit->setValidator(regExpValidator);
 
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->addWidget(&tag);
@@ -43,6 +50,30 @@ void Transform3D::InitWidget()
     layout->addWidget(zEdit);
 
     this->setLayout(layout);
+
+    connect(this->xLabel,&DragableLabel::ChangeData,[&](float value)
+    {
+        auto temp = xEdit->text().toFloat();
+        temp+= value*xWeight;
+        xEdit->setText(QString::number(temp));
+        emit DragEditFinished({xEdit->text().toFloat(), yEdit->text().toFloat(), zEdit->text().toFloat()});
+    });
+    connect(this->yLabel,&DragableLabel::ChangeData,[&](float value)
+    {
+        auto temp = yEdit->text().toFloat();
+        temp+= value*yWeight;
+        yEdit->setText(QString::number(temp));
+        emit DragEditFinished({xEdit->text().toFloat(), yEdit->text().toFloat(), zEdit->text().toFloat()});
+
+    });
+    connect(this->zLabel,&DragableLabel::ChangeData,[&](float value)
+    {
+        auto temp = zEdit->text().toFloat();
+        temp+= value*zWeight;
+        zEdit->setText(QString::number(temp));
+        emit DragEditFinished({xEdit->text().toFloat(), yEdit->text().toFloat(), zEdit->text().toFloat()});
+
+    });
 }
 
 void Transform3D::UpdateData(glm::vec3 data)

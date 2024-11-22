@@ -1,4 +1,3 @@
-
 #include "Scene.h"
 #include "iostream"
 
@@ -16,22 +15,18 @@ Scene::~Scene()
 
 GameObject* Scene::CreateObject(std::string name,std::string type)
 {
-    /*auto type_hash = entt::hashed_string::value(type.c_str());
-    auto name_hash = entt::hashed_string::value(name.c_str());
-
-    auto type_meta = entt::resolve(type_hash);
-
-    auto instance = type_meta.construct(&reg,name);*/
 
     GameObject* go;
     if(type=="GameObject")
     {
-        go= new GameObject(&reg,name);
+        go= new GameObject(&reg,name,type);
     }
     if(type=="Light")
     {
-        Light* lightGo = new Light(&reg,name);
+        Light* lightGo = new Light(&reg,name,type);
+        lights.push_back(lightGo);
         go = (GameObject*)lightGo;
+        UpdateLightData();
     }
     objects.push_back(go);
 
@@ -40,19 +35,8 @@ GameObject* Scene::CreateObject(std::string name,std::string type)
 
 GameObject* Scene::CreateObject(std::string name, int parent,std::string type)
 {
-   /* using namespace entt::literals;
-    auto type_hash = entt::hashed_string::value(type.c_str());
-    auto name_hash = entt::hashed_string::value(name.c_str());
 
-    auto type_meta = entt::resolve(type_hash);
-    auto parent_meta = entt::resolve(type_hash).data("parent"_hs);
-
-
-    auto instance = type_meta.construct(&reg,name);
-
-    parent_meta.set(instance,parent);*/
-
-    GameObject* go= new GameObject(&reg,name);
+    GameObject* go= new GameObject(&reg,name,type);
     go->parent = parent;
 
     objects.push_back(go);
@@ -117,7 +101,15 @@ void Scene::InitGlobalSet()
     vp.descriptorCount=1;
     vp.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     vp.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+    VkDescriptorSetLayoutBinding light;
+    light.binding=1;
+    light.descriptorCount=1;
+    light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
     bindings.push_back(vp);
+    bindings.push_back(light);
     //Layout
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -143,23 +135,43 @@ void Scene::InitGlobalSet()
         throw std::runtime_error("failed to allocate ds");
     }
     //Allocate
-    globalData.buffer= *VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(globUniform),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
+    int a = sizeof(lightUniform);
+    globalData.globBuffer= *VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(globUniform),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
+    globalData.lightBuffer =*VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(LightUniform),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
 
+    //std::vector<VkDescriptorBufferInfo> bufferInfos;
     VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer =globalData.buffer.vk_buffer;
+    bufferInfo.buffer =globalData.globBuffer.vk_buffer;
     bufferInfo.offset = 0;
     bufferInfo.range = sizeof(globUniform);
 
+    VkDescriptorBufferInfo lightBufferInfo{};
+    lightBufferInfo.buffer =globalData.lightBuffer.vk_buffer;
+    lightBufferInfo.offset = 0;
+    lightBufferInfo.range = sizeof(LightUniform);
+
+
     std::vector<VkWriteDescriptorSet> writes;
-    VkWriteDescriptorSet descriptorWrites{};
-    descriptorWrites.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrites.dstSet =globalData.globalDes;
-    descriptorWrites.dstBinding = 0;
-    descriptorWrites.dstArrayElement = 0;
-    descriptorWrites.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptorWrites.descriptorCount = 1;
-    descriptorWrites.pBufferInfo = &bufferInfo;
-    writes.push_back(descriptorWrites);
+    VkWriteDescriptorSet descriptorWrites1{};
+    descriptorWrites1.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites1.dstSet =globalData.globalDes;
+    descriptorWrites1.dstBinding = 0;
+    descriptorWrites1.dstArrayElement = 0;
+    descriptorWrites1.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites1.descriptorCount = 1;
+    descriptorWrites1.pBufferInfo = &bufferInfo;
+    writes.push_back(descriptorWrites1);
+
+
+    VkWriteDescriptorSet descriptorWrites2{};
+    descriptorWrites2.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites2.dstSet =globalData.globalDes;
+    descriptorWrites2.dstBinding = 1;
+    descriptorWrites2.dstArrayElement = 0;
+    descriptorWrites2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites2.descriptorCount = 1;
+    descriptorWrites2.pBufferInfo = &lightBufferInfo;
+    writes.push_back(descriptorWrites2);
 
     vkUpdateDescriptorSets(VulkanContext::GetContext().device,writes.size(),writes.data(),0, nullptr);
 
@@ -168,10 +180,14 @@ void Scene::InitGlobalSet()
 
 void Scene::UpdateScene()
 {
+    std::lock_guard<std::mutex> lock(Locker::Get().updateLightMtx);
     globUniform.view = mainCamera.vpMat.view;
     globUniform.proj = mainCamera.vpMat.proj;
 
-    memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.buffer),&globUniform,sizeof(globUniform));
+
+    memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.globBuffer),&globUniform,sizeof(globUniform));
+    memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.lightBuffer),&lightUniform,sizeof(LightUniform));
+
 }
 
 void Scene::InitSceneData()
@@ -214,6 +230,31 @@ void Scene::UpdateAspect()
                                               VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
                                               0.001f, 256.0f);
     globUniform.skyboxProj[1][1] *=-1;
+}
+
+void Scene::InitMainLight()
+{
+    mainLight = (Light*)CreateObject("MainLight","Light");
+}
+
+void Scene::UpdateLightData()
+{
+    int num=0;
+    auto view= reg.view<LightComponent,Transform>();
+    for (auto& entityID:view)
+    {
+        auto& lightComp= view.get<LightComponent>(entityID);
+        auto& trans = view.get<Transform>(entityID);
+        glm::mat4  mat = glm::rotate(glm::mat4(1.0f),trans.rotation.x,{1,0,0});
+        mat = glm::rotate(mat,trans.rotation.y,{0,1,0});
+        mat = glm::rotate(mat,trans.rotation.z,{0,0,1});
+        glm::vec4 rotatedDir = mat*glm::vec4(0.0,0.0,1.0,0.0);
+        lightUniform.lights[num] = std::move(LightUnitsInShader{glm::vec4(trans.pos,1.0),rotatedDir,glm::vec4(lightComp.color,1.0),(int)lightComp.type,lightComp.Intensity,lightComp.range});
+
+        num++;
+    }
+    lightUniform.count=num;
+    std::cout<<"Trigger\n";
 }
 
 

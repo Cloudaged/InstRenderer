@@ -59,7 +59,7 @@ void ComponentEditor::ChangeGameObject(GameObject *gameObject, entt::registry *r
     {
         //Renderable
     }
-    if(bits.test(static_cast<size_t>(ComponentType::Light)))
+    if(bits.test(static_cast<size_t>(ComponentType::LightComponent)))
     {
         auto& lightComp = reg->get<LightComponent>(gameObject->entityID);
 

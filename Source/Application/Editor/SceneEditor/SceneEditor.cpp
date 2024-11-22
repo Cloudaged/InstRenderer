@@ -197,19 +197,19 @@ void SceneEditor::ItemChanged()
 
 void SceneEditor::UpdateTree(std::vector<GameObject *> objs)
 {
-    //treeWidget->clear();
+    treeWidget->clear();
     for (auto obj:objs)
     {
         if(obj->parent<0)
         {
-            AddItem(static_cast<int>(obj->entityID),obj->name,"GameObject");
+            AddItem(static_cast<int>(obj->entityID),obj->name,obj->type);
         }
     }
     for (auto obj:objs)
     {
         if(obj->parent>=0)
         {
-            AddItem(static_cast<int>(obj->entityID),obj->name,"GameObject",obj->parent);
+            AddItem(static_cast<int>(obj->entityID),obj->name,obj->type,obj->parent);
         }
     }
 

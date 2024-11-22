@@ -6,6 +6,7 @@
 #include "string"
 #include "vector"
 #include "bitset"
+#include "Component/Components.h"
 enum class GameObjectType
 {
     GameObject,
@@ -15,13 +16,13 @@ enum class GameObjectType
 class GameObject
 {
 public:
-    GameObject(entt::registry* reg,std::string name);
+    GameObject(entt::registry* reg,std::string name,std::string type="GameObject");
     entt::entity entityID;
     entt::registry* reg;
     std::string name;
     int parent=-1;
     std::bitset<8> componentBits;
-    GameObjectType type = GameObjectType::GameObject;
+    std::string type = "GameObject";
 };
 
 

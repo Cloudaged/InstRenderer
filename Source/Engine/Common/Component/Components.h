@@ -6,7 +6,19 @@
 #include "string"
 #include "../../Render/Material/StandardMaterial.h"
 #include "../../Render/Mesh.h"
-#include "../Light.h"
+enum class ComponentType:int
+{
+    Transform=0,
+    Renderable=1,
+    LightComponent=2
+};
+
+enum class LightType:int
+{
+    Directional=0,
+    Point=1
+};
+
 struct Transform
 {
     glm::vec3 pos = {0,0,0};
@@ -22,7 +34,7 @@ struct Renderable
 
 struct LightComponent
 {
-    std::string type="Directional";
+    LightType type= LightType::Directional;
     glm::vec3 color = {1.0,1.0,1.0};
     float Intensity =1;
     float range = 0;

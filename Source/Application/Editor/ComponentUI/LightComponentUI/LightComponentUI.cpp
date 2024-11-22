@@ -39,7 +39,14 @@ void LightComponentUI::ChangeData(LightComponent data)
     colorUI->UpdateData({c.x,c.y,c.z});
     intensityUI->UpdateData(data.Intensity);
     rangeUI->UpdateData(data.range);
-    lightTypeUI->UpdateData(data.type);
+
+    if(data.type==LightType::Directional)
+    {
+        lightTypeUI->UpdateData("Directional");
+    } else if(data.type==LightType::Point)
+    {
+        lightTypeUI->UpdateData("Point");
+    }
 }
 
 void LightComponentUI::InitSignal()
@@ -55,8 +62,16 @@ void LightComponentUI::InitSignal()
             float range = rangeUI->edit->text().toFloat();
             std::string type =lightTypeUI->typer->currentText().toStdString();
 
-            std::cout<<"Trigger\n";
-            emit LightCompChanged({type,color,intensity,range});
+            LightType lightType;
+            if(type=="Directional")
+            {
+                lightType=LightType::Directional;
+            } else if(type=="Point")
+            {
+                lightType=LightType::Point;
+            }
+
+            emit LightCompChanged(LightComponent{lightType,color,intensity,range});
         });
     }
 
@@ -69,9 +84,16 @@ void LightComponentUI::InitSignal()
         float range = rangeUI->edit->text().toFloat();
         std::string type =lightTypeUI->typer->currentText().toStdString();
 
-        std::cout<<"Trigger\n";
+        LightType lightType;
+        if(type=="Directional")
+        {
+            lightType=LightType::Directional;
+        } else if(type=="Point")
+        {
+            lightType=LightType::Point;
+        }
 
-        emit LightCompChanged({type,color,intensity,range});
+        emit LightCompChanged({lightType,color,intensity,range});
     });
 }
 

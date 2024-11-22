@@ -8,6 +8,8 @@
 
 #include "QHBoxLayout"
 #include "glm/glm.hpp"
+#include "DragableLabel.h"
+#include "QRegularExpressionValidator"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -28,14 +30,17 @@ public:
     QLineEdit* xEdit,*yEdit,*zEdit;
     glm::vec3 data;
 
+    float xWeight=1,yWeight=1,zWeight=1;
     void UpdateData(glm::vec3 data);
 private:
     std::string tagName;
     void InitWidget();
     void InitSignal();
-    QLabel* xLabel,*yLabel,*zLabel;
+    DragableLabel* xLabel,*yLabel,*zLabel;
 
     Ui::Transform3D *ui;
+signals:
+    void DragEditFinished(glm::vec3 data);
 };
 
 
