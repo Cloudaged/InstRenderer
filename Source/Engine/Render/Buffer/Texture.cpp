@@ -7,14 +7,16 @@ Texture::Texture(AllocatedImage image,TextureType type)
 {
 
     //CreateSampler
-    VkSamplerCreateInfo samplerInfo{};
+    VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = VK_FILTER_LINEAR;
     samplerInfo.minFilter = VK_FILTER_LINEAR;
-
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.anisotropyEnable = false;
+    samplerInfo.maxAnisotropy = 16.0f;
 
     if(vkCreateSampler(VulkanContext::GetContext().device,&samplerInfo, nullptr, &this->sampler)!=VK_SUCCESS)
     {

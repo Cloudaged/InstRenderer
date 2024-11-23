@@ -34,7 +34,7 @@ void main()
     for(int i=0;i<lightUniform.size;i++)
     {
         Light light = lightUniform.light[i];
-        lambert=max(dot(normalize(normal.xyz), normalize(light.toward.xyz)),0.01);
+        lambert=max(dot(normalize(normal.xyz), normalize(light.toward.xyz)),0.1);
 
     }
 

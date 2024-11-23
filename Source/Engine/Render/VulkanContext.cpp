@@ -133,16 +133,25 @@ void VulkanContext::CreateQueueAndDevice()
         queueCreateInfos.push_back(queueCreateInfo);
     }
 
+    VkPhysicalDeviceFeatures supportedFeatures{};
+    vkGetPhysicalDeviceFeatures(gpu,&supportedFeatures);
+
+    if (!supportedFeatures.samplerAnisotropy) {
+        throw std::runtime_error("Anisotropic filtering is not supported by the physical device.");
+    }
     VkPhysicalDeviceFeatures deviceFeatures{};
-    vkGetPhysicalDeviceFeatures(gpu,&deviceFeatures);
+    deviceFeatures.samplerAnisotropy =VK_TRUE;
 
     VkPhysicalDeviceBufferDeviceAddressFeatures addressFeatures{};
     addressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
     addressFeatures.bufferDeviceAddress = VK_TRUE;
+    addressFeatures.pNext = nullptr;
 
     VkPhysicalDeviceFeatures2 features2{};
     features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features2.features.samplerAnisotropy=VK_TRUE;
     features2.pNext = &addressFeatures;
+
 
     VkPhysicalDeviceVulkan13Features device13Features{};
     device13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
@@ -153,7 +162,7 @@ void VulkanContext::CreateQueueAndDevice()
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.queueCreateInfoCount = queueCreateInfos.size();
-    //createInfo.pEnabledFeatures = &deviceFeatures;
+    //createInfo.pEnabledFeatures = nullptr;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
     createInfo.pNext = &device13Features;
