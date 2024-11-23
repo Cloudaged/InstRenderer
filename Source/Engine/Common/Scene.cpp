@@ -254,7 +254,6 @@ void Scene::UpdateLightData()
         num++;
     }
     lightUniform.count=num;
-    std::cout<<"Trigger\n";
 }
 
 

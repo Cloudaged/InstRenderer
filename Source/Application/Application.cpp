@@ -8,8 +8,9 @@ Application::Application(std::string title, WindowSize size,int argc,char** argv
 
     //Editor
     qApplication = new QApplication(argc,argv);
-    gameInstance = new GameInstance(windowSize);
+    gameInstance = new GameInstance({0,0});
     editor = new MainEditor(gameInstance->window);
+    editor->resize(windowSize.width,windowSize.height);
     editor->isClose = &isClose;
     gameThread = new GameThread(gameInstance,&isClose);
     EditorInitializer initializer;
