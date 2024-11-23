@@ -36,6 +36,7 @@ private:
     Texture* normalAttachment;
     Texture* positionAttachment;
     Texture* depthAttachment;
+    Texture* mrAttachment;
 
     glm::mat4 GetModelMatrixFromTrans(Transform trans);
     GlobalDescriptorData globalData;

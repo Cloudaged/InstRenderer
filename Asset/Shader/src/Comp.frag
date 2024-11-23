@@ -28,7 +28,7 @@ void main()
 {
 
     vec3 Pos = texture(inputPosition,inUV).xyz;
-    vec4 normal = texture(inputNormal,inUV)*2.0-1.0;
+    vec4 normal = texture(inputNormal,inUV);
     vec4 baseColor = texture(inputAlbedo,inUV);
     float lambert=0;
     for(int i=0;i<lightUniform.size;i++)

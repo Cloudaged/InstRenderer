@@ -12,13 +12,16 @@ void GeoPass::SetupAttachments()
 
 
     attachmentMap["BaseColor"] = AttachmentDes{"BaseColor", winWidth, winHeight,
-                                               AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB, &baseColorAttachment};
+                                               AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &baseColorAttachment};
 
     attachmentMap["Normal"] = AttachmentDes{"Normal", winWidth, winHeight,
-                                            AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB, &normalAttachment};
+                                            AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &normalAttachment};
 
     attachmentMap["Position"] = AttachmentDes{"Position", winWidth, winHeight,
-                                              AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB, &positionAttachment};
+                                              AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &positionAttachment};
+
+    attachmentMap["MetallicRoughness"] = AttachmentDes{"MetallicRoughness", winWidth, winHeight,
+                                              AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &mrAttachment};
 
     attachmentMap["Depth"] = AttachmentDes{"Depth",winWidth,winHeight,
                                            AttachmentUsage::Depth,VK_FORMAT_D32_SFLOAT,&depthAttachment};
@@ -26,6 +29,7 @@ void GeoPass::SetupAttachments()
     outputResource.push_back({attachmentMap["BaseColor"], AttachmentOP::WriteOnly});
     outputResource.push_back({attachmentMap["Normal"], AttachmentOP::WriteOnly});
     outputResource.push_back({attachmentMap["Position"], AttachmentOP::WriteOnly});
+    outputResource.push_back({attachmentMap["MetallicRoughness"], AttachmentOP::WriteOnly});
     outputResource.push_back({attachmentMap["Depth"], AttachmentOP::WriteOnly});
 }
 
@@ -43,11 +47,12 @@ void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
     VkExtent2D extent = VulkanContext::GetContext().windowExtent;
 
 
-    std::array<VkClearValue,4> clearValues{};
+    std::vector<VkClearValue> clearValues(outputResource.size());
     clearValues[0].color =  {{0.0f, 0.0f, 0.0f, 1.0f}};
     clearValues[1].color = {{0.0f, 0.0f, 0.0f, 0}};
     clearValues[2].color =  {{0.0f, 0.0f, 0.0f, 1.0f}};
-    clearValues[3].depthStencil = {1.0f, 0};
+    clearValues[3].color =  {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[4].depthStencil = {1.0f, 0};
 
     VkRenderPassBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

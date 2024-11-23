@@ -19,7 +19,7 @@ layout(set =1,binding =3) uniform sampler2D metallicRoughness;
 layout(location = 0) out vec4 outPosition;
 layout(location = 1) out vec4 outNormal;
 layout(location = 2) out vec4 outBaseColor;
-
+layout(location=3) out vec4 outMR;
 
 void main()
 {
@@ -30,6 +30,8 @@ void main()
    /* outBaseColor = slot.albedo==1?texture(basecolor,inUV):vec4(0.0,1.0,1.0,0.0);
     outPosition = slot.mr==1?texture(metallicRoughness,inUV):vec4(0,0,0,0);
     outNormal = slot.normal==1?texture(normal,inUV):vec4(inNormal,0.0);*/
+
+    outPosition = vec4(inWorldPos,1.0);
 
     if(slot.albedo==1)
     {
@@ -46,7 +48,6 @@ void main()
         normalColor = pow(normalColor, vec3(1/2.2));
         normalColor = normalize(normalColor*2.0-1);
         normalColor = normalize(tbn*normalColor);
-        normalColor = normalize(normalColor*0.5+0.5);
         outNormal = vec4(normalColor,0.0);
 
     }
@@ -57,11 +58,11 @@ void main()
 
     if(slot.mr==1)
     {
-        outPosition = texture(metallicRoughness,inUV);
+        outMR = texture(metallicRoughness,inUV);
     }
     else
     {
-        outPosition= vec4(0.0,0.0,0.0,0.0);
+        outMR= vec4(0.0,0.0,0.0,0.0);
     }
 
 
