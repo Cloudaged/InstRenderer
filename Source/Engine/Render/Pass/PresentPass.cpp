@@ -78,6 +78,6 @@ void PresentPass::SetupRenderState()
     renderState.layouts[0] = inputAttDesLayout;
     //Pipeline
     renderState.CreatePipeline(PipelineType::RenderQuad, passHandle, outputResource.size(),
-                               {FILE_PATH("Asset/Shader/spv/Present.vert.spv"),
-                                FILE_PATH("Asset/Shader/spv/Present.frag.spv")});
+                               {FILE_PATH("Asset/Shader/slangSPV/PresentVert.slang.spv"),
+                                FILE_PATH("Asset/Shader/slangSPV/PresentFrag.slang.spv")});
 }

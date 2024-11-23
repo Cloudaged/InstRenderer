@@ -103,16 +103,16 @@ void CompositionPass::SetupRenderState()
     renderState.layouts[1] = globData.globalDesLayout;
     //Pipeline
     renderState.CreatePipeline(PipelineType::RenderQuad, passHandle, outputResource.size() - 1,
-                               {FILE_PATH("Asset/Shader/spv/Comp.vert.spv"),
-                                FILE_PATH("Asset/Shader/spv/Comp.frag.spv")});
+                               {FILE_PATH("Asset/Shader/slangSPV/CompVert.slang.spv"),
+                                FILE_PATH("Asset/Shader/slangSPV/CompFrag.slang.spv")});
 
 
     CreateSkyboxDes();
     skyboxRenderState.layouts[0] = globData.globalDesLayout;
     skyboxRenderState.layouts[1] = skyboxLayout;
     skyboxRenderState.CreatePipeline(PipelineType::Skybox, passHandle, outputResource.size()-1,
-                               {FILE_PATH("Asset/Shader/spv/Skybox.vert.spv"),
-                                FILE_PATH("Asset/Shader/spv/Skybox.frag.spv")});
+                               {FILE_PATH("Asset/Shader/slangSPV/SkyboxVert.slang.spv"),
+                                FILE_PATH("Asset/Shader/slangSPV/SkyboxFrag.slang.spv")});
 
 }
 

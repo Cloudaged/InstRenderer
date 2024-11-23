@@ -5,11 +5,11 @@ layout (location = 2) in vec3 inNormal;
 layout(location =3) in mat3 tbn;
 
 layout(set=1,binding =0) uniform Slots
-{
-    int albedo;
-    int normal;
-    int mr;
-}slot;
+    {
+        int albedo;
+        int normal;
+        int mr;
+    }slot;
 
 layout(set =1,binding =1) uniform sampler2D basecolor;
 layout(set =1,binding =2) uniform sampler2D normal;
@@ -23,14 +23,6 @@ layout(location=3) out vec4 outMR;
 
 void main()
 {
-    /*vec4 basecolor = texture(basecolor,inUV);
-    vec4 normal = texture(normal,inUV);
-    vec4 metallicRoughness = texture(metallicRoughness,inUV);*/
-
-   /* outBaseColor = slot.albedo==1?texture(basecolor,inUV):vec4(0.0,1.0,1.0,0.0);
-    outPosition = slot.mr==1?texture(metallicRoughness,inUV):vec4(0,0,0,0);
-    outNormal = slot.normal==1?texture(normal,inUV):vec4(inNormal,0.0);*/
-
     outPosition = vec4(inWorldPos,1.0);
 
     if(slot.albedo==1)
