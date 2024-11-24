@@ -1,3 +1,5 @@
+import ShaderModule.BasicFunc;
+import ShaderModule.PBR;
 struct FragInput
 {
     float2 inUV : TEXCOORD0;
@@ -32,6 +34,8 @@ float4 main(FragInput input) : SV_Target
     float4 normal = normalize(inputNormal.Sample(input.inUV));
     float4 baseColor = inputAlbedo.Sample(input.inUV);
     float4 metallicRoughness = inputMR.Sample(input.inUV);
+
+    float3 F0 = GetF0(baseColor.xyz, metallicRoughness.x);
 
     float lambert = 0;
     for (int i = 0; i < lightUniform.size; i++)
