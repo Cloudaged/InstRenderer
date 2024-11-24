@@ -56,7 +56,8 @@ FragOutput main(FragInput input)
 
     if (slots.mr == 1)
     {
-        output.outMR = mr.Sample(input.uv);
+        float4 mrColor = mr.Sample(input.uv);
+        output.outMR = mrColor;
     }
     else
     {

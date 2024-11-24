@@ -12,7 +12,6 @@ public:
     std::mutex resizeMtx;
     std::mutex queueMtx;
     std::mutex loadResourceMtx;
-    std::mutex updateLightMtx;
 private:
     Locker();
     static std::unique_ptr<Locker> Pinstance;

@@ -18,6 +18,17 @@ Texture::Texture(AllocatedImage image,TextureType type)
     samplerInfo.anisotropyEnable = false;
     samplerInfo.maxAnisotropy = 16.0f;
 
+    samplerInfo.borderColor =VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+    samplerInfo.compareEnable = VK_FALSE;
+    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.mipLodBias = 0.0f;
+    samplerInfo.minLod = 0.0f;
+    samplerInfo.maxLod = 0.0f;
+
     if(vkCreateSampler(VulkanContext::GetContext().device,&samplerInfo, nullptr, &this->sampler)!=VK_SUCCESS)
     {
         std::runtime_error("Failed to create sampler\n");
