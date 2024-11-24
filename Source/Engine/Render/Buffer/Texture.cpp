@@ -5,6 +5,8 @@
 
 Texture::Texture(AllocatedImage image,TextureType type)
 {
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(VulkanContext::GetContext().gpu, &properties);
 
     //CreateSampler
     VkSamplerCreateInfo samplerInfo = {};
@@ -15,8 +17,8 @@ Texture::Texture(AllocatedImage image,TextureType type)
     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.anisotropyEnable = false;
-    samplerInfo.maxAnisotropy = 16.0f;
+    samplerInfo.anisotropyEnable = VK_TRUE;
+    samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
 
     samplerInfo.borderColor =VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
@@ -27,7 +29,7 @@ Texture::Texture(AllocatedImage image,TextureType type)
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = 0.0f;
+    samplerInfo.maxLod =allocatedImage.mipLevels;
 
     if(vkCreateSampler(VulkanContext::GetContext().device,&samplerInfo, nullptr, &this->sampler)!=VK_SUCCESS)
     {
@@ -48,7 +50,7 @@ void Texture::TransLayout()
 {
     auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
 
-    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,allocatedImage.vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,allocatedImage.vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,allocatedImage.mipLevels);
 
     VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
 }
