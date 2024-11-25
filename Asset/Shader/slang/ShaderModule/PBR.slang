@@ -13,9 +13,9 @@ public float3 GetDiffuseBRDF(float3 albedo)
     return albedo * (1 / PI);
 }
 
-float3 F_Schlick(float3 F0, float VoH)
+float3 F_Schlick(float3 F0, float VoN)
 {
-    return F0 + (1 - F0) * pow(VoH, 5);
+    return F0 + (1 - F0) * pow(1-VoN, 5);
 }
 
 float D_GGX(float roughness, float NoH)
@@ -37,17 +37,17 @@ public float3 GetSpecularBRDF(float3 N, float3 L, float3 V, float roughness, flo
 {
     float3 H = normalize(V + L);
 
-    // float NoL = clamp(dot(N, L), 0, 1);
-    // float NoV = clamp(dot(N, V), 0, 1);
-    // float VoH = clamp(dot(V, H), 0, 1);
-    // float NoH = clamp(dot(N, H), 0, 1);
+    float NoL = clamp(dot(N, L), 0, 1);
+    float NoV = clamp(dot(N, V), 0, 1);
+    float VoH = clamp(dot(V, H), 0, 1);
+    float NoH = clamp(dot(N, H), 0, 1);
 
-    float NoL = dot(N, L);
-    float NoV = dot(N, V);
-    float VoH = dot(V, H);
-    float NoH = dot(N, H);
+    // float NoL = dot(N, L);
+    // float NoV = dot(N, V);
+    // float VoH = dot(V, H);
+    // float NoH = dot(N, H);
 
-    float3 F = F_Schlick(F0, VoH);
+    float3 F = F_Schlick(F0, NoV);
     float D = D_GGX(roughness, NoH);
     float G = G_SchlickGGX(roughness, NoV)*G_SchlickGGX(roughness,NoL);
 

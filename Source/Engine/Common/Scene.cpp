@@ -183,7 +183,7 @@ void Scene::UpdateScene()
     globUniform.view = mainCamera.vpMat.view;
     globUniform.proj = mainCamera.vpMat.proj;
     lightUniform.cameraPos= glm::vec4(mainCamera.position,1.0);
-    lightUniform.cameraDir = glm::vec4(mainCamera.viewPoint,1.0);
+    lightUniform.cameraDir = glm::vec4(mainCamera.viewPoint-mainCamera.position,1.0);
 
     memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.globBuffer),&globUniform,sizeof(globUniform));
     memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.lightBuffer),&lightUniform,sizeof(LightUniform));

@@ -22,25 +22,27 @@ float4 main(FragInput input) : SV_Target
     float4 baseColor = inputAlbedo.Sample(input.inUV);
     float4 metallicRoughness = inputMR.Sample(input.inUV);
 
-    float metallic = metallicRoughness.g;
-    float roughness = metallicRoughness.r;
+    float metallic = metallicRoughness.b;
+    float roughness = metallicRoughness.g;
 
-    float3 F0 = GetF0(baseColor.xyz, metallicRoughness.x);
+    float3 F0 = GetF0(baseColor.xyz, metallic);
     float3 ks = F0;
     float3 kd = float3(1.0) - F0;
 
     float3 diffuseBRDF = GetDiffuseBRDF(baseColor.xyz);
 
-    float3 view = lightUniform.cameraToward.xyz;
+    float3 view = normalize(lightUniform.cameraPos.xyz-posWS.xyz);
 
     float3 finalColor = float3(0.0f);
     for (int i = 0; i < lightUniform.lightCount; i++)
     {
         Light light = lightUniform.light[i];
+        float3 lightDir = normalize(light.toward.xyz);
 
-        float3 specularBRDF = GetSpecularBRDF(normal.xyz, light.toward.xyz, view, roughness, F0);
+        float3 specularBRDF = GetSpecularBRDF(normal.xyz, lightDir, view, roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-        finalColor += light.intensity * dot(normal.xyz, light.toward.xyz) * finalBRDF;
+         finalColor += light.intensity * dot(normal.xyz, light.toward.xyz) * finalBRDF;
+        //finalColor = specularBRDF; 
     }
     return float4(finalColor,1.0);
 }
