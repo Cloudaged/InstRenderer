@@ -66,6 +66,7 @@ void Presenter::UpdateComponentData()
         auto& trans = instance->mainScene->reg.get<Transform>(editor->componentEditor->curID);
         trans = output;
         instance->mainScene->UpdateLightData();
+        std::cout<<"Trigger\n";
     });
 
     editor->connect(editor->componentEditor->lightComponentUI,&LightComponentUI::LightCompChanged,[&](LightComponent output)

@@ -33,7 +33,7 @@ struct PushConstantData
 VertOutput main(VertInput input)
 {
     VertOutput output;
-    output.posWS = mul(input.position, pushConstantData.modelMat).xyz;
+    output.posWS = mul(pushConstantData.modelMat,input.position).xyz;
     output.posSV = mul(globalUniform.projMat, mul(globalUniform.viewMat, float4(output.posWS, 1.0)));
     output.uv = input.uv;
 
