@@ -11,29 +11,21 @@ GameInstance::GameInstance(std::shared_ptr<WindowContext> windowContext): window
     controller = new Controller(&event);
     InitVulkanContext();
     InitEntity();
+    aaaabbbbb
     mainScene->InitGlobalSet();
-    mainScene->InitSceneData();
-    mainScene->InitSkyboxData();
-    mainScene->InitMainLight();
+    mainScene.InitSceneData();
+    mainScene.InitSkyboxData();
+    mainScene.InitMainLight();
     InitSystem();
 }
-
-
 
 void GameInstance::InitCore()
 {
     Locker::Init();
     //Meta
     RegisterMeta();
-    //Scene
-    mainScene = new Scene;
-    //Registry
-    entityManager = new EntityManager(&mainScene->reg);
-    //Locker
-
     //Resource Manager
     ResourceManager::Init();
-
 
 }
 

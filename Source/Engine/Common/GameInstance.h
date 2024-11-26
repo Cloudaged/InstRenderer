@@ -2,14 +2,12 @@
 #ifndef INSTRENDERER_GAMEINSTANCE_H
 #define INSTRENDERER_GAMEINSTANCE_H
 #include "iostream"
-#include "GameType.h"
 #include "Scene.h"
 #include "Meta/Meta.h"
 #include "SDL2/SDL.h"
 #include "../Render/VulkanContext.h"
 #include "System/RenderSystem.h"
 #include "System/ResourceSystem.h"
-#include "EntityManager.h"
 #include "../Resource/ModelLoader.h"
 #include "../Resource/ResTexture.h"
 #include "../Resource/ImageLoader.h"
@@ -23,8 +21,7 @@ public:
     GameInstance(std::shared_ptr<WindowContext> windowContext);
     void Run();
 public:
-    Scene* mainScene;
-    EntityManager* entityManager;
+    std::shared_ptr<Scene> mainScene;
     SDL_Event event;
     std::shared_ptr<WindowContext> windowContext;
     Controller* controller;
