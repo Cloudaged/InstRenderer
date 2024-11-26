@@ -92,14 +92,13 @@ AttachmentState RenderPass::GetState(AttachmentOP op,AttachmentUsage usage)
 void RenderPass::Build()
 {
     std::vector<VkAttachmentDescription> attDescriptions;
-
-    std::vector<VkAttachmentReference> outputRefs;
     std::vector<VkImageView> views;
 
+    std::vector<VkAttachmentReference> outputRefs;
     VkAttachmentReference depthRef = {};
-    bool hasDepth = false;
-
     int refIndex = 0;
+
+    bool hasDepth = false;
 
     //Output
     for (auto& res:outputResource)
@@ -113,11 +112,12 @@ void RenderPass::Build()
         }
 
         //Get data
-        width = att.width;
-        height = att.height;
+        this->width = att.width;
+        this->height = att.height;
         VkFormat format = att.format;
         VkImageUsageFlags usage = GetUsage(att.usage);
         VkImageLayout layout = GetLayout(att.usage);
+
         //Allocate image
         auto aspect = att.usage==AttachmentUsage::Depth?VK_IMAGE_ASPECT_DEPTH_BIT:VK_IMAGE_ASPECT_COLOR_BIT;
 
@@ -126,14 +126,6 @@ void RenderPass::Build()
             auto img = new AllocatedImage(format,usage,VkExtent2D{width,height},1,aspect);
             img->layout = layout;
             *att.data = new Texture(*img);
-
-            /*auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
-
-            VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,
-                                                                        (*att.data)->allocatedImage.vk_image,VK_IMAGE_LAYOUT_UNDEFINED,layout);
-
-            VulkanContext::GetContext().EndSingleTimeCommands(cmd);*/
-
             //Sampler
             {
                 VkSamplerCreateInfo samplerInfo{};
@@ -167,9 +159,6 @@ void RenderPass::Build()
                 att.hasInit = true;
 
         }
-
-
-
         }
 
         auto state = GetState(res.opt,att.usage);

@@ -1,0 +1,12 @@
+
+#ifndef INSTRENDERER_SHADOWPASS_H
+#define INSTRENDERER_SHADOWPASS_H
+
+
+class ShadowPass
+{
+
+};
+
+
+#endif //INSTRENDERER_SHADOWPASS_H

@@ -18,11 +18,11 @@ public:
     Application(std::string title,WindowSize size,int argc,char** argv);
     void Run();
     int Quit();
+public:
     std::string title;
     WindowSize windowSize;
 private:
     bool isClose = false;
-    void InitEditor();
     QApplication* qApplication;
     MainEditor* editor;
     GameInstance* gameInstance;

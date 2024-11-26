@@ -32,7 +32,8 @@ enum class AttachmentUsage
     TransferSrc,
     TransferDst,
     Present,
-    Depth
+    Depth,
+    Prefiltered
 };
 
 struct AttachmentData

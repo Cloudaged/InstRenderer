@@ -9,8 +9,9 @@ class Texture
 {
 public:
     Texture(AllocatedImage image,TextureType type=TextureType::DontCare);
-    TextureType textureType;
     void TransLayout();
+
+    TextureType textureType;
     const char *name = nullptr;
     VkDescriptorImageInfo desInfo;
     VkSampler sampler;

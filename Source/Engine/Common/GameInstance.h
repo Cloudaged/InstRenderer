@@ -23,11 +23,11 @@ class GameInstance
 {
 public:
     GameInstance(WindowSize size);
-    Scene* mainScene;
     void Tick();
     void Run(bool* isClose);
+public:
+    Scene* mainScene;
     EntityManager* entityManager;
-    //entt::registry reg;
     SDL_Window* window = nullptr;
     SDL_Event event;
     WindowSize size;
@@ -37,7 +37,6 @@ public:
     RenderSystem renderSystem;
     ResourceSystem resourceSystem;
 private:
-
     void InitCore();
     void InitSystem();
     void InitEntity();

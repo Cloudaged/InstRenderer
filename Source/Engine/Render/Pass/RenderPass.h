@@ -29,20 +29,17 @@ struct AttachmentState
 
 class RenderPass
 {
-private:
-
 public:
-    static AttachmentMap attachmentMap;
-
     virtual void SetupAttachments() = 0;
     void Build();
+    void ClearRes();
+public:
+    static AttachmentMap attachmentMap;
     VkRenderPass passHandle;
     VkFramebuffer framebufferHandle=VK_NULL_HANDLE;
     uint32_t width,height;
     std::string name;
     RenderState renderState;
-    void ClearRes();
-    void RecreatePassRes();
 protected:
     void TransAttachmentLayout(VkCommandBuffer cmd);
     void UpdateRecordedLayout();
@@ -51,13 +48,11 @@ protected:
     AttachmentState GetState(AttachmentOP op,AttachmentUsage usage);
     virtual void SetupRenderState()=0;
     void InputAttachmentDes(std::vector<std::string> names);
-
+protected:
     std::vector<AttachmentDes> inputAttDes;
     std::vector<RenderResource> outputResource;
-
     VkDescriptorSetLayout inputAttDesLayout;
     VkDescriptorSet inputAttDesSet;
-
 private:
     void BuildPresentFrame();
 };

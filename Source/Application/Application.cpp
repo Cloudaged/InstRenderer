@@ -32,10 +32,6 @@ int Application::Quit()
     qApplication->exec();
 }
 
-void Application::InitEditor()
-{
-    EditorInitializer initializer;
-}
 
 
 

@@ -1,6 +1,4 @@
 #include "Application.h"
-#include "QThread"
-#include "Editor/ComponentUI/Custom/Transform3D.h"
 
 int main(int argc,char** argv)
 {
