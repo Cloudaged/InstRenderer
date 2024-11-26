@@ -26,16 +26,17 @@ struct LightUnitsInShader
     alignas(16) glm::vec4 position;
     alignas(16) glm::vec4 toward;
     alignas(16) glm::vec4 color;
-    alignas(16) int type;
-    alignas(16) float intensity;
-    alignas(16) float range;
+    alignas(4) int type;
+    alignas(4) float intensity;
+    alignas(4) float range;
 };
 
 struct LightUniform
 {
-    alignas(16) int count;
-    alignas(16) LightUnitsInShader lights[16];
-
+    alignas(16) glm::vec4 cameraPos;
+    alignas(16) glm::vec4 cameraDir;
+    alignas(4) int count;
+    LightUnitsInShader lights[16];
 };
 
 struct SkyboxData

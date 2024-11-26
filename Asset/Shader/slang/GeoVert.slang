@@ -1,3 +1,5 @@
+
+import ShaderModule.Types;
 struct VertInput
 {
     float4 position : POSITION;
@@ -13,20 +15,14 @@ struct VertOutput
     float3 posWS:TEXCOORD0;
     float2 uv : TEXCOORD1;
     float3 normalWS : TEXCOORD2;
-    float3x3 tbn:TEXCOORD3;
+    float3 bitangentWS : TEXCOORD3;
+    float3 tangentWS : TEXCOORD4;
 }
 
 struct PushConstantData
 {
     float4x4 modelMat;
 }
-
-struct GlobalUniform
-{
-    float4x4 viewMat;
-    float4x4 projMat;
-}
-
 
 
 [[vk::push_constant]] ConstantBuffer<PushConstantData> pushConstantData;
@@ -37,14 +33,15 @@ struct GlobalUniform
 VertOutput main(VertInput input)
 {
     VertOutput output;
-    output.posWS = mul(input.position, pushConstantData.modelMat).xyz;
+    output.posWS = mul(pushConstantData.modelMat,input.position).xyz;
     output.posSV = mul(globalUniform.projMat, mul(globalUniform.viewMat, float4(output.posWS, 1.0)));
-    output.normalWS = mul(pushConstantData.modelMat, input.normal).xyz;
     output.uv = input.uv;
 
-    float3 T = normalize(mul(pushConstantData.modelMat, input.tangent).xyz);
-    float3 B = normalize(mul(pushConstantData.modelMat, input.bitangent).xyz);
-    float3 N = normalize(mul(pushConstantData.modelMat, input.normal).xyz);
-    output.tbn = float3x3(T, B, N);
+    output.tangentWS = normalize(mul(pushConstantData.modelMat, float4(input.tangent.xyz, 0.0)).xyz);
+    output.bitangentWS = normalize(mul(pushConstantData.modelMat, float4(input.bitangent.xyz, 0.0)).xyz);
+    output.normalWS = normalize(mul(pushConstantData.modelMat, float4(input.normal.xyz,0.0)).xyz);
+    // float3 T = normalize(input.tangent.xyz);
+    // float3 B = normalize(input.bitangent.xyz);
+    // float3 N = normalize(input.normal.xyz);
     return output;
 }

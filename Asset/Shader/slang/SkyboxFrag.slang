@@ -13,7 +13,7 @@ struct FragOutput
 [[vk::binding(0, 1)]] SamplerCube cubeMap;
 
 [shader("fragment")]
-FragOutput main(FragInput input):SV_Target
+FragOutput main(FragInput input)
 {
     FragOutput output;
     output.color = cubeMap.Sample(input.inUVW);

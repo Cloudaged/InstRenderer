@@ -19,6 +19,9 @@ public:
     VkImageUsageFlags usage;
     VmaAllocationInfo allocationInfo;
     VkImageLayout layout;
+    int mipLevels=1;
+private:
+    void GenerateMipmap();
 };
 
 

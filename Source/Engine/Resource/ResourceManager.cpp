@@ -91,8 +91,10 @@ StandardMaterial *ResourceManager::TransMaterial(Res::ResMaterial *resMaterial)
 Texture *ResourceManager::TransTexture(Res::ResTexture* resTexture)
 {
 
-    AllocatedImage img(VK_FORMAT_R8G8B8A8_SRGB,VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,
-                       {(uint32_t)resTexture->width,(uint32_t)resTexture->height},1,VK_IMAGE_ASPECT_COLOR_BIT);
+    uint32_t mipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(resTexture->width, resTexture->height)))) + 1;
+
+    AllocatedImage img(VK_FORMAT_R8G8B8A8_SRGB,VK_IMAGE_USAGE_TRANSFER_SRC_BIT |VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,
+                       {(uint32_t)resTexture->width,(uint32_t)resTexture->height},mipLevel,VK_IMAGE_ASPECT_COLOR_BIT);
 
     img.LoadData(resTexture);
     auto tex = new Texture(img,resTexture->textureType);

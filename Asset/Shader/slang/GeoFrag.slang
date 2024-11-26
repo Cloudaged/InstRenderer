@@ -3,7 +3,8 @@ struct FragInput
     float3 posWS : TEXCOORD0;
     float2 uv : TEXCOORD1;
     float3 normalWS : TEXCOORD2;
-    float3x3 tbn : TEXCOORD3;
+    float3 bitangentWS : TEXCOORD3;
+    float3 tangentWS : TEXCOORD4;
 }
 
 struct Slots
@@ -34,7 +35,8 @@ FragOutput main(FragInput input)
 
     if (slots.albedo == 1)
     {
-        output.outBaseColor = baseColor.Sample(input.uv);
+         //output.outBaseColor = pow(baseColor.Sample(input.uv),float4(2.2));
+         output.outBaseColor = baseColor.Sample(input.uv);
     }
     else
     {
@@ -45,8 +47,10 @@ FragOutput main(FragInput input)
     {
         float3 normalColor = normal.Sample(input.uv).xyz;
         normalColor = pow(normalColor, float3(1 / 2.2));
-        normalColor = normalize(normalColor * 2.0 - 1);
-        normalColor = normalize(mul(input.tbn,normalColor));
+        normalColor = normalColor * 2.0 - 1;
+        float3x3 tbn = float3x3(input.tangentWS, input.bitangentWS, input.normalWS);
+        tbn = transpose(tbn);
+        normalColor = normalize(mul(tbn, normalColor));
         output.outNormal = float4(normalColor, 0.0);
     }
     else
@@ -56,7 +60,9 @@ FragOutput main(FragInput input)
 
     if (slots.mr == 1)
     {
-        output.outMR = mr.Sample(input.uv);
+        //float4 mrColor = mr.Sample(input.uv);
+        float4 mrColor = pow(mr.Sample(input.uv),1/2.2);
+        output.outMR = mrColor;
     }
     else
     {

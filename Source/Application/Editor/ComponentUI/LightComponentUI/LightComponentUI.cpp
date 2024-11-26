@@ -16,8 +16,8 @@ LightComponentUI::LightComponentUI(LightComponent data,QWidget *parent) :
     lightTypeUI->AddNewType("Point");
 
     this->colorUI = new Transform3D("Color",{1,1,1});
-    this->intensityUI = new ValueEdit("Intensity",{});
-    this->rangeUI = new ValueEdit("Range",{});
+    this->intensityUI = new ValueEdit("Intensity",0);
+    this->rangeUI = new ValueEdit("Range",0);
     layout->addWidget(this->lightTypeUI);
     layout->addWidget(this->colorUI);
     layout->addWidget(intensityUI);

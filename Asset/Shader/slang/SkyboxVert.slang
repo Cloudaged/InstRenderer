@@ -1,3 +1,4 @@
+import ShaderModule.Types;
 struct VertInput
 {
     float4 position : POSITION;
@@ -12,19 +13,19 @@ struct VertOutput
     float2 outUV2 : TEXCOORD1;
 }
 
-struct GlobalUniform
-{
-    float4x4 viewMat;
-    float4x4 projMat;
-    float4x4 skyboxProjMat;
-}
 [[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> globalUniform;
 
 [shader("vertex")]
 VertOutput main(VertInput input)
 {
     VertOutput output;
-    output.svPosition = mul(globalUniform.skyboxProjMat, mul(globalUniform.viewMat, input.position));
+    float3x3 viewMat3 = (float3x3)globalUniform.viewMat; 
+    float4x4 viewMat = float4x4(
+        float4(viewMat3[0], 0.0),  
+        float4(viewMat3[1], 0.0),
+        float4(viewMat3[2], 0.0),  
+        float4(0.0, 0.0, 0.0, 1.0));    
+    output.svPosition = mul(globalUniform.skyboxProjMat, mul(viewMat, input.position));
     output.outUV2 = input.uv;
     output.outUVW = input.position.xyz;
     return output;

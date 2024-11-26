@@ -248,8 +248,15 @@ Res::ResMesh* ModelLoader::LoadMesh(tinygltf::Model* model,tinygltf::Mesh& mesh,
         vertices[i].position = positions[i];
         vertices[i].normal = i < normals.size() ? normals[i] : glm::vec3(0.0f);
         vertices[i].uv = i < uvs.size() ? uvs[i] : glm::vec2(0.0f);
-        vertices[i].tangent = i < tangents.size() ? tangents[i] : glm::vec4(0.0f);
-        vertices[i].bitangent = glm::cross(vertices[i].normal, glm::vec3(vertices[i].tangent)) * vertices[i].tangent.w;
+        if(i < tangents.size())
+        {
+            vertices[i].tangent = tangents[i];
+            vertices[i].bitangent = glm::cross(vertices[i].normal, glm::vec3(vertices[i].tangent))*vertices[i].tangent.w;
+        } else
+        {
+            vertices[i].tangent = glm::vec4(0,0,0,0);
+            vertices[i].bitangent =glm::cross(vertices[i].normal, glm::vec3(vertices[i].tangent));
+        }
     }
 
     //Material
