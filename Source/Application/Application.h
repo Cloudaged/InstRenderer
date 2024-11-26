@@ -1,33 +1,35 @@
 #ifndef INSTRENDERER_APPLICATION_H
 #define INSTRENDERER_APPLICATION_H
 #include "QApplication"
-
 #include "Editor/MainEditor/MainEditor.h"
 #include "Presenter.h"
-
 #include "Common/GameInstance.h"
 #include "Common/GameType.h"
 #include <string>
 #include "QThread"
-#include "GameThread.h"
-#include "GlobalValue.h"
+#include "Editor/GameThread.h"
 
 class Application
 {
 public:
     Application(std::string title,WindowSize size,int argc,char** argv);
+    ~Application();
     void Run();
     int Quit();
 public:
     std::string title;
-    WindowSize windowSize;
+    std::shared_ptr<WindowContext> windowContext;
 private:
-    bool isClose = false;
-    QApplication* qApplication;
-    MainEditor* editor;
-    GameInstance* gameInstance;
-    Presenter* presenter;
-    GameThread* gameThread;
+    std::shared_ptr<GameInstance> gameInstance;
+
+#ifdef WITH_EDITOR
+    std::unique_ptr<QApplication> qApplication;
+    std::shared_ptr<MainEditor> editor;
+    std::shared_ptr<Presenter> presenter;
+#endif
+
+private:
+    void InitWindow();
 };
 
 

@@ -13,9 +13,12 @@ RenderEditor::RenderEditor(SDL_Window* window,QDockWidget *parent) :
 
     SDL_SysWMinfo systemInfo;
     SDL_VERSION(&systemInfo.version);
+    SDL_SetWindowFullscreen(sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
     SDL_GetWindowWMInfo(sdlWindow, &systemInfo);
     HWND SDLHandle = systemInfo.info.win.window;
     ::SetParent(SDLHandle, (HWND)this->winId());
+    SDL_ShowWindow(sdlWindow);
+
 }
 
 RenderEditor::~RenderEditor()

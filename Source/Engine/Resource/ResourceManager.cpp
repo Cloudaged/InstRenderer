@@ -24,7 +24,7 @@ std::string ResourceManager::LoadResource(std::string path)
     }
     else if(extension==".spv")
     {
-
+        return " ";
     } else
     {
         std::cout<<"can't analysis data\n";

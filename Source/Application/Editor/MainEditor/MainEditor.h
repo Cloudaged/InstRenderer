@@ -9,6 +9,7 @@
 #include "../RenderEditor/RenderEditor.h"
 #include "../ConsoleEditor/ConsoleEditor.h"
 #include "../EditorTypes.h"
+#include "../GameThread.h"
 #include "SDL2/SDL.h"
 
 #include "QMenuBar"
@@ -16,8 +17,10 @@
 #include "QAction"
 #include "QFileDialog"
 #include "Common/Core/PathDefine.h"
-
+#include "Common/Core/WindowContext.h"
+#include "Common/GameInstance.h"
 #include "QCloseEvent"
+#include "memory"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -25,51 +28,34 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
-struct EditorInitializer
-{
-    SDL_Window* window;
-};
-
 
 class  MainEditor : public QMainWindow
 {
 Q_OBJECT
 
 public:
-    explicit MainEditor(SDL_Window* window,QWidget *parent = nullptr);
-
-
+    explicit MainEditor(std::shared_ptr<WindowContext> windowContext,QWidget *parent = nullptr);
+    void StartGameThread(std::shared_ptr<GameInstance> gameInstance);
     ~MainEditor() override;
-
-
-    //SubEditor
+public:
     SceneEditor* sceneEditor;
     ComponentEditor* componentEditor;
     ResourceEditor* resourceEditor;
     RenderEditor* renderEditor;
     ConsoleEditor* consoleEditor;
-    bool* isClose;
-
-
 private:
     void DeleteCentralWidget();
     void InitMenuBar();
     void InitSubWidget();
     void InitSubWidgetLayoutAndShow();
-
-    void closeEvent(QCloseEvent *event) override
-    {
-        *isClose = true;
-        event->accept();      // 接受关闭事件
-    }
-    //ToolBar
+    void closeEvent(QCloseEvent *event) override;
+private:
+    std::unique_ptr<GameThread> gameThread;
+    std::shared_ptr<WindowContext> windowContext;
     QMenuBar* menuBar;
     QMenu* fileMenu;
     QAction* loadAction;
-    SDL_Window* window;
-
     Ui::MainEditor *ui;
-
 signals:
     void AddNewNode(std::string name, std::string type);
     void DeleteNode();

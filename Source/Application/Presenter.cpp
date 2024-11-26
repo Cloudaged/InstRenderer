@@ -2,7 +2,7 @@
 #include "Presenter.h"
 #include "Resource/ResourceManager.h"
 
-Presenter::Presenter(GameInstance *gameInstance, MainEditor *mainEditor):instance(gameInstance),editor(mainEditor)
+Presenter::Presenter(std::shared_ptr<GameInstance> gameInstance,std::shared_ptr<MainEditor> mainEditor):instance(gameInstance),editor(mainEditor)
 {
     AddGameObject();
     DeleteGameObject();
@@ -96,7 +96,7 @@ void Presenter::CreateMeshObjectsForRes(std::string path)
     auto model= (Res::ResModel*)ResourceManager::Get().resReg[resName];
 
 
-   ResourceManager::Get().CompileModel(instance,model);
+   ResourceManager::Get().CompileModel(instance.get(),model);
    editor->sceneEditor->UpdateTree(instance->mainScene->objects);
 
 }

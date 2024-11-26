@@ -6,11 +6,10 @@
 class Presenter
 {
 public:
-    Presenter(GameInstance* gameInstance,MainEditor* mainEditor);
-
-    GameInstance* instance;
-    MainEditor* editor;
-
+    Presenter(std::shared_ptr<GameInstance> gameInstance,std::shared_ptr<MainEditor> mainEditor);
+public:
+    std::shared_ptr<GameInstance> instance;
+    std::shared_ptr<MainEditor> editor;
 private:
     void UpdateComponentData();
     void ChangeSelectedItem();
@@ -18,9 +17,7 @@ private:
     void DeleteGameObject();
     void RenameGameObject();
     void LoadResourceToObj();
-
     void AddComponentsForGo(std::string type,GameObject* go);
-
     void CreateMeshObjectsForRes(std::string path);
 };
 

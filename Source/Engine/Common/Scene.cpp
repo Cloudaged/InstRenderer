@@ -90,6 +90,7 @@ GameObject *Scene::GetGameObject(int id)
         }
     }
     std::cout<<"Can't find game object"<<id<<"\n";
+    return nullptr;
 }
 
 void Scene::InitGlobalSet()

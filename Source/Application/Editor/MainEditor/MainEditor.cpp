@@ -5,8 +5,8 @@
 #include "ui_MainEditor.h"
 
 
-MainEditor::MainEditor(SDL_Window* window,QWidget *parent) :
-        QMainWindow(parent),ui(new Ui::MainEditor),window(window)
+MainEditor::MainEditor(std::shared_ptr<WindowContext> windowContext,QWidget *parent) :
+        QMainWindow(parent),ui(new Ui::MainEditor),windowContext(windowContext)
 {
     ui->setupUi(this);
     DeleteCentralWidget();
@@ -14,6 +14,8 @@ MainEditor::MainEditor(SDL_Window* window,QWidget *parent) :
     InitSubWidget();
     InitSubWidgetLayoutAndShow();
 
+    resize(windowContext->windowSize.width,windowContext->windowSize.height);
+    this->show();
 
 }
 
@@ -32,7 +34,7 @@ void MainEditor::InitSubWidget()
     componentEditor = new ComponentEditor();
 
     //Render Editor
-    renderEditor = new RenderEditor(window);
+    renderEditor = new RenderEditor(windowContext->window);
 
     //Resource Editor
     resourceEditor = new ResourceEditor();
@@ -100,6 +102,19 @@ void MainEditor::InitMenuBar()
     menuBar->addMenu(fileMenu);
 
     this->setMenuBar(menuBar);
+}
+
+void MainEditor::closeEvent(QCloseEvent *event)
+{
+    windowContext->isClose = true;
+    gameThread->quit();
+    event->accept();
+}
+
+void MainEditor::StartGameThread(std::shared_ptr<GameInstance> gameInstance)
+{
+    gameThread = std::make_unique<GameThread>(gameInstance);
+    gameThread->start();
 }
 
 

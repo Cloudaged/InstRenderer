@@ -1,35 +1,57 @@
 
 #include "Application.h"
 
-Application::Application(std::string title, WindowSize size,int argc,char** argv): windowSize(size),editor(editor)
+Application::Application(std::string title, WindowSize size,int argc,char** argv):
+windowContext(std::make_shared<WindowContext>(WindowContext{size, nullptr, false})),
+title(title)
 {
-    //Locker
-    Locker::Init();
+    InitWindow();
+    gameInstance = std::make_shared<GameInstance>(windowContext);
 
-    //Editor
-    qApplication = new QApplication(argc,argv);
-    gameInstance = new GameInstance({0,0});
-    editor = new MainEditor(gameInstance->window);
-    editor->resize(windowSize.width,windowSize.height);
-    editor->isClose = &isClose;
-    gameThread = new GameThread(gameInstance,&isClose);
-    EditorInitializer initializer;
-    editor->show();
-
-    presenter = new Presenter(gameInstance,editor);
-    //GameInstance
-
+#ifdef WITH_EDITOR
+    qApplication = std::make_unique<QApplication>(argc,argv);
+    editor = std::make_unique<MainEditor>(windowContext);
+    presenter = std::make_shared<Presenter>(gameInstance,editor);
+#endif
 
 }
 
 void Application::Run()
 {
-   gameThread->start();
+#ifdef WITH_EDITOR
+    editor->StartGameThread(gameInstance);
+#else
+    SDL_ShowWindow(windowContext->window);
+    gameInstance->Run();
+#endif
 }
 
 int Application::Quit()
 {
-    qApplication->exec();
+#ifdef WITH_EDITOR
+    int qAppExecCode = qApplication->exec();
+    SDL_DestroyWindow(windowContext->window);
+    return qAppExecCode;
+#else
+    SDL_DestroyWindow(windowContext->window);
+    return 0;
+#endif
+}
+
+void Application::InitWindow()
+{
+    if(SDL_Init(SDL_INIT_EVERYTHING)<0)
+    {
+        std::cout<<"Failed to create sdl window\n";
+    }
+    windowContext->window = SDL_CreateWindow(title.c_str(),SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,
+                              windowContext->windowSize.width,windowContext->windowSize.height,
+                              SDL_WINDOW_HIDDEN|SDL_WINDOW_VULKAN|SDL_WINDOW_RESIZABLE);
+}
+
+Application::~Application()
+{
+
 }
 
 

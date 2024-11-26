@@ -10,10 +10,15 @@ file(GLOB_RECURSE EDITOR_SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/Editor/*.cpp)
 
 
-add_executable(${PROJECT_NAME} main.cpp Application.h Application.cpp Presenter.cpp Presenter.h GameThread.h GameThread.cpp
-        GlobalValue.h GlobalValue.cpp
+
+add_executable(${PROJECT_NAME} main.cpp Application.h Application.cpp Presenter.cpp Presenter.h Editor/GameThread.h Editor/GameThread.cpp
         ${EDITOR_HEADER} ${EDITOR_SOURCE}
-        )
+        ../Engine/Common/Core/WindowContext.h)
+
+option(COMPILE_EDITOR "Enable editor" ON)
+if (COMPILE_EDITOR)
+    target_compile_definitions(EngineApplication PRIVATE WITH_EDITOR=1)
+endif ()
 
 target_link_libraries(${PROJECT_NAME}
         Engine
@@ -24,3 +29,5 @@ target_link_libraries(${PROJECT_NAME}
         Qt::Gui
         Qt::Widgets
         )
+
+

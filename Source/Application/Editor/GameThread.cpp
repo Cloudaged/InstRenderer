@@ -4,8 +4,8 @@
 #include "GameThread.h"
 
 
-GameThread::GameThread(GameInstance* instance,bool* closeTrigger,QThread *parent) :
-        instance(instance),isClose(closeTrigger),QThread(parent)
+GameThread::GameThread(std::shared_ptr<GameInstance> instance,QThread *parent) :
+        instance(instance),QThread(parent)
 {
 
 }
@@ -16,6 +16,6 @@ GameThread::~GameThread()
 
 void GameThread::run()
 {
-    instance->Run(isClose);
+    instance->Run();
     QThread::run();
 }

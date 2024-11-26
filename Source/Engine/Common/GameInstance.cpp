@@ -5,10 +5,9 @@
 #include "../Resource/ResourceManager.h"
 
 
-GameInstance::GameInstance(WindowSize size): size(size)
+GameInstance::GameInstance(std::shared_ptr<WindowContext> windowContext): windowContext(windowContext)
 {
     InitCore();
-    InitWindow(size);
     controller = new Controller(&event);
     InitVulkanContext();
     InitEntity();
@@ -19,25 +18,11 @@ GameInstance::GameInstance(WindowSize size): size(size)
     InitSystem();
 }
 
-void GameInstance::InitWindow(WindowSize size)
-{
-    if(SDL_Init(SDL_INIT_EVERYTHING)<0)
-    {
-        std::cout<<"Failed to create sdl window\n";
-    }
 
-    window = SDL_CreateWindow("GameInstance",
-                              SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,
-                              size.width,size.height,
-                              SDL_WINDOW_SHOWN|SDL_WINDOW_VULKAN|SDL_WINDOW_RESIZABLE);
-
-    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-
-
-}
 
 void GameInstance::InitCore()
 {
+    Locker::Init();
     //Meta
     RegisterMeta();
     //Scene
@@ -54,7 +39,7 @@ void GameInstance::InitCore()
 
 void GameInstance::InitVulkanContext()
 {
-    VulkanContext::Init(window,&event);
+    VulkanContext::Init(windowContext->window,&event);
 }
 
 void GameInstance::InitSystem()
@@ -86,9 +71,9 @@ void GameInstance::InitEntity()
 {
 }
 
-void GameInstance::Run(bool* isClose)
+void GameInstance::Run()
 {
-    while ((!(*isClose)))
+    while (!windowContext->isClose)
     {
         Tick();
     }
@@ -106,8 +91,8 @@ void GameInstance::SDLEvent()
             {
                 std::lock_guard<std::mutex> lock(Locker::Get().resizeMtx);
 
-                size.width= event.window.data1;
-                size.height = event.window.data2;
+                windowContext->windowSize.width= event.window.data1;
+                windowContext->windowSize.height = event.window.data2;
                 mainScene->UpdateAspect();
             }
             else if(event.window.event ==SDL_WINDOWEVENT_MINIMIZED)

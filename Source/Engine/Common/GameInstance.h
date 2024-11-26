@@ -6,41 +6,37 @@
 #include "Scene.h"
 #include "Meta/Meta.h"
 #include "SDL2/SDL.h"
-
 #include "../Render/VulkanContext.h"
 #include "System/RenderSystem.h"
 #include "System/ResourceSystem.h"
-
 #include "EntityManager.h"
 #include "../Resource/ModelLoader.h"
 #include "../Resource/ResTexture.h"
-
 #include "../Resource/ImageLoader.h"
 #include "Controller.h"
 #include "Locker.h"
+#include "Core/WindowContext.h"
 
 class GameInstance
 {
 public:
-    GameInstance(WindowSize size);
-    void Tick();
-    void Run(bool* isClose);
+    GameInstance(std::shared_ptr<WindowContext> windowContext);
+    void Run();
 public:
     Scene* mainScene;
     EntityManager* entityManager;
-    SDL_Window* window = nullptr;
     SDL_Event event;
-    WindowSize size;
+    std::shared_ptr<WindowContext> windowContext;
     Controller* controller;
     bool isRun = true;
     bool isReady = false;
     RenderSystem renderSystem;
     ResourceSystem resourceSystem;
 private:
+    void Tick();
     void InitCore();
     void InitSystem();
     void InitEntity();
-    void InitWindow(WindowSize size);
     void InitVulkanContext();
     void SDLEvent();
 };
