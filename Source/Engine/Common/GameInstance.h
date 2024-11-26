@@ -26,16 +26,17 @@ public:
     std::shared_ptr<WindowContext> windowContext;
     Controller* controller;
     bool isRun = true;
-    bool isReady = false;
     RenderSystem renderSystem;
     ResourceSystem resourceSystem;
 private:
     void Tick();
     void InitCore();
     void InitSystem();
-    void InitEntity();
     void InitVulkanContext();
-    void SDLEvent();
+    void Update();
+    void Execute();
+    void ReceiveEvent();
+    bool AllowToTick();
 };
 
 

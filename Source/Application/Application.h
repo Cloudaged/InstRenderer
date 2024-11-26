@@ -4,7 +4,6 @@
 #include "Editor/MainEditor/MainEditor.h"
 #include "Presenter.h"
 #include "Common/GameInstance.h"
-#include "Common/GameType.h"
 #include <string>
 #include "QThread"
 #include "Editor/GameThread.h"

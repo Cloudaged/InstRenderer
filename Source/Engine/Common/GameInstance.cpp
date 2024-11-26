@@ -1,32 +1,32 @@
 
 #include "GameInstance.h"
 #include "iostream"
-
 #include "../Resource/ResourceManager.h"
 
 
 GameInstance::GameInstance(std::shared_ptr<WindowContext> windowContext): windowContext(windowContext)
 {
     InitCore();
-    controller = new Controller(&event);
     InitVulkanContext();
-    InitEntity();
-    aaaabbbbb
+
     mainScene->InitGlobalSet();
-    mainScene.InitSceneData();
-    mainScene.InitSkyboxData();
-    mainScene.InitMainLight();
+    mainScene->InitSceneData();
+    mainScene->InitSkyboxData();
+    mainScene->InitMainLight();
     InitSystem();
 }
+
+
 
 void GameInstance::InitCore()
 {
     Locker::Init();
     //Meta
+    controller = new Controller(&event);
     RegisterMeta();
-    //Resource Manager
+    //Scene
+    mainScene = std::make_shared<Scene>();
     ResourceManager::Init();
-
 }
 
 void GameInstance::InitVulkanContext()
@@ -47,20 +47,12 @@ void GameInstance::InitSystem()
 
 void GameInstance::Tick()
 {
-    SDLEvent();
-    if(!isRun)
-        return;
-    if(!isReady)
+    ReceiveEvent();
+    Update();
+    if(AllowToTick())
     {
-        isReady = true;
-        return;
+        Execute();
     }
-    mainScene->UpdateScene();
-    renderSystem.Execute();
-}
-
-void GameInstance::InitEntity()
-{
 }
 
 void GameInstance::Run()
@@ -71,7 +63,7 @@ void GameInstance::Run()
     }
 }
 
-void GameInstance::SDLEvent()
+void GameInstance::ReceiveEvent()
 {
     while (SDL_PollEvent(&event))
     {
@@ -89,14 +81,35 @@ void GameInstance::SDLEvent()
             }
             else if(event.window.event ==SDL_WINDOWEVENT_MINIMIZED)
             {
-                isRun= false;
+                windowContext->isMinimal= false;
             }
             else if(event.window.event==SDL_WINDOWEVENT_RESTORED)
             {
-                isRun= true;
+                windowContext->isMinimal= true;
             }
         }
     }
+}
+
+bool GameInstance::AllowToTick()
+{
+    static int isFirstFrame = true;
+    if(isFirstFrame)
+    {
+        isFirstFrame = false;
+    }
+    return (!isFirstFrame)&&windowContext->isMinimal;
+}
+
+void GameInstance::Update()
+{
+    mainScene->UpdateScene();
+
+}
+
+void GameInstance::Execute()
+{
+    renderSystem.Execute();
 }
 
 

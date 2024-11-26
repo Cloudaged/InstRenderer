@@ -118,17 +118,17 @@ void ResourceManager::AsynCompile(GameInstance *instance, Res::ResModel *model)
     for (auto& mesh:model->meshes)
     {
         //Backend
-        auto meshGo =instance->mainScene.CreateObject(mesh->name);
+        auto meshGo =instance->mainScene->CreateObject(mesh->name);
         glm::vec3 pos = {0.0,0.0,0.0};
         glm::vec3 rotation = {0.0,0.0,0.0};
         glm::vec3 scale = {1.0,1.0,1.0};
 
-        auto& transComp = instance->mainScene.reg.get<Transform>(meshGo->entityID);
+        auto& transComp = instance->mainScene->reg.get<Transform>(meshGo->entityID);
         transComp = {pos,rotation,scale};
 
         auto meshData= ResourceManager::Get().TransMesh(mesh);
         auto materialData = ResourceManager::Get().TransMaterial(mesh->material);
-        instance->mainScene.reg.emplace<Renderable>(meshGo->entityID,meshData,materialData);
+        instance->mainScene->reg.emplace<Renderable>(meshGo->entityID,meshData,materialData);
 
     }
     instance->renderSystem.materialManager.AllocateDescriptorSets();
