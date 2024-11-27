@@ -59,37 +59,28 @@ class Scene
 public:
     Scene();
     ~Scene();
-    entt::registry reg;
-
-    std::vector<GameObject*> objects;
-    Camera mainCamera;
-    Light* mainLight;
-    std::vector<Light*> lights;
-    GameObject* CreateObject(std::string name,std::string type="GameObject");
-    GameObject* CreateObject(std::string name,int parent,std::string type="GameObject");
-
+    std::shared_ptr<GameObject> CreateObject(std::string name,std::string type="GameObject");
+    std::shared_ptr<GameObject> CreateObject(std::string name,int parent,std::string type="GameObject");
+    std::shared_ptr<GameObject> GetGameObject(int id);
     void InitGlobalSet();
     void InitSkyboxData();
     void InitSceneData();
     void InitMainLight();
     void UpdateAspect();
-
-    GameObject* GetGameObject(int id);
-
-    GlobalDescriptorData globalData;
-
-    LightUniform lightUniform;
-    GlobalUniform globUniform;
     void UpdateScene();
-
-    template<typename T>
-    void AddComponent(int objID);
-
     void DeleteObject(int id);
     void Destroy(int i);
     void RenameObject(int id,std::string dstName);
     void UpdateLightData();
-
+public:
+    entt::registry reg;
+    std::vector<std::shared_ptr<GameObject>> objects;
+    std::vector<std::shared_ptr<Light>> lights;
+    Camera mainCamera;
+    std::shared_ptr<Light> mainLight;
+    GlobalDescriptorData globalData{};
+    LightUniform lightUniform{};
+    GlobalUniform globUniform{};
 private:
 };
 

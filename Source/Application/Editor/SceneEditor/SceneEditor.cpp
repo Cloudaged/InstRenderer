@@ -195,7 +195,7 @@ void SceneEditor::ItemChanged()
     });
 }
 
-void SceneEditor::UpdateTree(std::vector<GameObject *> objs)
+void SceneEditor::UpdateTree(std::vector<std::shared_ptr<GameObject>> objs)
 {
     treeWidget->clear();
     for (auto obj:objs)

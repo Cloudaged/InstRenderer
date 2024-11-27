@@ -18,25 +18,25 @@
 class GameInstance
 {
 public:
-    GameInstance(std::shared_ptr<WindowContext> windowContext);
+    explicit GameInstance(std::shared_ptr<WindowContext> windowContext);
     void Run();
 public:
     std::shared_ptr<Scene> mainScene;
-    SDL_Event event;
     std::shared_ptr<WindowContext> windowContext;
-    Controller* controller;
-    bool isRun = true;
+    SDL_Event event{};
+    Controller controller;
     RenderSystem renderSystem;
     ResourceSystem resourceSystem;
 private:
     void Tick();
     void InitCore();
     void InitSystem();
-    void InitVulkanContext();
     void Update();
     void Execute();
     void ReceiveEvent();
     bool AllowToTick();
+    void InitVulkanContext();
+    void SDLEvent();
 };
 
 

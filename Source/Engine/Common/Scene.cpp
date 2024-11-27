@@ -4,7 +4,8 @@
 #include "../Render/VulkanContext.h"
 #include "../Resource/ModelLoader.h"
 
-Scene::Scene():mainCamera(&reg,"mainCamera")
+Scene::Scene():
+mainCamera(&reg,"mainCamera")
 {
 }
 
@@ -13,19 +14,18 @@ Scene::~Scene()
 
 }
 
-GameObject* Scene::CreateObject(std::string name,std::string type)
+std::shared_ptr<GameObject> Scene::CreateObject(std::string name,std::string type)
 {
-
-    GameObject* go;
+    std::shared_ptr<GameObject> go;
     if(type=="GameObject")
     {
-        go= new GameObject(&reg,name,type);
+        go = std::make_shared<GameObject>(&reg,name,type);
     }
     if(type=="Light")
     {
-        Light* lightGo = new Light(&reg,name,type);
+        auto lightGo = std::make_shared<Light>(&reg,name,type);
         lights.push_back(lightGo);
-        go = (GameObject*)lightGo;
+        go = std::static_pointer_cast<GameObject>(lightGo);
         UpdateLightData();
     }
     objects.push_back(go);
@@ -33,10 +33,10 @@ GameObject* Scene::CreateObject(std::string name,std::string type)
     return go;
 }
 
-GameObject* Scene::CreateObject(std::string name, int parent,std::string type)
+std::shared_ptr<GameObject> Scene::CreateObject(std::string name, int parent,std::string type)
 {
 
-    GameObject* go= new GameObject(&reg,name,type);
+    std::shared_ptr<GameObject> go= std::make_shared<GameObject>(&reg,name,type);
     go->parent = parent;
 
     objects.push_back(go);
@@ -50,7 +50,7 @@ void Scene::DeleteObject(int id)
     //Delete Child
     for (int i = 0; i < objects.size(); ++i)
     {
-        GameObject* go = objects[i];
+        std::shared_ptr<GameObject> go = objects[i];
         if (go->parent==id)
         {
             Destroy(i);
@@ -60,17 +60,17 @@ void Scene::DeleteObject(int id)
 
 void Scene::Destroy(int i)
 {
-    GameObject* go =  objects[i];
+    std::shared_ptr<GameObject> go =  objects[i];
     reg.destroy(go->entityID);
     objects.erase(objects.cbegin()+i);
-    delete go;
+    go.reset();
 }
 
 void Scene::RenameObject(int id, std::string dstName)
 {
     for (int i = 0; i < objects.size(); ++i)
     {
-        GameObject* go =  (GameObject*)objects[i];
+        std::shared_ptr<GameObject> go =  objects[i];
         if(static_cast<int>(go->entityID)==id)
         {
             go->name = dstName;
@@ -79,11 +79,11 @@ void Scene::RenameObject(int id, std::string dstName)
     }
 }
 
-GameObject *Scene::GetGameObject(int id)
+std::shared_ptr<GameObject> Scene::GetGameObject(int id)
 {
-    for (auto& meta:objects)
+    for (auto& obj:objects)
     {
-        GameObject* go = (GameObject*)meta;
+        std::shared_ptr<GameObject> go = obj;
         if(static_cast<int>(go->entityID)==id)
         {
             return go;
@@ -235,7 +235,7 @@ void Scene::UpdateAspect()
 
 void Scene::InitMainLight()
 {
-    mainLight = (Light*)CreateObject("MainLight","Light");
+    mainLight = std::static_pointer_cast<Light>(CreateObject("MainLight","Light"));
 }
 
 void Scene::UpdateLightData()
@@ -251,32 +251,11 @@ void Scene::UpdateLightData()
         mat = glm::rotate(mat,trans.rotation.z,{0,0,1});
         glm::vec4 rotatedDir = mat*glm::vec4(0.0,0.0,1.0,0.0);
         lightUniform.lights[num] = std::move(LightUnitsInShader{glm::vec4(trans.pos,1.0),rotatedDir,glm::vec4(lightComp.color,1.0),(int)lightComp.type,lightComp.Intensity,lightComp.range});
-
         num++;
     }
     lightUniform.count=num;
 }
 
-
-template<typename T>
-void Scene::AddComponent(int objID)
-{
-    GameObject* go;
-    for (int i = 0; i < objects.size(); ++i)
-    {
-        GameObject* tempGo =  objects[i];
-        if(static_cast<int>(go->entityID)==objID)
-        {
-            go = tempGo;
-            break;
-        }
-    }
-    if(go)
-    {
-        reg.emplace<T>(go->entityID);
-    }
-
-}
 
 
 

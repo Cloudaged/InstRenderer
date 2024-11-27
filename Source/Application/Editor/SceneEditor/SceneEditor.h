@@ -39,7 +39,7 @@ public:
 
     QTreeWidgetItem* FindItemsWithColumnValue(QTreeWidgetItem* parent, int column, const QString& value);
 
-    void UpdateTree(std::vector<GameObject*> objs);
+    void UpdateTree(std::vector<std::shared_ptr<GameObject>> objs);
 
     void DeleteItem(int id);
 

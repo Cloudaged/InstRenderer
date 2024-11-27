@@ -54,7 +54,7 @@ void Presenter::ChangeSelectedItem()
     editor->connect(editor->sceneEditor,&SceneEditor::SelectedItemChanged,[&](int id)
     {
         auto go = instance->mainScene->GetGameObject(id);
-        editor->componentEditor->ChangeGameObject(go,&instance->mainScene->reg);
+        editor->componentEditor->ChangeGameObject(go.get(),&instance->mainScene->reg);
 
     });
 }
