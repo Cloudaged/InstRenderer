@@ -83,11 +83,11 @@ void GameInstance::SDLEvent()
             }
             else if(event.window.event ==SDL_WINDOWEVENT_MINIMIZED)
             {
-                windowContext->isMinimal= false;
+                windowContext->isMinimal= true;
             }
             else if(event.window.event==SDL_WINDOWEVENT_RESTORED)
             {
-                windowContext->isMinimal= true;
+                windowContext->isMinimal= false;
             }
         }
     }
@@ -100,7 +100,7 @@ bool GameInstance::AllowToTick()
     {
         isFirstFrame = false;
     }
-    return (!isFirstFrame)&&(windowContext->isMinimal);
+    return (!isFirstFrame)&&(!windowContext->isMinimal);
 }
 
 void GameInstance::Update()

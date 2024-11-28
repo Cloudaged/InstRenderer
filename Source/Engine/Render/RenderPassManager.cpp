@@ -11,49 +11,55 @@ void RenderPassManager::ExecuteAllPass()
 {
     auto cmd = VulkanContext::GetContext().presentManager.BeginRecordCommand();
     geoPass->Execute(view);
+    shadowPass->Execute(view);
     compositionPass->Execute();
     presentPass->Execute();
     VulkanContext::GetContext().presentManager.EndRecordCommand(cmd);
 }
 
-void RenderPassManager::Build()
-{
-    geoPass->Build();
-    compositionPass->Build();
-    presentPass->Build();
-}
+
 
 void RenderPassManager::Setup()
 {
-    this->geoPass = new GeoPass(globalDescriptorData);
+    this->geoPass = std::make_unique<GeoPass>(globalDescriptorData);
     geoPass->SetupAttachments();
+    geoPass->Build();
 
-    this->compositionPass = new CompositionPass(globalDescriptorData);
+    this->shadowPass = std::make_unique<ShadowPass>(globalDescriptorData);
+    shadowPass->SetupAttachments();
+    shadowPass->Build();
+
+    this->compositionPass = std::make_unique<CompositionPass>(globalDescriptorData);
     compositionPass->SetupAttachments();
+    compositionPass->Build();
 
-    this->presentPass =new PresentPass();
+
+    this->presentPass = std::make_unique<PresentPass>();
     presentPass->SetupAttachments();
+    presentPass->Build();
+
 }
 
 
 void RenderPassManager::RecreateAllPass()
 {
     geoPass->ClearRes();
+    shadowPass->ClearRes();
     compositionPass->ClearRes();
     presentPass->ClearRes();
     ClearAtt();
 
 
     geoPass->SetupAttachments();
+    shadowPass->SetupAttachments();
     compositionPass->SetupAttachments();
     presentPass->SetupAttachments();
 
 
     geoPass->Build();
+    shadowPass->Build();
     compositionPass->Build();
     presentPass->Build();
-
-
 }
 
 void RenderPassManager::ClearAtt()

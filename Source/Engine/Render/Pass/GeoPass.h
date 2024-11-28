@@ -3,6 +3,8 @@
 #define INSTRENDERER_GEOPASS_H
 #include "RenderPass.h"
 #include "../../Common/Core/PathDefine.h"
+#include "../../Common/Core/EngineMath.h"
+
 struct GeoPassPerObjData
 {
     glm::mat4 modelMatrix;
@@ -38,7 +40,7 @@ private:
     Texture* depthAttachment;
     Texture* mrAttachment;
 
-    glm::mat4 GetModelMatrixFromTrans(Transform trans);
+    //glm::mat4 GetModelMatrixFromTrans(Transform trans);
     GlobalDescriptorData globalData;
     GeoPassPerObjData perData={};
 };

@@ -35,7 +35,7 @@ void Controller::ViewInteract(Camera* cam)
     }
     else if(event->type == SDL_MOUSEBUTTONDOWN)
     {
-        if(event->button.button == SDL_BUTTON_RIGHT)
+        if(event->button.button == SDL_BUTTON_LEFT)
         {
             glm::vec3 pos= cam->GetCameraPos();
             float xSquare = pow((pos.x-0),2);
@@ -46,7 +46,7 @@ void Controller::ViewInteract(Camera* cam)
             interactInfo.isDrag = true;
             interactInfo.dragStartPos.x = event->button.x;
             interactInfo.dragStartPos.y = event->button.y;
-            SDL_ShowCursor(0);
+
         }
     }
     else if (event->type == SDL_MOUSEMOTION && interactInfo.isDrag&&interactInfo.isSpace)
@@ -90,7 +90,7 @@ void Controller::ViewInteract(Camera* cam)
     }
     else if (event->type == SDL_MOUSEBUTTONUP)
     {
-        if (event->button.button == SDL_BUTTON_RIGHT)
+        if (event->button.button == SDL_BUTTON_LEFT)
         {
             SDL_ShowCursor(1);
             interactInfo.isDrag = false;

@@ -33,7 +33,8 @@ enum class AttachmentUsage
     TransferDst,
     Present,
     Depth,
-    Prefiltered
+    Prefiltered,
+    ShadowMap
 };
 
 struct AttachmentData

@@ -54,7 +54,9 @@ protected:
     VkDescriptorSetLayout inputAttDesLayout;
     VkDescriptorSet inputAttDesSet;
 private:
+    void AllocAttachmentResource(AttachmentDes& attachment);
     void BuildPresentFrame();
+private:
 };
 
 

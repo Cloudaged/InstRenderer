@@ -91,7 +91,7 @@ void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
         auto renderComponents = view.get<Renderable>(entity);
         auto transComponents = view.get<Transform>(entity);
 
-        perData = {GetModelMatrixFromTrans(transComponents)};
+        perData = {EngineMath::GetModelMatrix(transComponents)};
         //Update
         memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(perObjDesBuffer),
                &perData,
@@ -157,7 +157,7 @@ void GeoPass::SetupRenderState()
     CreatePerObjDescriptor(sizeof(GeoPassPerObjData));
 }
 
-glm::mat4 GeoPass::GetModelMatrixFromTrans(Transform trans)
+/*glm::mat4 GeoPass::GetModelMatrixFromTrans(Transform trans)
 {
     auto mat =  glm::translate(glm::mat4(1),trans.pos);
     mat = glm::scale(mat,trans.scale);
@@ -165,7 +165,7 @@ glm::mat4 GeoPass::GetModelMatrixFromTrans(Transform trans)
     mat = glm::rotate(mat,trans.rotation.y,{0,1,0});
     mat = glm::rotate(mat,trans.rotation.z,{0,0,1});
     return mat;
-}
+}*/
 
 void GeoPass::InputGlobalDesLayout()
 {

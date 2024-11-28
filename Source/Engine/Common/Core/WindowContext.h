@@ -13,6 +13,6 @@ struct WindowContext
     WindowSize windowSize;
     SDL_Window* window;
     bool isClose;
-    bool isMinimal=false;
+    bool isMinimal = false;
 };
 #endif //INSTRENDERER_WINDOWCONTEXT_H

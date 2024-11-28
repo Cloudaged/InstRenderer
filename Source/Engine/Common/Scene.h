@@ -19,6 +19,7 @@ struct GlobalUniform
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 skyboxProj;
+    glm::mat4 lightMat;
 };
 
 struct LightUnitsInShader
@@ -52,6 +53,7 @@ struct GlobalDescriptorData
     VkDescriptorSet globalDes;
     SkyboxData skyboxData;
 };
+glm::mat4 GetLightMat(const entt::registry& reg,const Light& light);
 
 
 class Scene

@@ -18,6 +18,8 @@ VkImageUsageFlags RenderPass::GetUsage(AttachmentUsage usage)
             return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         case AttachmentUsage::Depth:
             return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        case AttachmentUsage::ShadowMap:
+            return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
         default:
             return VK_IMAGE_USAGE_SAMPLED_BIT;
     }
@@ -48,7 +50,7 @@ AttachmentState RenderPass::GetState(AttachmentOP op,AttachmentUsage usage)
     {
         case AttachmentOP::WriteOnly:
         {
-            if(usage==AttachmentUsage::Depth)
+            if(usage==AttachmentUsage::Depth||usage==AttachmentUsage::ShadowMap)
             {
                 return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
                                        VK_ATTACHMENT_STORE_OP_STORE,
@@ -64,7 +66,7 @@ AttachmentState RenderPass::GetState(AttachmentOP op,AttachmentUsage usage)
         }
         case AttachmentOP::ReadAndWrite:
         {
-            if(usage==AttachmentUsage::Depth)
+            if(usage==AttachmentUsage::Depth||usage==AttachmentUsage::ShadowMap)
             {
                 return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
                                        VK_ATTACHMENT_STORE_OP_STORE,
@@ -93,73 +95,26 @@ void RenderPass::Build()
 {
     std::vector<VkAttachmentDescription> attDescriptions;
     std::vector<VkImageView> views;
-
     std::vector<VkAttachmentReference> outputRefs;
     VkAttachmentReference depthRef = {};
-    int refIndex = 0;
 
     bool hasDepth = false;
 
-    //Output
+    int refIndex = 0;
     for (auto& res:outputResource)
     {
         auto& att = res.attDes;
-
         if(att.usage==AttachmentUsage::Present)
         {
             BuildPresentFrame();
             return;
         }
 
-        //Get data
         this->width = att.width;
         this->height = att.height;
         VkFormat format = att.format;
-        VkImageUsageFlags usage = GetUsage(att.usage);
-        VkImageLayout layout = GetLayout(att.usage);
 
-        //Allocate image
-        auto aspect = att.usage==AttachmentUsage::Depth?VK_IMAGE_ASPECT_DEPTH_BIT:VK_IMAGE_ASPECT_COLOR_BIT;
-
-        if(!att.hasInit)
-        {
-            auto img = new AllocatedImage(format,usage,VkExtent2D{width,height},1,aspect);
-            img->layout = layout;
-            *att.data = new Texture(*img);
-            //Sampler
-            {
-                VkSamplerCreateInfo samplerInfo{};
-                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-                samplerInfo.magFilter = VK_FILTER_LINEAR;
-                samplerInfo.minFilter = VK_FILTER_LINEAR;
-
-                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-
-                VkPhysicalDeviceProperties properties{};
-                vkGetPhysicalDeviceProperties(VulkanContext::GetContext().gpu, &properties);
-                samplerInfo.anisotropyEnable = VK_FALSE;
-                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-                samplerInfo.borderColor =VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-                samplerInfo.unnormalizedCoordinates = VK_FALSE;
-
-                samplerInfo.compareEnable = VK_FALSE;
-                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-
-                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-                samplerInfo.mipLodBias = 0.0f;
-                samplerInfo.minLod = 0.0f;
-                samplerInfo.maxLod = 0.0f;
-
-                if(vkCreateSampler(VulkanContext::GetContext().device,&samplerInfo, nullptr,&(*att.data)->sampler)!=VK_SUCCESS)
-                {
-                    std::cout<<"failed to create attachment sampler\n";
-                }
-                att.hasInit = true;
-
-        }
-        }
+        AllocAttachmentResource(att);
 
         auto state = GetState(res.opt,att.usage);
         //Attachment
@@ -168,28 +123,24 @@ void RenderPass::Build()
         attachmentDes.samples = VK_SAMPLE_COUNT_1_BIT;
         attachmentDes.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachmentDes.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
         attachmentDes.loadOp = state.loadOp;
         attachmentDes.storeOp = state.storeOp;
         attachmentDes.initialLayout = state.initLayout;
         attachmentDes.finalLayout = state.finalLayout;
 
 
-        if(!(att.usage==AttachmentUsage::Depth))
+        if(att.usage == AttachmentUsage::Depth||att.usage == AttachmentUsage::ShadowMap)
+        {
+            depthRef.attachment = refIndex;
+            depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            hasDepth = true;
+        } else
         {
             VkAttachmentReference ref{};
             ref.attachment = refIndex;
             ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             outputRefs.push_back(ref);
-
-        } else
-        {
-            depthRef.attachment = refIndex;
-            depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            hasDepth = true;
         }
-
-
         attDescriptions.push_back(attachmentDes);
 
         views.push_back((*att.data)->allocatedImage.imageView);
@@ -472,6 +423,30 @@ void RenderPass::UpdateRecordedLayout()
         res.attDes.currentLayout=state.finalLayout;
     }
 }
+
+void RenderPass::AllocAttachmentResource(AttachmentDes &attachment)
+{
+    if(!attachment.hasInit)
+    {
+        auto usage = GetUsage(attachment.usage);
+        auto layout = GetLayout(attachment.usage);
+
+        VkImageAspectFlagBits aspect;
+        if(attachment.usage == AttachmentUsage::Depth || attachment.usage == AttachmentUsage::ShadowMap)
+        {
+            aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+        } else
+        {
+            aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+        }
+
+        auto img = new AllocatedImage(attachment.format,usage,VkExtent2D{(uint32_t)attachment.width,(uint32_t)attachment.height},1,aspect);
+        img->layout = layout;
+        *attachment.data = new Texture(*img);
+        attachment.hasInit = true;
+    }
+}
+
 
 
 

@@ -183,6 +183,7 @@ void Scene::UpdateScene()
 {
     globUniform.view = mainCamera.vpMat.view;
     globUniform.proj = mainCamera.vpMat.proj;
+    globUniform.lightMat = GetLightMat(this->reg,*mainLight);
     lightUniform.cameraPos= glm::vec4(mainCamera.position,1.0);
     lightUniform.cameraDir = glm::vec4(mainCamera.viewPoint-mainCamera.position,1.0);
 
@@ -246,15 +247,24 @@ void Scene::UpdateLightData()
     {
         auto& lightComp= view.get<LightComponent>(entityID);
         auto& trans = view.get<Transform>(entityID);
-        glm::mat4  mat = glm::rotate(glm::mat4(1.0f),trans.rotation.x,{1,0,0});
-        mat = glm::rotate(mat,trans.rotation.y,{0,1,0});
-        mat = glm::rotate(mat,trans.rotation.z,{0,0,1});
+        glm::mat4 mat = EngineMath::GetRotateMatrix(trans.rotation);
         glm::vec4 rotatedDir = mat*glm::vec4(0.0,0.0,1.0,0.0);
         lightUniform.lights[num] = std::move(LightUnitsInShader{glm::vec4(trans.pos,1.0),rotatedDir,glm::vec4(lightComp.color,1.0),(int)lightComp.type,lightComp.Intensity,lightComp.range});
         num++;
     }
     lightUniform.count=num;
 }
+glm::mat4 GetLightMat(const entt::registry& reg,const Light& light)
+{
+    const Transform& transform = reg.get<Transform>(light.entityID);
+    auto rotationMat = EngineMath::GetRotateMatrix(transform.rotation);
+    glm::vec4 target = rotationMat*glm::vec4(0.0,0.0,1.0,0.0);
+    glm::vec4 upDir = rotationMat*glm::vec4(0.0,1.0,0.0,0.0);
+    glm::mat4 lightMat = glm::lookAt(transform.pos,glm::vec3(target),glm::vec3(upDir));
+    glm::mat4 projMat = glm::ortho(-2000.0f,2000.0f,-2000.0f,2000.0f,0.001f, 1000.0f);
+    return projMat*lightMat;
+}
+
 
 
 
