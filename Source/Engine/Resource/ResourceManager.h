@@ -22,10 +22,11 @@ public:
     Mesh* TransMesh(Res::ResMesh* resMesh);
     StandardMaterial* TransMaterial(Res::ResMaterial* resMaterial);
     Texture* TransTexture(Res::ResTexture* resTexture);
-    ResReg resReg;
     std::string LoadResource(std::string path);
-    static std::unique_ptr<ResourceManager> Pinstance;
     void CompileModel(GameInstance* instance,Res::ResModel* model);
+public:
+    static std::unique_ptr<ResourceManager> Pinstance;
+    ResReg resReg;
 private:
     void AsynCompile(GameInstance* instance,Res::ResModel* model);
     ResourceManager();

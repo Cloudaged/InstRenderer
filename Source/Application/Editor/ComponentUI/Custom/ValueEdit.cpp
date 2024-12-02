@@ -10,15 +10,22 @@ ValueEdit::ValueEdit(std::string name,float data,QWidget *parent) :
 {
     ui->setupUi(this);
 
-    tag = new QLabel(QString::fromStdString(name));
+    tag = new DragableLabel(QString::fromStdString(name));
     edit = new QLineEdit();
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->addWidget(tag);
     layout->setSpacing(100);
     layout->addWidget(edit);
-
     this->setLayout(layout);
+
+    connect(this->tag,&DragableLabel::ChangeData,[&](float value)
+    {
+        auto temp = edit->text().toFloat();
+        temp+= value*1;
+        edit->setText(QString::number(temp));
+        emit DragEditFinished(edit->text().toFloat());
+    });
 }
 
 ValueEdit::~ValueEdit()

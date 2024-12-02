@@ -39,6 +39,8 @@ VkImageLayout RenderPass::GetLayout(AttachmentUsage usage)
             return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         case AttachmentUsage::Depth:
             return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        case AttachmentUsage::ShadowMap:
+            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         default:
             return VK_IMAGE_LAYOUT_UNDEFINED;
     }
@@ -50,13 +52,21 @@ AttachmentState RenderPass::GetState(AttachmentOP op,AttachmentUsage usage)
     {
         case AttachmentOP::WriteOnly:
         {
-            if(usage==AttachmentUsage::Depth||usage==AttachmentUsage::ShadowMap)
+            if(usage==AttachmentUsage::Depth)
             {
                 return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
                                        VK_ATTACHMENT_STORE_OP_STORE,
                                        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                                        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
-            } else
+            }
+            else if(usage==AttachmentUsage::ShadowMap)
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+            }
+            else
             {
                 return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
                                        VK_ATTACHMENT_STORE_OP_STORE,
@@ -66,13 +76,20 @@ AttachmentState RenderPass::GetState(AttachmentOP op,AttachmentUsage usage)
         }
         case AttachmentOP::ReadAndWrite:
         {
-            if(usage==AttachmentUsage::Depth||usage==AttachmentUsage::ShadowMap)
+            if(usage==AttachmentUsage::Depth)
             {
                 return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
                                        VK_ATTACHMENT_STORE_OP_STORE,
                                        VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
                                        VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
-            } else
+            }else if (usage==AttachmentUsage::ShadowMap)
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+            }
+            else
             {
                 return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
                                        VK_ATTACHMENT_STORE_OP_STORE,

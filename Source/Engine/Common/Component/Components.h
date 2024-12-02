@@ -32,12 +32,19 @@ struct Renderable
     StandardMaterial* material;
 };
 
+struct ShadowCamera
+{
+    float near;
+    float far;
+};
+
 struct LightComponent
 {
     LightType type= LightType::Directional;
     glm::vec3 color = {1.0,1.0,1.0};
     float Intensity =1;
     float range = 0;
+    ShadowCamera shadowCamera={};
 };
 
 struct CameraComponent

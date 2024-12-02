@@ -9,6 +9,7 @@
 
 #include "QHBoxLayout"
 #include "glm/glm.hpp"
+#include "DragableLabel.h"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -24,12 +25,14 @@ public:
     explicit ValueEdit(std::string name,float data,QWidget *parent = nullptr);
     void UpdateData(float data);
     ~ValueEdit() override;
-    QLabel* tag;
+public:
+    DragableLabel* tag;
     float data;
-
     QLineEdit* edit;
 private:
     Ui::ValueEdit *ui;
+signals:
+    void DragEditFinished(float data);
 };
 
 

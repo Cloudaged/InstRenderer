@@ -1,9 +1,11 @@
 import ShaderModule.BasicFunc;
 import ShaderModule.PBR;
 import ShaderModule.Types;
+import ShaderModule.Shadow;
 struct FragInput
 {
     float2 inUV : TEXCOORD0;
+    float4x4 lightMat : TEXCOORD1;
 }
 
 
@@ -11,6 +13,7 @@ struct FragInput
 [[vk::binding(1, 0)]] Sampler2D inputNormal;
 [[vk::binding(2, 0)]] Sampler2D inputAlbedo;
 [[vk::binding(3, 0)]] Sampler2D inputMR;
+[[vk::binding(4, 0)]] Sampler2D shadowMap;
 
 [[vk::binding(1, 1)]] ConstantBuffer<LightCameraUniform> lightUniform;
 
@@ -44,5 +47,7 @@ float4 main(FragInput input) : SV_Target
          finalColor += light.intensity * dot(normal.xyz, light.toward.xyz) * finalBRDF;
         //finalColor = specularBRDF; 
     }
-    return float4(finalColor,1.0);
+
+    float shadow = CalculateShadow(shadowMap, input.lightMat, posWS);
+    return baseColor*shadow;
 }

@@ -24,20 +24,19 @@ Q_OBJECT
 
 public:
     explicit Transform3D(std::string tagName,glm::vec3 data,QWidget *parent = nullptr);
-
+    void UpdateData(glm::vec3 data);
     ~Transform3D() override;
+public:
     QLabel tag;
     QLineEdit* xEdit,*yEdit,*zEdit;
     glm::vec3 data;
-
     float xWeight=1,yWeight=1,zWeight=1;
-    void UpdateData(glm::vec3 data);
 private:
-    std::string tagName;
     void InitWidget();
     void InitSignal();
+private:
     DragableLabel* xLabel,*yLabel,*zLabel;
-
+    std::string tagName;
     Ui::Transform3D *ui;
 signals:
     void DragEditFinished(glm::vec3 data);

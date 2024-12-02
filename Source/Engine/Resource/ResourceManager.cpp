@@ -129,7 +129,8 @@ void ResourceManager::AsynCompile(GameInstance *instance, Res::ResModel *model)
         auto meshData= ResourceManager::Get().TransMesh(mesh);
         auto materialData = ResourceManager::Get().TransMaterial(mesh->material);
         instance->mainScene->reg.emplace<Renderable>(meshGo->entityID,meshData,materialData);
-
+        instance->mainScene->minPoint = glm::min(model->minPoint,instance->mainScene->minPoint);
+        instance->mainScene->maxPoint = glm::max(model->maxPoint,instance->mainScene->maxPoint);
     }
     instance->renderSystem.materialManager.AllocateDescriptorSets();
 }

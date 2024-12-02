@@ -21,16 +21,20 @@ class LightComponentUI : public QWidget
 
 public:
     explicit LightComponentUI(LightComponent data,QWidget *parent = nullptr);
+    void ChangeData(LightComponent data);
+    void InitSignal();
+    ~LightComponentUI() override;
+public:
     LightComponent data;
     Transform3D* colorUI;
     ValueEdit* intensityUI;
     ValueEdit* rangeUI;
+    ValueEdit* nearUI;
+    ValueEdit* farUI;
     TypeSelector* lightTypeUI;
-    void ChangeData(LightComponent data);
-    void InitSignal();
-    ~LightComponentUI() override;
 
 private:
+    LightComponent UpdateALlData();
     Ui::LightComponentUI *ui;
 
 signals:

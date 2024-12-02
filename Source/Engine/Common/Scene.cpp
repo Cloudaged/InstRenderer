@@ -109,8 +109,15 @@ void Scene::InitGlobalSet()
     light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
+    /*VkDescriptorSetLayoutBinding lightVP;
+    light.binding=2;
+    light.descriptorCount=1;
+    light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;*/
+
     bindings.push_back(vp);
     bindings.push_back(light);
+    //bindings.push_back(lightVP);
     //Layout
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -183,7 +190,7 @@ void Scene::UpdateScene()
 {
     globUniform.view = mainCamera.vpMat.view;
     globUniform.proj = mainCamera.vpMat.proj;
-    globUniform.lightMat = GetLightMat(this->reg,*mainLight);
+    globUniform.lightMat = GetLightMat(*mainLight);
     lightUniform.cameraPos= glm::vec4(mainCamera.position,1.0);
     lightUniform.cameraDir = glm::vec4(mainCamera.viewPoint-mainCamera.position,1.0);
 
@@ -223,11 +230,7 @@ void Scene::InitSkyboxData()
 
 void Scene::UpdateAspect()
 {
-    mainCamera.vpMat.proj = glm::perspective(glm::radians(80.0f),
-                                        VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
-                                        5.0f, 20000.0f);
-    mainCamera.vpMat.proj[1][1] *=-1;
-
+    mainCamera.UpdateAspect();
     globUniform.skyboxProj = glm::perspective(glm::radians(80.0f),
                                               VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
                                               0.001f, 256.0f);
@@ -254,14 +257,32 @@ void Scene::UpdateLightData()
     }
     lightUniform.count=num;
 }
-glm::mat4 GetLightMat(const entt::registry& reg,const Light& light)
+
+glm::mat4 Scene::GetLightMat(const Light& light)
 {
     const Transform& transform = reg.get<Transform>(light.entityID);
+    const LightComponent& lightComponent = reg.get<LightComponent>(light.entityID);
+
     auto rotationMat = EngineMath::GetRotateMatrix(transform.rotation);
     glm::vec4 target = rotationMat*glm::vec4(0.0,0.0,1.0,0.0);
-    glm::vec4 upDir = rotationMat*glm::vec4(0.0,1.0,0.0,0.0);
-    glm::mat4 lightMat = glm::lookAt(transform.pos,glm::vec3(target),glm::vec3(upDir));
-    glm::mat4 projMat = glm::ortho(-2000.0f,2000.0f,-2000.0f,2000.0f,0.001f, 1000.0f);
+    auto pos = EngineMath::SphereToRectCoord(transform.rotation,transform.pos.y);
+    glm::mat4 lightMat = glm::lookAt(pos,{0,0,0},{0,0,1});
+
+    auto [frustumMaxWS,frustumMinWS] = EngineMath::GetFrustumBoundingBox(mainCamera);
+    auto [frustumMaxLS,frustumMinLS] = EngineMath::TransformAABB(frustumMinWS,frustumMaxWS,lightMat);
+    auto [sceneMaxLS,sceneMinLS] = EngineMath::TransformAABB(minPoint,maxPoint,lightMat);
+
+    float nearPlane = std::min(frustumMinLS.z,sceneMinLS.z);
+    float farPlane = std::max(frustumMaxLS.z,sceneMaxLS.z);
+
+    glm::mat4 projMat = glm::ortho(frustumMinLS.x,frustumMaxLS.x,frustumMinLS.y,frustumMaxLS.y,nearPlane,farPlane);
+    projMat[1][1] *= -1;
+
+   /*glm::mat4 lightMat = glm::lookAt(transform.pos,transform.pos+glm::vec3(target),glm::vec3(0,1,0));
+   glm::mat4 projMat = glm::perspective(glm::radians(80.0f),
+                                        1.0f,
+                                        5.0f, 20000.0f);
+    projMat[1][1] *= -1;*/
     return projMat*lightMat;
 }
 

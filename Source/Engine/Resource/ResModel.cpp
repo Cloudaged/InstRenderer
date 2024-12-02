@@ -7,4 +7,5 @@ namespace Res
     {
 
     }
+
 } // Res

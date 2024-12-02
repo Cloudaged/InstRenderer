@@ -11,6 +11,7 @@ void CompositionPass::SetupAttachments()
     inputAttDes.push_back(attachmentMap["Normal"]);
     inputAttDes.push_back(attachmentMap["Position"]);
     inputAttDes.push_back(attachmentMap["MetallicRoughness"]);
+    inputAttDes.push_back(attachmentMap["ShadowMap"]);
 
     attachmentMap["Lighted"] = AttachmentDes{"Lighted", winWidth, winHeight,
                                              AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB, &lightAttachment};

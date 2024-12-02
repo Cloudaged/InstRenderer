@@ -1,6 +1,7 @@
 
 #ifndef INSTRENDERER_SCENE_H
 #define INSTRENDERER_SCENE_H
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "entt.hpp"
 #include "GameObject.h"
 #include "MeshObject.h"
@@ -53,8 +54,8 @@ struct GlobalDescriptorData
     VkDescriptorSet globalDes;
     SkyboxData skyboxData;
 };
-glm::mat4 GetLightMat(const entt::registry& reg,const Light& light);
 
+using BoundingPoint = glm::vec3;
 
 class Scene
 {
@@ -83,7 +84,11 @@ public:
     GlobalDescriptorData globalData{};
     LightUniform lightUniform{};
     GlobalUniform globUniform{};
+    BoundingPoint minPoint;
+    BoundingPoint maxPoint;
 private:
+    glm::mat4 GetLightMat(const Light& light);
+
 };
 
 

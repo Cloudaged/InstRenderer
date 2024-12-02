@@ -18,14 +18,17 @@ void Camera::InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir)
     viewPoint = Target;
     upDir = UpDir;
 
+
     this->vpMat.view = glm::lookAt(position,
                                    viewPoint,yAxis);
 
-    this->vpMat.proj = glm::perspective(glm::radians(80.0f),
+    this->vpMat.proj = glm::perspective(cameraData.fov,
                                         VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
-                                        500.0f, 20000.0f);
+                                        cameraData.nearPlane, cameraData.farPlane);
     this->vpMat.proj[1][1] *=-1;
+
 }
+
 
 glm::mat4 Camera::GetViewMatrix(entt::registry reg)
 {
@@ -63,5 +66,13 @@ void Camera::SetCameraTarget(glm::vec3 newTarget)
 glm::vec3 Camera::GetCameraUpDir()
 {
     return this->yAxis;
+}
+
+void Camera::UpdateAspect()
+{
+    cameraData.aspect = VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height;
+    this->vpMat.proj = glm::perspective(cameraData.fov, cameraData.aspect,
+                                        cameraData.nearPlane, cameraData.farPlane);
+    this->vpMat.proj[1][1] *=-1;
 }
 
