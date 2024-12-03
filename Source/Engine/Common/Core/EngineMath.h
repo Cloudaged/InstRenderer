@@ -6,6 +6,9 @@
 #include "../Component/Components.h"
 #include "../Camera.h"
 #include <array>
+#include <iostream>
+#include <glm/gtx/string_cast.hpp>
+
 using BoundingPoint = glm::vec3;
 
 namespace EngineMath
