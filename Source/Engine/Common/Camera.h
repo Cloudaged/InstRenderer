@@ -45,7 +45,7 @@ public:
     CameraData cameraData =
             CameraData{
                 glm::radians(80.0f),
-                1,5.0f,2000.0f
+                1,5.0f,5000.0f
             };
 };
 

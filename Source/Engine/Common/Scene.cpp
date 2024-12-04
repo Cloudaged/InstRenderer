@@ -265,30 +265,13 @@ glm::mat4 Scene::GetLightMat(const Light& light)
 
     auto rotationMat = EngineMath::GetRotateMatrix(transform.rotation);
     glm::vec4 target = rotationMat*glm::vec4(0.0,0.0,1.0,0.0);
-    //auto pos = EngineMath::SphereToRectCoord(transform.rotation,transform.pos.y);
-    //auto pos = glm::vec3 (maxPoint)+glm::vec3 (100);
-    glm::mat4 lightMat = glm::lookAt({0,0,0},glm::vec3(target),{0,0,1});
-    //glm::mat4 lightMat = glm::lookAt(pos,pos+glm::vec3(target),{0,0,1});
-
-    //auto [frustumMaxWS,frustumMinWS] = EngineMath::GetFrustumBoundingBox(mainCamera);
-    //auto [frustumMaxLS,frustumMinLS] = EngineMath::TransformAABB(frustumMinWS,frustumMaxWS,lightMat);
-    auto [sceneMaxLS,sceneMinLS] = EngineMath::TransformAABB(minPoint,maxPoint,lightMat);
-    
-   // std::cout<<"Frustum Min: "<<glm::to_string(frustumMinLS)<<" Max: "<<glm::to_string(frustumMaxLS)<<"\n";
-    std::cout<<"Scene Min: "<<glm::to_string(sceneMinLS)<<" Max: "<<glm::to_string(sceneMaxLS)<<"\n";
-
-    //float nearPlane = std::min(frustumMinLS.z,sceneMinLS.z);
-    //float farPlane = std::max(frustumMaxLS.z,sceneMaxLS.z);
-    /*std::cout<<frustumMinLS.x<<" "<<frustumMaxLS.x<<" "<<frustumMinLS.y<<" "<<frustumMaxLS.y<<" "<<nearPlane
-            <<" "<<farPlane<<"\n";*/
-    glm::mat4 projMat = glm::ortho(sceneMinLS.x,sceneMaxLS.x,sceneMinLS.y,sceneMaxLS.y,sceneMinLS.z,sceneMaxLS.z);
+    glm::vec3 sceneCenter = (minPoint + maxPoint) / 2.0f;
+    float maxDepth = glm::distance(maxPoint,minPoint);
+    glm::vec3 position = sceneCenter - glm::vec3(target)*maxDepth;
+    glm::mat4 lightMat = glm::lookAt(position,sceneCenter,{0,1,0});
+    auto [sceneMaxLS,sceneMinLS] = EngineMath::TransformAABB(minPoint,maxPoint,lightMat);//world space to light space
+    glm::mat4 projMat = glm::ortho(sceneMinLS.x-100,sceneMaxLS.x+100,sceneMinLS.y-100,sceneMaxLS.y+100,1.0f+lightComponent.shadowCamera.near,maxDepth+lightComponent.shadowCamera.far);
     projMat[1][1] *= -1;
-
-   /*glm::mat4 lightMat = glm::lookAt(transform.pos,transform.pos+glm::vec3(target),glm::vec3(0,1,0));
-   glm::mat4 projMat = glm::perspective(glm::radians(80.0f),
-                                        1.0f,
-                                        5.0f, 20000.0f);
-    projMat[1][1] *= -1;*/
     return projMat*lightMat;
 }
 
