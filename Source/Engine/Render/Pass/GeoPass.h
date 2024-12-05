@@ -14,16 +14,13 @@ class GeoPass : public RenderPass
 {
 public:
     GeoPass(GlobalDescriptorData data);
-    void SetupAttachments() override;
     void Execute(entt::view<entt::get_t<Renderable,Transform>> view);
-
-
     VkDescriptorSetLayout globalLayout;
     VkDescriptorSetLayout materialLayout;
     VkDescriptorSetLayout perObjLayout;
 private:
     void SetupRenderState() override;
-
+    void SetupAttachments() override;
     void InputGlobalDesLayout();
     void CreatePerMaterialLayout(std::vector<DescriptorBindingSlot> bindings);
     void CreatePerObjLayout(std::vector<DescriptorBindingSlot> bindings);

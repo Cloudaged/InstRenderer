@@ -1,10 +1,30 @@
 
 #include "RenderPassManager.h"
+
+#include <memory>
 #include "iostream"
 #include "VulkanContext.h"
 RenderPassManager::RenderPassManager()
 {
 
+}
+
+void RenderPassManager::Setup(entt::view<entt::get_t<Renderable, Transform>> view, GlobalDescriptorData globalData)
+{
+    this->view = std::move(view);
+    this->globalDescriptorData = std::move(globalData);
+
+    this->geoPass = std::make_unique<GeoPass>(globalDescriptorData);
+    geoPass->Build();
+
+    this->shadowPass = std::make_unique<ShadowPass>(globalDescriptorData);
+    shadowPass->Build();
+
+    this->compositionPass = std::make_unique<CompositionPass>(globalDescriptorData);
+    compositionPass->Build();
+
+    this->presentPass = std::make_unique<PresentPass>();
+    presentPass->Build();
 }
 
 void RenderPassManager::ExecuteAllPass()
@@ -17,49 +37,20 @@ void RenderPassManager::ExecuteAllPass()
     VulkanContext::GetContext().presentManager.EndRecordCommand(cmd);
 }
 
-
-
-void RenderPassManager::Setup()
+void RenderPassManager::RecreateAllPass()
 {
+    ClearAtt();
     this->geoPass = std::make_unique<GeoPass>(globalDescriptorData);
-    geoPass->SetupAttachments();
     geoPass->Build();
-
     this->shadowPass = std::make_unique<ShadowPass>(globalDescriptorData);
-    shadowPass->SetupAttachments();
     shadowPass->Build();
 
     this->compositionPass = std::make_unique<CompositionPass>(globalDescriptorData);
-    compositionPass->SetupAttachments();
     compositionPass->Build();
-
 
     this->presentPass = std::make_unique<PresentPass>();
-    presentPass->SetupAttachments();
     presentPass->Build();
 
-}
-
-
-void RenderPassManager::RecreateAllPass()
-{
-    geoPass->ClearRes();
-    shadowPass->ClearRes();
-    compositionPass->ClearRes();
-    presentPass->ClearRes();
-    ClearAtt();
-
-
-    geoPass->SetupAttachments();
-    shadowPass->SetupAttachments();
-    compositionPass->SetupAttachments();
-    presentPass->SetupAttachments();
-
-
-    geoPass->Build();
-    shadowPass->Build();
-    compositionPass->Build();
-    presentPass->Build();
 }
 
 void RenderPassManager::ClearAtt()
@@ -77,3 +68,4 @@ void RenderPassManager::ClearAtt()
     }
     RenderPass::attachmentMap.clear();
 }
+

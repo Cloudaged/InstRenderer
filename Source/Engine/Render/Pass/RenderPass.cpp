@@ -4,6 +4,29 @@
 
 AttachmentMap RenderPass::attachmentMap;
 
+RenderPass::RenderPass()
+{
+
+}
+
+RenderPass::~RenderPass()
+{
+    auto device = VulkanContext::GetContext().device;
+    vkDeviceWaitIdle(device);
+    //Clear Renderpass
+    vkDestroyRenderPass(device,passHandle, nullptr);
+
+    //Clear FrameBuffer
+    if(framebufferHandle!=VK_NULL_HANDLE)
+    {
+        vkDestroyFramebuffer(device,framebufferHandle, nullptr);
+    }
+
+    inputAttDes.clear();
+    outputResource.clear();
+}
+
+
 VkImageUsageFlags RenderPass::GetUsage(AttachmentUsage usage)
 {
     switch (usage)
@@ -110,6 +133,8 @@ AttachmentState RenderPass::GetState(AttachmentOP op,AttachmentUsage usage)
 
 void RenderPass::Build()
 {
+    SetupAttachments();
+
     std::vector<VkAttachmentDescription> attDescriptions;
     std::vector<VkImageView> views;
     std::vector<VkAttachmentReference> outputRefs;
@@ -402,24 +427,6 @@ void RenderPass::InputAttachmentDes(std::vector<std::string> names)
     vkUpdateDescriptorSets(VulkanContext::GetContext().device,writes.size(),writes.data(),0, nullptr);
 }
 
-void RenderPass::ClearRes()
-{
-    auto device = VulkanContext::GetContext().device;
-
-    vkDeviceWaitIdle(device);
-    //Clear Renderpass
-    vkDestroyRenderPass(device,passHandle, nullptr);
-
-    //Clear FrameBuffer
-    if(framebufferHandle!=VK_NULL_HANDLE)
-    {
-        vkDestroyFramebuffer(device,framebufferHandle, nullptr);
-    }
-
-    inputAttDes.clear();
-    outputResource.clear();
-}
-
 void RenderPass::TransAttachmentLayout(VkCommandBuffer cmd)
 {
     for (auto& res:outputResource)
@@ -463,6 +470,7 @@ void RenderPass::AllocAttachmentResource(AttachmentDes &attachment)
         attachment.hasInit = true;
     }
 }
+
 
 
 

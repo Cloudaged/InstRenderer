@@ -13,13 +13,12 @@ class RenderPassManager
 public:
     RenderPassManager();
     void ExecuteAllPass();
-    void Setup();
-
+    void Setup(entt::view<entt::get_t<Renderable,Transform>> view,GlobalDescriptorData globalData);
     void RecreateAllPass();
     void ClearAtt();
+private:
     entt::view<entt::get_t<Renderable,Transform>> view;
     GlobalDescriptorData globalDescriptorData;
-private:
     std::unique_ptr<CompositionPass> compositionPass;
     std::unique_ptr<GeoPass> geoPass;
     std::unique_ptr<PresentPass> presentPass;

@@ -30,9 +30,9 @@ struct AttachmentState
 class RenderPass
 {
 public:
-    virtual void SetupAttachments() = 0;
+    RenderPass();
     void Build();
-    void ClearRes();
+    ~RenderPass();
 public:
     static AttachmentMap attachmentMap;
     VkRenderPass passHandle;
@@ -41,19 +41,20 @@ public:
     std::string name;
     RenderState renderState;
 protected:
-    void TransAttachmentLayout(VkCommandBuffer cmd);
-    void UpdateRecordedLayout();
     VkImageUsageFlags GetUsage(AttachmentUsage usage);
     VkImageLayout GetLayout(AttachmentUsage usage);
     AttachmentState GetState(AttachmentOP op,AttachmentUsage usage);
+    void TransAttachmentLayout(VkCommandBuffer cmd);
+    void UpdateRecordedLayout();
     virtual void SetupRenderState()=0;
-    void InputAttachmentDes(std::vector<std::string> names);
+    virtual void SetupAttachments() = 0;
 protected:
     std::vector<AttachmentDes> inputAttDes;
     std::vector<RenderResource> outputResource;
     VkDescriptorSetLayout inputAttDesLayout;
     VkDescriptorSet inputAttDesSet;
 private:
+    void InputAttachmentDes(std::vector<std::string> names);
     void AllocAttachmentResource(AttachmentDes& attachment);
     void BuildPresentFrame();
 private:
