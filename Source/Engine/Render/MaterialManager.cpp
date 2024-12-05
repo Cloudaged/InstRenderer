@@ -1,7 +1,7 @@
 
 #include "MaterialManager.h"
 #include "VulkanContext.h"
-void MaterialManager::Setup(VkDescriptorSetLayout* layout,entt::view<entt::get_t<Renderable>> view)
+void MaterialManager::Setup(VkDescriptorSetLayout layout,entt::view<entt::get_t<Renderable>> view)
 {
     this->materialLayout = layout;
     this->view = view;
@@ -37,7 +37,7 @@ void MaterialManager::AllocatePBRDes(StandardMaterial* material)
     allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocateInfo.descriptorPool = VulkanContext::GetContext().pool;
     allocateInfo.descriptorSetCount = 1;
-    allocateInfo.pSetLayouts = materialLayout;
+    allocateInfo.pSetLayouts = &materialLayout;
 
     if (vkAllocateDescriptorSets(VulkanContext::GetContext().device, &allocateInfo, &material->set) != VK_SUCCESS)
     {

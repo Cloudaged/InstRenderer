@@ -6,7 +6,7 @@
 #include "QDockWidget"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_syswm.h"
-#include "Common/Locker.h"
+#include "Common/Core/Locker.h"
 #include "QResizeEvent"
 QT_BEGIN_NAMESPACE
 namespace Ui

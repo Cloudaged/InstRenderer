@@ -8,8 +8,8 @@
 class MaterialManager
 {
 public:
-    void Setup(VkDescriptorSetLayout* layout,entt::view<entt::get_t<Renderable>> view);
-    VkDescriptorSetLayout* materialLayout;
+    void Setup(VkDescriptorSetLayout layout,entt::view<entt::get_t<Renderable>> view);
+    VkDescriptorSetLayout materialLayout;
     entt::view<entt::get_t<Renderable>> view;
     void AllocateDescriptorSets();
 private:

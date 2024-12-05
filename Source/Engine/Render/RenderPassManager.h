@@ -3,7 +3,7 @@
 #define INSTRENDERER_RENDERPASSMANAGER_H
 #include "Pass/CompositionPass.h"
 #include "Pass/GeoPass.h"
-#include "../Common/Scene.h"
+#include "../Common/Scene/Scene.h"
 #include "Pass/PresentPass.h"
 #include "Pass/ShadowPass.h"
 class RenderSystem;

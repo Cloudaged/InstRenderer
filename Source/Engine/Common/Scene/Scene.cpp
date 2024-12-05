@@ -1,12 +1,16 @@
 #include "Scene.h"
 #include "iostream"
 
-#include "../Render/VulkanContext.h"
-#include "../Resource/ModelLoader.h"
+#include "../../Render/VulkanContext.h"
+#include "../../Resource/ModelLoader.h"
 
 Scene::Scene():
 mainCamera(&reg,"mainCamera")
 {
+    InitGlobalSet();
+    InitSkyboxData();
+    InitMainCamera();
+    InitMainLight();
 }
 
 Scene::~Scene()
@@ -188,8 +192,6 @@ void Scene::InitGlobalSet()
 
 void Scene::UpdateScene()
 {
-    globUniform.view = mainCamera.vpMat.view;
-    globUniform.proj = mainCamera.vpMat.proj;
     globUniform.lightMat = GetLightMat(*mainLight);
     lightUniform.cameraPos= glm::vec4(mainCamera.position,1.0);
     lightUniform.cameraDir = glm::vec4(mainCamera.viewPoint-mainCamera.position,1.0);
@@ -199,20 +201,14 @@ void Scene::UpdateScene()
 
 }
 
-void Scene::InitSceneData()
-{
-    mainCamera.InitCamera(glm::vec3{0,0,0},glm::vec3{0,0,1},{0,1,0});
 
-    auto tar = mainCamera.GetCameraTarget();
+void Scene::InitSkyboxData()
+{
     globUniform.skyboxProj = glm::perspective(glm::radians(80.0f),
                                               VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
                                               0.001f, 256.0f);
     globUniform.skyboxProj[1][1] *=-1;
 
-}
-
-void Scene::InitSkyboxData()
-{
     std::string boxPath = FILE_PATH("Asset/Skybox/Box/Box.gltf");
 
     std::string texturePath = FILE_PATH("Asset/Skybox/Textures/");
@@ -228,14 +224,6 @@ void Scene::InitSkyboxData()
 
 }
 
-void Scene::UpdateAspect()
-{
-    mainCamera.UpdateAspect();
-    globUniform.skyboxProj = glm::perspective(glm::radians(80.0f),
-                                              VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
-                                              0.001f, 256.0f);
-    globUniform.skyboxProj[1][1] *=-1;
-}
 
 void Scene::InitMainLight()
 {
@@ -275,7 +263,36 @@ glm::mat4 Scene::GetLightMat(const Light& light)
     return projMat*lightMat;
 }
 
+void Scene::onCameraUpdate(Camera &camera)
+{
+    camera.cameraData.aspect = VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height;
+    camera.vpMat.proj = glm::perspective(camera.cameraData.fov, camera.cameraData.aspect,
+                                         camera.cameraData.nearPlane, camera.cameraData.farPlane);
+    camera.vpMat.proj[1][1] *=-1;
+    camera.vpMat.view = glm::lookAt(camera.position,
+                                    camera.viewPoint+camera.position,camera.yAxis);
 
+    globUniform.view = camera.vpMat.view;
+    globUniform.proj = camera.vpMat.proj;
+    lightUniform.cameraPos= glm::vec4(camera.position,1.0);
+    lightUniform.cameraDir = glm::vec4(camera.viewPoint-camera.position,1.0);
+
+    globUniform.skyboxProj = glm::perspective(glm::radians(80.0f),
+                                              VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
+                                              0.001f, 256.0f);
+    globUniform.skyboxProj[1][1] *=-1;
+}
+
+void Scene::onLightUpdate(Light* light)
+{
+
+}
+
+void Scene::InitMainCamera()
+{
+    mainCamera.InitCamera(glm::vec3{0,0,0},glm::vec3{0,0,1},{0,1,0});
+    mainCamera.AddObserver(this);
+}
 
 
 

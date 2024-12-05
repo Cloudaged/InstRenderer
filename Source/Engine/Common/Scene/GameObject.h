@@ -6,7 +6,7 @@
 #include "string"
 #include "vector"
 #include "bitset"
-#include "Component/Components.h"
+#include "../Component/Components.h"
 enum class GameObjectType
 {
     GameObject,

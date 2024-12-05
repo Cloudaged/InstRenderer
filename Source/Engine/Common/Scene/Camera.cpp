@@ -1,6 +1,6 @@
 
 #include "Camera.h"
-#include "../Render/VulkanContext.h"
+#include "../../Render/VulkanContext.h"
 
 Camera::Camera(entt::registry* reg,std::string name):GameObject(reg,name)
 {
@@ -20,7 +20,7 @@ void Camera::InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir)
 
 
     this->vpMat.view = glm::lookAt(position,
-                                   viewPoint,yAxis);
+                                   viewPoint + position,yAxis);
 
     this->vpMat.proj = glm::perspective(cameraData.fov,
                                         VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
@@ -35,15 +35,10 @@ glm::mat4 Camera::GetViewMatrix(entt::registry reg)
     return vpMat.view;
 }
 
-void Camera::ResetViewMatrix()
-{
-    this->vpMat.view = glm::lookAt(position,
-                                   viewPoint+position,yAxis);
-}
-
 void Camera::SetCameraPos(glm::vec3 newPos)
 {
     this->position = newPos;
+    Update();
 }
 
 glm::vec3 Camera::GetCameraPos()
@@ -61,6 +56,7 @@ void Camera::SetCameraTarget(glm::vec3 newTarget)
     this->viewPoint = newTarget;
     this->zAxis = newTarget;
     this->xAxis = glm::cross(this->yAxis,newTarget);
+    Update();
 }
 
 glm::vec3 Camera::GetCameraUpDir()
@@ -68,11 +64,14 @@ glm::vec3 Camera::GetCameraUpDir()
     return this->yAxis;
 }
 
+
+void Camera::Update()
+{
+    NotifyCamera(*this);
+}
+
 void Camera::UpdateAspect()
 {
-    cameraData.aspect = VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height;
-    this->vpMat.proj = glm::perspective(cameraData.fov, cameraData.aspect,
-                                        cameraData.nearPlane, cameraData.farPlane);
-    this->vpMat.proj[1][1] *=-1;
+
 }
 

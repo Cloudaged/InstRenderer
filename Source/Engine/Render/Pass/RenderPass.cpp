@@ -11,19 +11,7 @@ RenderPass::RenderPass()
 
 RenderPass::~RenderPass()
 {
-    auto device = VulkanContext::GetContext().device;
-    vkDeviceWaitIdle(device);
-    //Clear Renderpass
-    vkDestroyRenderPass(device,passHandle, nullptr);
 
-    //Clear FrameBuffer
-    if(framebufferHandle!=VK_NULL_HANDLE)
-    {
-        vkDestroyFramebuffer(device,framebufferHandle, nullptr);
-    }
-
-    inputAttDes.clear();
-    outputResource.clear();
 }
 
 
@@ -423,7 +411,6 @@ void RenderPass::InputAttachmentDes(std::vector<std::string> names)
         writes.push_back(descriptorWrite);
 
     }
-
     vkUpdateDescriptorSets(VulkanContext::GetContext().device,writes.size(),writes.data(),0, nullptr);
 }
 
@@ -469,6 +456,23 @@ void RenderPass::AllocAttachmentResource(AttachmentDes &attachment)
         *attachment.data = new Texture(*img);
         attachment.hasInit = true;
     }
+}
+
+void RenderPass::ClearRes()
+{
+    auto device = VulkanContext::GetContext().device;
+    vkDeviceWaitIdle(device);
+    //Clear Renderpass
+    vkDestroyRenderPass(device,passHandle, nullptr);
+
+    //Clear FrameBuffer
+    if(framebufferHandle!=VK_NULL_HANDLE)
+    {
+        vkDestroyFramebuffer(device,framebufferHandle, nullptr);
+    }
+
+    inputAttDes.clear();
+    outputResource.clear();
 }
 
 

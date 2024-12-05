@@ -17,7 +17,7 @@
 #include "SceneTree.h"
 #include "QDropEvent"
 #include "../../../Source/Engine/Common/Core/PathDefine.h"
-#include "../../../Source/Engine/Common/GameObject.h"
+#include "Common/Scene/GameObject.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui

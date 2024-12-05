@@ -3,7 +3,7 @@
 #define INSTRENDERER_RENDERSYSTEM_H
 #include "../../Render/RenderPassManager.h"
 #include "../../Render/MaterialManager.h"
-#include "../Scene.h"
+#include "../Scene/Scene.h"
 #include "iostream"
 struct RenderSysBeginInfo
 {

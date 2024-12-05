@@ -2,7 +2,7 @@
 #ifndef INSTRENDERER_LIGHT_H
 #define INSTRENDERER_LIGHT_H
 #include "GameObject.h"
-#include "Component/Components.h"
+#include "../Component/Components.h"
 
 class Light:public GameObject
 {

@@ -5,7 +5,7 @@
 void RenderSystem::BeginSystem(RenderSysBeginInfo info)
 {
     passManager.Setup(info.registry->view<Renderable,Transform>(),info.globalData);
-    materialManager.Setup(&passManager.geoPass->materialLayout,info.registry->view<Renderable>());
+    materialManager.Setup(passManager.geoPass->materialLayout,info.registry->view<Renderable>());
     VulkanContext::GetContext().passManager = &this->passManager;
 }
 

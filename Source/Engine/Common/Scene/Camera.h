@@ -3,9 +3,10 @@
 #define INSTRENDERER_CAMERA_H
 #include "glm/glm.hpp"
 #include "GameObject.h"
-#include "../Common/Component/Components.h"
+#include "../Component/Components.h"
 #include <array>
 #include "glm/gtc/matrix_transform.hpp"
+#include "SceneSubject.h"
 using BoundingPoint = glm::vec3;
 
 
@@ -17,18 +18,18 @@ struct CameraData
     float farPlane;
 };
 
-class Camera:public GameObject
+class Camera:public GameObject,public SceneSubject
 {
 public:
     Camera(entt::registry* reg,std::string name);
+    void InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir);
     glm::mat4 GetViewMatrix(entt::registry reg);
-    void ResetViewMatrix();
     glm::vec3 GetCameraPos();
     void SetCameraPos(glm::vec3 newPos);
     glm::vec3 GetCameraTarget();
     void SetCameraTarget(glm::vec3 newTarget);
     glm::vec3 GetCameraUpDir();
-    void InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir);
+    void Update();
     void UpdateAspect();
 public:
     float pitch=0;

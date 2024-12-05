@@ -2,7 +2,7 @@
 #ifndef INSTRENDERER_CONTROLLER_H
 #define INSTRENDERER_CONTROLLER_H
 #include "SDL2/SDL.h"
-#include "Camera.h"
+#include "Scene/Camera.h"
 #include "iostream"
 class Controller
 {

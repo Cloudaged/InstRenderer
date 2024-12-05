@@ -6,14 +6,14 @@
 #include "MeshObject.h"
 #include "vulkan/vulkan.h"
 #include "vector"
-#include "../Render/Buffer/Buffer.h"
+#include "../../Render/Buffer/Buffer.h"
 #include "glm/gtc/matrix_transform.hpp"
-#include "../Resource/ImageLoader.h"
-#include "../Render/Buffer/Skybox.h"
+#include "../../Resource/ImageLoader.h"
+#include "../../Render/Buffer/Skybox.h"
 #include "Camera.h"
 #include "Light.h"
-#include <glm/gtx/string_cast.hpp>
-
+#include "glm/gtx/string_cast.hpp"
+#include "SceneObserver.h"
 struct GlobalUniform
 {
     glm::mat4 view;
@@ -56,7 +56,7 @@ struct GlobalDescriptorData
 
 using BoundingPoint = glm::vec3;
 
-class Scene
+class Scene : public SceneObserver
 {
 public:
     Scene();
@@ -64,11 +64,6 @@ public:
     std::shared_ptr<GameObject> CreateObject(std::string name,std::string type="GameObject");
     std::shared_ptr<GameObject> CreateObject(std::string name,int parent,std::string type="GameObject");
     std::shared_ptr<GameObject> GetGameObject(int id);
-    void InitGlobalSet();
-    void InitSkyboxData();
-    void InitSceneData();
-    void InitMainLight();
-    void UpdateAspect();
     void UpdateScene();
     void DeleteObject(int id);
     void Destroy(int i);
@@ -86,6 +81,13 @@ public:
     BoundingPoint minPoint;
     BoundingPoint maxPoint;
 private:
+    void InitGlobalSet();
+    void InitSkyboxData();
+    void InitMainCamera();
+    void InitMainLight();
+
+    void onCameraUpdate(Camera& camera) override;
+    void onLightUpdate(Light* light) override;
     glm::mat4 GetLightMat(const Light& light);
 
 };

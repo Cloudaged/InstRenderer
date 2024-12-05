@@ -12,7 +12,7 @@
 #include "../ComponentUI/Base/MyToolBox.h"
 
 #include "entt.hpp"
-#include "../Engine/Common/GameObject.h"
+#include "Common/Scene/GameObject.h"
 
 #include "../Engine/Common/Component/Components.h"
 #include "../ComponentUI/TransformComponentUI/TransformComponentUI.h"

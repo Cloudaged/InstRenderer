@@ -7,7 +7,7 @@
 #include "vector"
 #include "entt.hpp"
 #include "../../Common/Component/Components.h"
-#include "../../Common/Scene.h"
+#include "../../Common/Scene/Scene.h"
 #include "../RenderState.h"
 
 typedef std::unordered_map<std::string,AttachmentDes> AttachmentMap;
@@ -32,7 +32,8 @@ class RenderPass
 public:
     RenderPass();
     void Build();
-    ~RenderPass();
+    virtual ~RenderPass();
+    void ClearRes();
 public:
     static AttachmentMap attachmentMap;
     VkRenderPass passHandle;

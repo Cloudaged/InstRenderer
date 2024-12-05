@@ -39,16 +39,18 @@ void RenderPassManager::ExecuteAllPass()
 
 void RenderPassManager::RecreateAllPass()
 {
+    geoPass->ClearRes();
+    shadowPass->ClearRes();
+    compositionPass->ClearRes();
+    presentPass->ClearRes();
     ClearAtt();
-    this->geoPass = std::make_unique<GeoPass>(globalDescriptorData);
+
+
     geoPass->Build();
-    this->shadowPass = std::make_unique<ShadowPass>(globalDescriptorData);
     shadowPass->Build();
 
-    this->compositionPass = std::make_unique<CompositionPass>(globalDescriptorData);
     compositionPass->Build();
 
-    this->presentPass = std::make_unique<PresentPass>();
     presentPass->Build();
 
 }

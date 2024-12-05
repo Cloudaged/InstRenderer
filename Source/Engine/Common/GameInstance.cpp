@@ -10,20 +10,13 @@ windowContext(windowContext), controller(&event)
 {
     InitCore();
     InitVulkanContext();
-    mainScene->InitGlobalSet();
-    mainScene->InitSceneData();
-    mainScene->InitSkyboxData();
-    mainScene->InitMainLight();
+    mainScene = std::make_shared<Scene>();
     InitSystem();
 }
 
 void GameInstance::InitCore()
 {
     Locker::Init();
-    mainScene = std::make_shared<Scene>();
-    ResourceManager::Init();
-    //Meta
-    RegisterMeta();
     //Resource Manager
     ResourceManager::Init();
 
@@ -79,7 +72,7 @@ void GameInstance::SDLEvent()
 
                 windowContext->windowSize.width= event.window.data1;
                 windowContext->windowSize.height = event.window.data2;
-                mainScene->UpdateAspect();
+                mainScene->mainCamera.Update();
             }
             else if(event.window.event ==SDL_WINDOWEVENT_MINIMIZED)
             {

@@ -96,6 +96,4 @@ void Controller::ViewInteract(Camera* cam)
             interactInfo.isDrag = false;
         }
     }
-    cam->ResetViewMatrix();
-
 }

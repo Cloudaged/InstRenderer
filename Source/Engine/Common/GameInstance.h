@@ -2,8 +2,7 @@
 #ifndef INSTRENDERER_GAMEINSTANCE_H
 #define INSTRENDERER_GAMEINSTANCE_H
 #include "iostream"
-#include "Scene.h"
-#include "Meta/Meta.h"
+#include "Scene/Scene.h"
 #include "SDL2/SDL.h"
 #include "../Render/VulkanContext.h"
 #include "System/RenderSystem.h"
@@ -12,7 +11,7 @@
 #include "../Resource/ResTexture.h"
 #include "../Resource/ImageLoader.h"
 #include "Controller.h"
-#include "Locker.h"
+#include "Core/Locker.h"
 #include "Core/WindowContext.h"
 
 class GameInstance
@@ -33,7 +32,6 @@ private:
     void InitSystem();
     void Update();
     void Execute();
-    void ReceiveEvent();
     bool AllowToTick();
     void InitVulkanContext();
     void SDLEvent();
