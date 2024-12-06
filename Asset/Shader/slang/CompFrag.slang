@@ -37,6 +37,7 @@ float4 main(FragInput input) : SV_Target
     float3 view = normalize(lightUniform.cameraPos.xyz-posWS.xyz);
 
     float3 finalColor = float3(0.0f);
+    float shadow=0;
     for (int i = 0; i < lightUniform.lightCount; i++)
     {
         Light light = lightUniform.light[i];
@@ -45,9 +46,11 @@ float4 main(FragInput input) : SV_Target
         float3 specularBRDF = GetSpecularBRDF(normal.xyz, lightDir, view, roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
          finalColor += light.intensity * dot(normal.xyz, light.toward.xyz) * finalBRDF;
-        //finalColor = specularBRDF; 
-    }
+        //finalColor = specularBRDF;
 
-    float shadow = CalculateShadow(shadowMap, input.lightMat, posWS);
+         float bias = NormalBias(0.01, normal.xyz, lightDir);
+        shadow = CalculateShadow(shadowMap, input.lightMat, posWS,bias);
+    }
+    
     return baseColor*shadow;
 }

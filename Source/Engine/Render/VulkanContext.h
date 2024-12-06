@@ -25,19 +25,19 @@ class VulkanContext
 public:
     static VulkanContext& GetContext();
     static void Init(SDL_Window* window,SDL_Event* event);
-
-
-    //Vulkan Object
+    void DrawPrepare();
+    void Submit();
+    void CreateSwapchain();
+    VkCommandBuffer BeginSingleTimeCommands(bool isResourceThread= false);
+    void EndSingleTimeCommands(VkCommandBuffer commandBuffer,bool isResourceThread= false);
+public:
     VkExtent2D windowExtent;
-
     VkInstance instance;
     VkSurfaceKHR surface;
     VkPhysicalDevice gpu;
     VkDevice device;
     SwapchainData swapchainData;
-
     ContextQueues queues;
-
     QueueFamilyIndices familyIndices;
     VmaAllocator allocator;
     VkCommandPool cmdPool;
@@ -48,22 +48,12 @@ public:
     bool isResize = false;
     SDL_Window* sdlWindow;
     SDL_Event* sdlEvent;
-
     RenderPassManager* passManager;
-
     VkCommandBuffer drawCmd;
-    void DrawPrepare();
-    void Submit();
-
-    void CreateSwapchain();
-
-    VkCommandBuffer BeginSingleTimeCommands(bool isResourceThread= false);
-    void EndSingleTimeCommands(VkCommandBuffer commandBuffer,bool isResourceThread= false);
 private:
     VulkanContext(SDL_Window* window);
     void InitVulkanBackend();
     static std::unique_ptr<VulkanContext> Pcontext;
-
     //Init
     void CreateInstance();
     void CreateSurface();
