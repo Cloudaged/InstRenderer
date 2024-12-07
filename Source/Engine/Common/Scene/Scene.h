@@ -31,6 +31,8 @@ struct LightUnitsInShader
     alignas(4) int type;
     alignas(4) float intensity;
     alignas(4) float range;
+    alignas(4) float outerCutoff;
+    alignas(4) float attenuation;
 };
 
 struct LightUniform
@@ -86,10 +88,8 @@ private:
     void InitSkyboxData();
     void InitMainCamera();
     void InitMainLight();
-
     void onCameraUpdate(Camera& camera) override;
     void onLightUpdate(Light* light) override;
-    void UpdateLightMat(const Light& light);
 
 };
 

@@ -19,6 +19,8 @@ public struct Light
     public int type;
     public float intensity;
     public float range;
+    public float outerCutoff;
+    public float attenuation;
 }
 
 public struct LightCameraUniform

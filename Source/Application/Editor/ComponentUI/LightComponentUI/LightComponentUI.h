@@ -31,10 +31,18 @@ public:
     ValueEdit* rangeUI;
     ValueEdit* nearUI;
     ValueEdit* farUI;
+    ValueEdit* attenuationUI;
+    ValueEdit* outerCutoffUI;
     TypeSelector* lightTypeUI;
 
 private:
     LightComponent UpdateALlData();
+    void ChangeToDirectionLight();
+    void ChangeToPointLight();
+    void ChangeToSpotLight();
+    void ClearLayoutItems();
+private:
+    QVBoxLayout* layout;
     Ui::LightComponentUI *ui;
 
 signals:

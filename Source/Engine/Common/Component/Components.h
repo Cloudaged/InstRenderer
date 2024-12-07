@@ -16,7 +16,8 @@ enum class ComponentType:int
 enum class LightType:int
 {
     Directional=0,
-    Point=1
+    Point=1,
+    Spot = 2
 };
 
 struct Transform
@@ -44,6 +45,8 @@ struct LightComponent
     glm::vec3 color = {1.0,1.0,1.0};
     float Intensity =1;
     float range = 0;
+    float outerCutoff = 0;
+    float attenuation = 0;
     ShadowCamera shadowCamera={};
 };
 

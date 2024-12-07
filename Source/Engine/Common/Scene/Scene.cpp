@@ -205,7 +205,10 @@ void Scene::UpdateScene()
     mainCamera.vpMat.proj[1][1] *=-1;
 
     globUniform.proj = mainCamera.vpMat.proj;
-    UpdateLightMat(*mainLight);
+    auto [lightV,lightP] = mainLight->GetLightMatrix(&reg,minPoint,maxPoint);
+    globUniform.lightViewMat = lightV;
+    globUniform.lightProjMat = lightP;
+    //UpdateLightMat(*mainLight);
     lightUniform.cameraPos= glm::vec4(mainCamera.position,1.0);
     lightUniform.cameraDir = glm::vec4(mainCamera.viewPoint-mainCamera.position,1.0);
 
@@ -241,6 +244,9 @@ void Scene::InitSkyboxData()
 void Scene::InitMainLight()
 {
     mainLight = std::static_pointer_cast<Light>(CreateObject("MainLight","Light"));
+    auto& transComp = reg.get<Transform>(mainLight->entityID);
+    transComp.rotation = {90,0,0};
+    UpdateLightData();
 }
 
 void Scene::UpdateLightData()
@@ -253,30 +259,15 @@ void Scene::UpdateLightData()
         auto& trans = view.get<Transform>(entityID);
         glm::mat4 mat = EngineMath::GetRotateMatrix(trans.rotation);
         glm::vec4 rotatedDir = mat*glm::vec4(0.0,0.0,1.0,0.0);
-        lightUniform.lights[num] = std::move(LightUnitsInShader{glm::vec4(trans.pos,1.0),rotatedDir,glm::vec4(lightComp.color,1.0),(int)lightComp.type,lightComp.Intensity,lightComp.range});
+        lightUniform.lights[num] = std::move(LightUnitsInShader{glm::vec4(trans.pos,1.0),rotatedDir,
+                                                                glm::vec4(lightComp.color,1.0),
+                                                                (int)lightComp.type,lightComp.Intensity,
+                                                                lightComp.range,lightComp.outerCutoff,lightComp.attenuation});
         num++;
     }
     lightUniform.count=num;
 }
 
-void Scene::UpdateLightMat(const Light& light)
-{
-    const Transform& transform = reg.get<Transform>(light.entityID);
-    const LightComponent& lightComponent = reg.get<LightComponent>(light.entityID);
-
-    auto rotationMat = EngineMath::GetRotateMatrix(transform.rotation);
-    glm::vec4 target = rotationMat*glm::vec4(0.0,0.0,1.0,0.0);
-    glm::vec3 sceneCenter = (minPoint + maxPoint) / 2.0f;
-    float maxDepth = glm::distance(maxPoint,minPoint);
-    glm::vec3 position = sceneCenter - glm::vec3(target)*maxDepth;
-    glm::mat4 lightMat = glm::lookAt(position,sceneCenter,{0,1,0});
-    auto [sceneMaxLS,sceneMinLS] = EngineMath::TransformAABB(minPoint,maxPoint,lightMat);//world space to light space
-    glm::mat4 projMat = glm::ortho(sceneMinLS.x-100,sceneMaxLS.x+100,sceneMinLS.y-100,sceneMaxLS.y+100,1.0f+lightComponent.shadowCamera.near,maxDepth+lightComponent.shadowCamera.far);
-    projMat[1][1] *= -1;
-
-    globUniform.lightViewMat = lightMat;
-    globUniform.lightProjMat = projMat;
-}
 
 void Scene::onCameraUpdate(Camera &camera)
 {

@@ -41,9 +41,9 @@ void TransformComponentUI::InitSignal()
                              positionEditor->yEdit->text().toFloat(),
                              positionEditor->zEdit->text().toFloat()};
 
-            glm::vec3 rot = {glm::radians(rotationEditor->xEdit->text().toFloat()),
-                             glm::radians(rotationEditor->yEdit->text().toFloat()),
-                             glm::radians(rotationEditor->zEdit->text().toFloat())};
+            glm::vec3 rot = {rotationEditor->xEdit->text().toFloat(),
+                             rotationEditor->yEdit->text().toFloat(),
+                            rotationEditor->zEdit->text().toFloat()};
 
             glm::vec3 scl= {scaleEditor->xEdit->text().toFloat(),
                             scaleEditor->yEdit->text().toFloat(),
@@ -58,9 +58,9 @@ void TransformComponentUI::InitSignal()
                          positionEditor->yEdit->text().toFloat(),
                          positionEditor->zEdit->text().toFloat()};
 
-        glm::vec3 rot = {glm::radians(rotationEditor->xEdit->text().toFloat()),
-                         glm::radians(rotationEditor->yEdit->text().toFloat()),
-                         glm::radians(rotationEditor->zEdit->text().toFloat())};
+        glm::vec3 rot = {rotationEditor->xEdit->text().toFloat(),
+                         rotationEditor->yEdit->text().toFloat(),
+                         rotationEditor->zEdit->text().toFloat()};
 
         glm::vec3 scl= {scaleEditor->xEdit->text().toFloat(),
                         scaleEditor->yEdit->text().toFloat(),
@@ -73,9 +73,9 @@ void TransformComponentUI::InitSignal()
                          positionEditor->yEdit->text().toFloat(),
                          positionEditor->zEdit->text().toFloat()};
 
-        glm::vec3 rot = {glm::radians(rotationEditor->xEdit->text().toFloat()),
-                         glm::radians(rotationEditor->yEdit->text().toFloat()),
-                         glm::radians(rotationEditor->zEdit->text().toFloat())};
+        glm::vec3 rot = {rotationEditor->xEdit->text().toFloat(),
+                         rotationEditor->yEdit->text().toFloat(),
+                         rotationEditor->zEdit->text().toFloat()};
 
         glm::vec3 scl= {scaleEditor->xEdit->text().toFloat(),
                         scaleEditor->yEdit->text().toFloat(),
@@ -88,9 +88,9 @@ void TransformComponentUI::InitSignal()
                          positionEditor->yEdit->text().toFloat(),
                          positionEditor->zEdit->text().toFloat()};
 
-        glm::vec3 rot = {glm::radians(rotationEditor->xEdit->text().toFloat()),
-                         glm::radians(rotationEditor->yEdit->text().toFloat()),
-                         glm::radians(rotationEditor->zEdit->text().toFloat())};
+        glm::vec3 rot = {rotationEditor->xEdit->text().toFloat(),
+                         rotationEditor->yEdit->text().toFloat(),
+                         rotationEditor->zEdit->text().toFloat()};
 
         glm::vec3 scl= {scaleEditor->xEdit->text().toFloat(),
                         scaleEditor->yEdit->text().toFloat(),
@@ -105,7 +105,7 @@ void TransformComponentUI::ChangeData(Transform trans)
 {
     this->data = trans;
     positionEditor->UpdateData(data.pos);
-    rotationEditor->UpdateData(glm::degrees(data.rotation));
+    rotationEditor->UpdateData(data.rotation);
     scaleEditor->UpdateData(data.scale);
 }
 

@@ -12,9 +12,9 @@ namespace EngineMath
 
     glm::mat4 GetRotateMatrix(const glm::vec3& rotationAngle,glm::mat4 mat)
     {
-        mat = glm::rotate(mat,rotationAngle.x,{1,0,0});
-        mat = glm::rotate(mat,rotationAngle.y,{0,1,0});
-        mat = glm::rotate(mat,rotationAngle.z,{0,0,1});
+        mat = glm::rotate(mat,glm::radians(rotationAngle.x),{1,0,0});
+        mat = glm::rotate(mat,glm::radians(rotationAngle.y),{0,1,0});
+        mat = glm::rotate(mat,glm::radians(rotationAngle.z),{0,0,1});
         return mat;
     }
 
