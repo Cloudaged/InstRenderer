@@ -10,6 +10,7 @@ public:
     void SetupAttachments() override;
     void Execute(entt::view<entt::get_t<Renderable,Transform>> compView);
 private:
+    glm::mat4 modelMatrix;
     uint32_t shadowMapWidth,shadowMapHeight;
     GlobalDescriptorData globalDescriptorData;
     Texture* shadowMapAttachment;

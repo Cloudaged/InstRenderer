@@ -105,7 +105,7 @@ void TransformComponentUI::ChangeData(Transform trans)
 {
     this->data = trans;
     positionEditor->UpdateData(data.pos);
-    rotationEditor->UpdateData(data.rotation);
+    rotationEditor->UpdateData(glm::degrees(data.rotation));
     scaleEditor->UpdateData(data.scale);
 }
 

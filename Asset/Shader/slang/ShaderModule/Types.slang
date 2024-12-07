@@ -7,7 +7,8 @@ public struct GlobalUniform
     public float4x4 viewMat;
     public float4x4 projMat;
     public float4x4 skyboxProjMat;
-    public float4x4 lightMat;
+    public float4x4 lightViewMat;
+    public float4x4 lightProjMat;
 }
 
 public struct Light

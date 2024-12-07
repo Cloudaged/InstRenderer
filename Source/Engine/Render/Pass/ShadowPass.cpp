@@ -77,9 +77,12 @@ void ShadowPass::Execute(entt::view<entt::get_t<Renderable, Transform>> compView
     {
         auto renderComponents = compView.get<Renderable>(entity);
         auto transComponents = compView.get<Transform>(entity);
+        modelMatrix = {EngineMath::GetModelMatrix(transComponents)};
 
         std::vector<VkDescriptorSet> sets = {globalDescriptorData.globalDes};
         //Bind
+        vkCmdPushConstants(cmd,renderState.pipelineLayout,VK_SHADER_STAGE_VERTEX_BIT,0,sizeof(glm::mat4),&modelMatrix);
+
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 renderState.pipelineLayout,
                                 0, sets.size(),sets.data(),0, nullptr);

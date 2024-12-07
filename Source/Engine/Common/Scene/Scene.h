@@ -19,7 +19,8 @@ struct GlobalUniform
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 skyboxProj;
-    glm::mat4 lightMat;
+    glm::mat4 lightViewMat;
+    glm::mat4 lightProjMat;
 };
 
 struct LightUnitsInShader
@@ -88,7 +89,7 @@ private:
 
     void onCameraUpdate(Camera& camera) override;
     void onLightUpdate(Light* light) override;
-    glm::mat4 GetLightMat(const Light& light);
+    void UpdateLightMat(const Light& light);
 
 };
 

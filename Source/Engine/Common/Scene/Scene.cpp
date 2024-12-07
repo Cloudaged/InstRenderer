@@ -205,8 +205,7 @@ void Scene::UpdateScene()
     mainCamera.vpMat.proj[1][1] *=-1;
 
     globUniform.proj = mainCamera.vpMat.proj;
-    std::cout<<"update\n";
-    globUniform.lightMat = GetLightMat(*mainLight);
+    UpdateLightMat(*mainLight);
     lightUniform.cameraPos= glm::vec4(mainCamera.position,1.0);
     lightUniform.cameraDir = glm::vec4(mainCamera.viewPoint-mainCamera.position,1.0);
 
@@ -260,7 +259,7 @@ void Scene::UpdateLightData()
     lightUniform.count=num;
 }
 
-glm::mat4 Scene::GetLightMat(const Light& light)
+void Scene::UpdateLightMat(const Light& light)
 {
     const Transform& transform = reg.get<Transform>(light.entityID);
     const LightComponent& lightComponent = reg.get<LightComponent>(light.entityID);
@@ -274,7 +273,9 @@ glm::mat4 Scene::GetLightMat(const Light& light)
     auto [sceneMaxLS,sceneMinLS] = EngineMath::TransformAABB(minPoint,maxPoint,lightMat);//world space to light space
     glm::mat4 projMat = glm::ortho(sceneMinLS.x-100,sceneMaxLS.x+100,sceneMinLS.y-100,sceneMaxLS.y+100,1.0f+lightComponent.shadowCamera.near,maxDepth+lightComponent.shadowCamera.far);
     projMat[1][1] *= -1;
-    return projMat*lightMat;
+
+    globUniform.lightViewMat = lightMat;
+    globUniform.lightProjMat = projMat;
 }
 
 void Scene::onCameraUpdate(Camera &camera)

@@ -5,7 +5,8 @@ import ShaderModule.Shadow;
 struct FragInput
 {
     float2 inUV : TEXCOORD0;
-    float4x4 lightMat : TEXCOORD1;
+    float4x4 lightViewMat : TEXCOORD1;
+    float4x4 lightProjMat : TEXCOORD2;
 }
 
 
@@ -37,20 +38,20 @@ float4 main(FragInput input) : SV_Target
     float3 view = normalize(lightUniform.cameraPos.xyz-posWS.xyz);
 
     float3 finalColor = float3(0.0f);
+    float shading = 0;
     float shadow=0;
     for (int i = 0; i < lightUniform.lightCount; i++)
     {
         Light light = lightUniform.light[i];
-        float3 lightDir = normalize(light.toward.xyz);
+        float3 lightDir = -normalize(light.toward.xyz);
 
         float3 specularBRDF = GetSpecularBRDF(normal.xyz, lightDir, view, roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-         finalColor += light.intensity * dot(normal.xyz, light.toward.xyz) * finalBRDF;
+        finalColor += light.intensity * dot(normal.xyz, lightDir.xyz) * finalBRDF;
         //finalColor = specularBRDF;
-
-         float bias = NormalBias(0.01, normal.xyz, lightDir);
-        shadow = CalculateShadow(shadowMap, input.lightMat, posWS,bias);
+         float bias = NormalBias(0.001, normal.xyz, lightDir);
+        shadow = CalculateShadow(shadowMap, mul(input.lightProjMat,input.lightViewMat), posWS,bias);
     }
-    
-    return baseColor*shadow;
+
+    return float4(shadow*finalColor,1.0);
 }
