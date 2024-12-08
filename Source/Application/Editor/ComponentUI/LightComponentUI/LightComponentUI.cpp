@@ -70,11 +70,15 @@ void LightComponentUI::ChangeData(LightComponent data)
 
 void LightComponentUI::InitSignal()
 {
-    for(auto* child:this->findChildren<QLineEdit*>())
+    for(auto* child:this->findChildren<ValueEdit*>())
     {
-        connect(child,&QLineEdit::editingFinished,this,[&]()
+        connect(child->edit,&QLineEdit::editingFinished,this,[&]()
         {
+            emit LightCompChanged(UpdateALlData());
+        });
 
+        connect(child,&ValueEdit::DragEditFinished,this,[&]()
+        {
             emit LightCompChanged(UpdateALlData());
         });
     }
@@ -84,14 +88,6 @@ void LightComponentUI::InitSignal()
         emit LightCompChanged(UpdateALlData());
     });
 
-    connect(nearUI,&ValueEdit::DragEditFinished,[&]()
-    {
-        emit LightCompChanged(UpdateALlData());
-    });
-    connect(farUI,&ValueEdit::DragEditFinished,[&]()
-    {
-        emit LightCompChanged(UpdateALlData());
-    });
 }
 
 LightComponent LightComponentUI::UpdateALlData()

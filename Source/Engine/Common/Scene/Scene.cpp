@@ -262,7 +262,7 @@ void Scene::UpdateLightData()
         lightUniform.lights[num] = std::move(LightUnitsInShader{glm::vec4(trans.pos,1.0),rotatedDir,
                                                                 glm::vec4(lightComp.color,1.0),
                                                                 (int)lightComp.type,lightComp.Intensity,
-                                                                lightComp.range,lightComp.outerCutoff,lightComp.attenuation});
+                                                                glm::radians(lightComp.range),glm::radians(lightComp.outerCutoff),lightComp.attenuation});
         num++;
     }
     lightUniform.count=num;

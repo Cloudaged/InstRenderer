@@ -14,7 +14,7 @@ public struct LightProperty
     public float intensity;
 }
 
-public LightProperty GetLightProperty(Light light)
+public LightProperty GetLightProperty(Light light,float3 fragPos)
 {
     LightProperty lightProperty;
     if (light.type == LightType::Directional)
@@ -23,12 +23,22 @@ public LightProperty GetLightProperty(Light light)
         lightProperty.intensity = light.intensity;
     } else if (light.type == LightType::Point)
     {
-        lightProperty.lightDir = normalize(light.position.xyz - light.toward.xyz);
+        lightProperty.lightDir = normalize(fragPos - light.position.xyz);
         lightProperty.intensity = light.intensity;
     } else if (light.type == LightType::Spot)
     {
-        lightProperty.lightDir = normalize(light.position.xyz - light.toward.xyz);
-        lightProperty.intensity = light.intensity;
+        lightProperty.lightDir = -normalize(fragPos - light.position.xyz);
+        float3 l = -lightProperty.lightDir;
+        float3 toward = normalize(light.toward.xyz);
+        float thetaCos = dot(l, toward);
+        if (cos(light.range) < thetaCos)
+        {
+            float soft = 1.0 - (1.0 - thetaCos) / (1.0-cos(light.range));
+            lightProperty.intensity = light.intensity*soft;
+        } else
+        {
+            lightProperty.intensity = 0;
+        }
     }
     return lightProperty;
 }

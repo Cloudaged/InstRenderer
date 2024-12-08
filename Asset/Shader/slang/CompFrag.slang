@@ -44,15 +44,16 @@ float4 main(FragInput input) : SV_Target
     for (int i = 0; i < lightUniform.lightCount; i++)
     {
         Light light = lightUniform.light[i];
-        LightProperty lp = GetLightProperty(light);
-
+        LightProperty lp = GetLightProperty(light, posWS.xyz);
+        shading = lp.intensity;
         float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-        finalColor += light.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
+        finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
         // finalColor = specularBRDF;
         float bias = NormalBias(0.001, normal.xyz, lp.lightDir);
         shadow = CalculateShadow(shadowMap, mul(input.lightProjMat,input.lightViewMat), posWS,bias);
     }
+    return float4(shadow*finalColor,1.0);
 
-    return float4(shadow);
+    //return float4(finalColor*shadow,1.0);
 }

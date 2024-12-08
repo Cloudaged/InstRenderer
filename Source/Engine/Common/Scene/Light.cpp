@@ -31,7 +31,7 @@ LightVPMat Light::GetLightMatrix(entt::registry *reg,const glm::vec3& minPoint,c
         auto rotationMat = EngineMath::GetRotateMatrix(transform.rotation);
         glm::vec4 target = rotationMat*glm::vec4(0.0,0.0,1.0,0.0);
         glm::mat4 lightMat = glm::lookAt(transform.pos,glm::vec3(target)+transform.pos,{0,1,0});
-        glm::mat4 projMat = glm::perspective(lightComp.range*2,1.0f,5.0f,5000.0f);
+        glm::mat4 projMat = glm::perspective(glm::radians(lightComp.range*2),1.0f,5.0f,5000.0f);
         projMat[1][1] *=-1;
         return {lightMat,projMat};
     }
