@@ -11,14 +11,14 @@ void GeoPass::SetupAttachments()
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
 
-    attachmentMap["BaseColor"] = AttachmentDes{"BaseColor", winWidth, winHeight,
-                                               AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &baseColorAttachment};
+    attachmentMap["Position"] = AttachmentDes{"Position", winWidth, winHeight,
+                                               AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &positionAttachment};
 
     attachmentMap["Normal"] = AttachmentDes{"Normal", winWidth, winHeight,
                                             AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &normalAttachment};
 
-    attachmentMap["Position"] = AttachmentDes{"Position", winWidth, winHeight,
-                                              AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &positionAttachment};
+    attachmentMap["BaseColor"] = AttachmentDes{"BaseColor", winWidth, winHeight,
+                                              AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &baseColorAttachment};
 
     attachmentMap["MetallicRoughness"] = AttachmentDes{"MetallicRoughness", winWidth, winHeight,
                                               AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &mrAttachment};
@@ -26,9 +26,9 @@ void GeoPass::SetupAttachments()
     attachmentMap["Depth"] = AttachmentDes{"Depth",winWidth,winHeight,
                                            AttachmentUsage::Depth,VK_FORMAT_D32_SFLOAT,&depthAttachment};
 
-    outputResource.push_back({attachmentMap["BaseColor"], AttachmentOP::WriteOnly});
-    outputResource.push_back({attachmentMap["Normal"], AttachmentOP::WriteOnly});
     outputResource.push_back({attachmentMap["Position"], AttachmentOP::WriteOnly});
+    outputResource.push_back({attachmentMap["Normal"], AttachmentOP::WriteOnly});
+    outputResource.push_back({attachmentMap["BaseColor"], AttachmentOP::WriteOnly});
     outputResource.push_back({attachmentMap["MetallicRoughness"], AttachmentOP::WriteOnly});
     outputResource.push_back({attachmentMap["Depth"], AttachmentOP::WriteOnly});
 }

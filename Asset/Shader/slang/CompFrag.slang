@@ -16,6 +16,7 @@ struct FragInput
 [[vk::binding(2, 0)]] Sampler2D inputAlbedo;
 [[vk::binding(3, 0)]] Sampler2D inputMR;
 [[vk::binding(4, 0)]] Sampler2D shadowMap;
+[[vk::binding(5, 0)]] Sampler2D blockerDepthMap;
 
 [[vk::binding(1, 1)]] ConstantBuffer<LightCameraUniform> lightUniform;
 
@@ -26,7 +27,7 @@ float4 main(FragInput input) : SV_Target
     float4 normal = normalize(inputNormal.Sample(input.inUV));
     float4 baseColor = inputAlbedo.Sample(input.inUV);
     float4 metallicRoughness = inputMR.Sample(input.inUV);
-
+    float blockerDepth = blockerDepthMap.Sample(input.inUV).r;
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
 
@@ -51,9 +52,10 @@ float4 main(FragInput input) : SV_Target
         finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
         // finalColor = specularBRDF;
         float bias = NormalBias(0.001, normal.xyz, lp.lightDir);
-        shadow = CalculateShadow(shadowMap, mul(input.lightProjMat,input.lightViewMat), posWS,bias);
+        shadow = CalculateShadow(shadowMap, blockerDepth ,mul(input.lightProjMat,input.lightViewMat), posWS,light.outerCutoff);
     }
-    return float4(shadow*finalColor,1.0);
 
-    //return float4(finalColor*shadow,1.0);
+    //return float4(shadow*finalColor,1.0);
+
+    return float4(shadow);
 }

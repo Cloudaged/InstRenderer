@@ -7,11 +7,12 @@ void CompositionPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    inputAttDes.push_back(attachmentMap["BaseColor"]);
-    inputAttDes.push_back(attachmentMap["Normal"]);
     inputAttDes.push_back(attachmentMap["Position"]);
+    inputAttDes.push_back(attachmentMap["Normal"]);
+    inputAttDes.push_back(attachmentMap["BaseColor"]);
     inputAttDes.push_back(attachmentMap["MetallicRoughness"]);
     inputAttDes.push_back(attachmentMap["ShadowMap"]);
+    inputAttDes.push_back(attachmentMap["BlockerSearch"]);
 
     attachmentMap["Lighted"] = AttachmentDes{"Lighted", winWidth, winHeight,
                                              AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB, &lightAttachment};

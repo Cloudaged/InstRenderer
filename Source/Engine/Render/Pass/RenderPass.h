@@ -33,7 +33,7 @@ public:
     RenderPass();
     void Build();
     virtual ~RenderPass();
-    void ClearRes();
+    virtual void ClearRes();
 public:
     static AttachmentMap attachmentMap;
     VkRenderPass passHandle;

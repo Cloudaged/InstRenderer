@@ -397,7 +397,8 @@ void VulkanContext::Submit()
 
     if(result!=VK_SUCCESS)
     {
-        std::cout<<"Failed to submit\n";
+        std::cout<<result<<"\n";
+        throw std::runtime_error("failed to submit!");
     }
     //********************************
     //***************Present

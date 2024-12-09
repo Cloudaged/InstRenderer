@@ -6,6 +6,7 @@
 #include "../Common/Scene/Scene.h"
 #include "Pass/PresentPass.h"
 #include "Pass/ShadowPass.h"
+#include "Pass/BlockerSearchPass.h"
 class RenderSystem;
 class RenderPassManager
 {
@@ -19,6 +20,7 @@ public:
 private:
     entt::view<entt::get_t<Renderable,Transform>> view;
     GlobalDescriptorData globalDescriptorData;
+    std::unique_ptr<BlockerSearchPass> blockerSearchPass;
     std::unique_ptr<CompositionPass> compositionPass;
     std::unique_ptr<GeoPass> geoPass;
     std::unique_ptr<PresentPass> presentPass;

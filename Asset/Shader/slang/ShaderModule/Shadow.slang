@@ -1,25 +1,73 @@
 module Shadow;
 
-static const int PCF_SAMPLE_COUNTS = 16;
+static const int BLOCKER_SEARCH_SIZE = 16;
+static const int PCF_SAMPLE_COUNTS = 81;
+static const float LIGHT_SIZE = 1;
+#define PI 3.141592653589793
+#define PI2 6.283185307179586
+#define NUM_RINGS 10
+#define NUM_SAMPLES PCF_SAMPLE_COUNTS
+float rand_2to1(float2 uv) {
+    // 0 - 1
+    const float a = 12.9898, b = 78.233, c = 43758.5453;
+    float dt = dot(uv.xy, float2(a, b));
+    float sn = fmod(dt, PI);
+    return frac(sin(sn) * c);
+}
 
-static float2 poissonDisk[16] = {
-    float2(-0.94201624, -0.39906216),
-    float2(0.94558609, -0.76890725),
-    float2(-0.094184101, -0.92938870),
-    float2(0.34495938, 0.29387760),
-    float2(-0.91588581, 0.45771432),
-    float2(-0.81544232, -0.87912464),
-    float2(-0.38277543, 0.27676845),
-    float2(0.97484398, 0.75648379),
-    float2(0.44323325, -0.97511554),
-    float2(0.53742981, -0.47373420),
-    float2(-0.26496911, -0.41893023),
-    float2(0.79197514, 0.19090188),
-    float2(-0.24188840, 0.99706507),
-    float2(-0.81409955, 0.91437590),
-    float2(0.19984126, 0.78641367),
-    float2(0.14383161, -0.14100790)
-};
+static float2 poissonDisk[NUM_SAMPLES];
+void poissonDiskSamples(const in float2 randomSeed) {
+
+    float ANGLE_STEP = PI2 * float(NUM_RINGS) / float(NUM_SAMPLES);
+    float INV_NUM_SAMPLES = 1.0 / float(NUM_SAMPLES);
+
+    float angle = rand_2to1(randomSeed) * PI2;
+    float radius = INV_NUM_SAMPLES;
+    float radiusStep = radius;
+
+    for (int i = 0; i < NUM_SAMPLES; i++) {
+        poissonDisk[i] = float2(cos(angle), sin(angle)) * pow(radius, 0.75);
+        radius += radiusStep;
+        angle += ANGLE_STEP;
+    }
+}
+
+float GetFilterAvgDepth(Sampler2D shadowMap, float2 screenPos, float shadingPointDepth)
+{
+    poissonDiskSamples(screenPos.xy);
+    float totalDepth = 0.0;
+    float blockerCount = 0.0;
+    float filterSize = 2.0;
+    float textureSize = 2048.0f;
+    float range = filterSize / textureSize;
+    for (int i = 0; i < BLOCKER_SEARCH_SIZE; i++)
+    {
+        //float range = 0.002;
+
+        float2 offset = poissonDisk[i] * range;
+        float lightCamDepth = shadowMap.Sample(screenPos+offset).r;
+        if (shadingPointDepth > lightCamDepth)
+        {
+            totalDepth += lightCamDepth;
+            blockerCount += 1;
+        }
+    }
+    if(blockerCount == 0)
+    {
+        return 1.0f;
+    }
+    return totalDepth / blockerCount;
+}
+
+public float GetAvgBlockerDepth(Sampler2D shadowMap, float4x4 lightMat, float4 worldPos)
+{
+    float4 posInLightNDC = mul(lightMat, worldPos);
+    posInLightNDC = posInLightNDC / posInLightNDC.w;
+    float2 sceenPos = posInLightNDC.xy * 0.5 + 0.5;
+
+    float viewCamDepthLS = posInLightNDC.z;
+    return GetFilterAvgDepth(shadowMap, sceenPos, viewCamDepthLS);
+}
 
 
 public float NormalBias(float biasValue,float3 normal,float3 lightDir)
@@ -30,13 +78,20 @@ public float NormalBias(float biasValue,float3 normal,float3 lightDir)
     return bias;
 }
 
-public float PCF(Sampler2D shadowMap, float2 screenPos, float camDepth, float bias)
+float GetPenmubraSize(float receiverDepth, float avgBlockerDepth,float lightSize)
 {
+    return lightSize * (receiverDepth - avgBlockerDepth) / avgBlockerDepth;
+}
+
+float PCF(Sampler2D shadowMap,float2 screenPos, float camDepth,float range,float bias)
+{
+    poissonDiskSamples(screenPos.xy);
+
     float sum = 0;
     for (int i = 0; i < PCF_SAMPLE_COUNTS; ++i)
     {
         float2 offset = poissonDisk[i];
-        float lightCamDepth = shadowMap.Sample(screenPos + offset*0.001).r;
+        float lightCamDepth = shadowMap.Sample(screenPos + offset*range).r;
         if (camDepth - 0.001 < lightCamDepth)
         {
             sum += 1;
@@ -45,16 +100,26 @@ public float PCF(Sampler2D shadowMap, float2 screenPos, float camDepth, float bi
     return sum / PCF_SAMPLE_COUNTS;
 }
 
-public float CalculateShadow(Sampler2D shadowMap,float4x4 lightMat,float4 worldPos,float bias)
+float PCSS(Sampler2D shadowMap, float avgBlockerDepth, float2 screenPos, float camDepth,float lightSize)
+{
+    float p = GetPenmubraSize(camDepth, avgBlockerDepth, lightSize);
+    float filterSize = 2.0;
+    float textureSize = 2048.0f;
+    float range = p * filterSize/textureSize;
+    float shadow = PCF(shadowMap, screenPos, camDepth, 0.002, 0.001);
+    return shadow;
+}
+
+public float CalculateShadow(Sampler2D shadowMap,float avgBlocker,float4x4 lightMat,float4 worldPos,float lightSize)
 {
     float4 posInLightNDC = mul(lightMat, worldPos);
     posInLightNDC = posInLightNDC / posInLightNDC.w;
-    float2 sceenPos = posInLightNDC.xy*0.5+0.5;
+    float2 screenPos = posInLightNDC.xy*0.5+0.5;
 
     float viewCamDepthLS = posInLightNDC.z;
-    float lightCamDepthLS = shadowMap.Sample(sceenPos).r;
 
-    float shadow = PCF(shadowMap, sceenPos, viewCamDepthLS, 0.001);
+    // float shadow = PCF(shadowMap, screenPos, viewCamDepthLS, 0.002, 0.001);
+    float shadow = PCSS(shadowMap, avgBlocker, screenPos, viewCamDepthLS,lightSize);
     return shadow;
 }
 
