@@ -41,7 +41,8 @@ float4 main(FragInput input) : SV_Target
 
     float3 finalColor = float3(0.0f);
     float shading = 0;
-    float shadow=0;
+    float shadow = 0;
+    float4 testValues = { 0, 0, 0, 0 };
     for (int i = 0; i < lightUniform.lightCount; i++)
     {
         Light light = lightUniform.light[i];
@@ -52,10 +53,11 @@ float4 main(FragInput input) : SV_Target
         finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
         // finalColor = specularBRDF;
         float bias = NormalBias(0.001, normal.xyz, lp.lightDir);
-        shadow = CalculateShadow(shadowMap, blockerDepth ,mul(input.lightProjMat,input.lightViewMat), posWS,light.outerCutoff);
+        testValues = CalculateShadow(shadowMap, blockerDepth ,mul(input.lightProjMat,input.lightViewMat), posWS,light.attenuation);
     }
 
-    //return float4(shadow*finalColor,1.0);
-
-    return float4(shadow);
+    // return float4(shadow*finalColor,1.0);
+    // return testValues;
+    return float4(blockerDepth);
+    //return float4(shadow);
 }
