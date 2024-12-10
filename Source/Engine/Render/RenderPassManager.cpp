@@ -20,8 +20,8 @@ void RenderPassManager::Setup(entt::view<entt::get_t<Renderable, Transform>> vie
     this->shadowPass = std::make_unique<ShadowPass>(globalDescriptorData);
     shadowPass->Build();
 
-    this->blockerSearchPass = std::make_unique<BlockerSearchPass>(globalDescriptorData);
-    blockerSearchPass->Build();
+    /*this->blockerSearchPass = std::make_unique<BlockerSearchPass>(globalDescriptorData);
+    blockerSearchPass->Build();*/
 
     this->compositionPass = std::make_unique<CompositionPass>(globalDescriptorData);
     compositionPass->Build();
@@ -35,7 +35,7 @@ void RenderPassManager::ExecuteAllPass()
     auto cmd = VulkanContext::GetContext().presentManager.BeginRecordCommand();
     geoPass->Execute(view);
     shadowPass->Execute(view);
-    blockerSearchPass->Execute();
+   // blockerSearchPass->Execute();
     compositionPass->Execute();
     presentPass->Execute();
     VulkanContext::GetContext().presentManager.EndRecordCommand(cmd);
@@ -45,7 +45,7 @@ void RenderPassManager::RecreateAllPass()
 {
     geoPass->ClearRes();
     shadowPass->ClearRes();
-    blockerSearchPass->ClearRes();
+    //blockerSearchPass->ClearRes();
     compositionPass->ClearRes();
     presentPass->ClearRes();
     ClearAtt();
@@ -53,7 +53,7 @@ void RenderPassManager::RecreateAllPass()
 
     geoPass->Build();
     shadowPass->Build();
-    blockerSearchPass->Build();
+   // blockerSearchPass->Build();
     compositionPass->Build();
 
     presentPass->Build();

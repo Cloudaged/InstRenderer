@@ -12,6 +12,6 @@ struct FragInput
 float4 main(FragInput input)
 {
 
-    float avgDepth = GetAvgBlockerDepth(shadowMap, input.lightMat, position.Sample(input.inUV));
-    return float4(avgDepth, avgDepth,0.0,0.0);
+    //float avgDepth = GetAvgBlockerDepth(shadowMap, input.lightMat, position.Sample(input.inUV));
+    return float4(0.0, 0.0,0.0,0.0);
 }
