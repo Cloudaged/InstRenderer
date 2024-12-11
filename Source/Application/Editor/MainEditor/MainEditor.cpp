@@ -10,13 +10,27 @@ MainEditor::MainEditor(std::shared_ptr<WindowContext> windowContext,QWidget *par
 {
     ui->setupUi(this);
     DeleteCentralWidget();
-    InitMenuBar();
+    InitCustomTitleBar();
     InitSubWidget();
     InitSubWidgetLayoutAndShow();
+
 
     resize(windowContext->windowSize.width,windowContext->windowSize.height);
     this->show();
 
+}
+
+void MainEditor::InitCustomTitleBar()
+{
+    this->setWindowFlag(Qt::FramelessWindowHint);
+
+    layout = new QVBoxLayout();
+    layout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    titleBar = new CustomTitleBar(this);
+    titleBar->mainEditor = this;
+    setMenuWidget(titleBar);
 }
 
 MainEditor::~MainEditor()
@@ -78,31 +92,6 @@ void MainEditor::InitSubWidgetLayoutAndShow()
 
 }
 
-void MainEditor::InitMenuBar()
-{
-    menuBar = new QMenuBar(this);
-    //File Menu
-    fileMenu = new QMenu("File",menuBar);
-    QAction* loadAction = new QAction("Load Resource",fileMenu);
-    fileMenu->addAction(loadAction);
-    connect(loadAction,&QAction::triggered,[&]()
-    {
-        auto filePath = QFileDialog::getOpenFileName(nullptr,"Load File",
-                                                     QString::fromStdString(FILE_PATH("Asset")),
-                                                     "所有文件(*.*)");
-        if(!filePath.isEmpty())
-        {
-            emit LoadAction(filePath.toStdString());
-        }
-
-    });
-
-
-
-    menuBar->addMenu(fileMenu);
-
-    this->setMenuBar(menuBar);
-}
 
 void MainEditor::closeEvent(QCloseEvent *event)
 {
@@ -116,6 +105,8 @@ void MainEditor::StartGameThread(std::shared_ptr<GameInstance> gameInstance)
     gameThread = std::make_unique<GameThread>(gameInstance);
     gameThread->start();
 }
+
+
 
 
 

@@ -135,7 +135,7 @@ void ResourceEditor::SetIcon(QListWidgetItem* item, QString extension)
     {
         item->setIcon(*IconManager::GetIcon("Model.png"));
     }
-    else if(extension=="png")
+    else if(extension=="png"||extension=="jpg")
     {
         item->setIcon(*IconManager::GetIcon("Texture.png"));
     }

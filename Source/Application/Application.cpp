@@ -12,6 +12,17 @@ title(title)
     qApplication = std::make_unique<QApplication>(argc,argv);
     editor = std::make_unique<MainEditor>(windowContext);
     presenter = std::make_shared<Presenter>(gameInstance,editor);
+
+    QFile file("D:\\code_lib\\AGProject\\InstRenderer\\Source\\Application\\Editor\\qss\\Combinear.qss"); // ":/" 表示资源文件路径
+    if (file.open(QFile::ReadOnly)) {
+        // 读取文件内容
+        QString styleSheet = file.readAll();
+        // 应用 QSS 样式表到整个应用程序
+        qApplication->setStyleSheet(styleSheet);
+        file.close();
+    } else {
+        qWarning("Could not open QSS file.");
+    }
 #endif
 
 }

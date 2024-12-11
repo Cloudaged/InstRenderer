@@ -11,7 +11,7 @@
 #include "../EditorTypes.h"
 #include "../GameThread.h"
 #include "SDL2/SDL.h"
-
+#include "QFile"
 #include "QMenuBar"
 #include "QMenu"
 #include "QAction"
@@ -21,6 +21,8 @@
 #include "Common/GameInstance.h"
 #include "QCloseEvent"
 #include "memory"
+#include "../CustomTitleBar.h"
+#include "QVBoxLayout"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -48,13 +50,13 @@ private:
     void InitMenuBar();
     void InitSubWidget();
     void InitSubWidgetLayoutAndShow();
+    void InitCustomTitleBar();
     void closeEvent(QCloseEvent *event) override;
 private:
+    CustomTitleBar *titleBar;
+    QVBoxLayout* layout;
     std::unique_ptr<GameThread> gameThread;
     std::shared_ptr<WindowContext> windowContext;
-    QMenuBar* menuBar;
-    QMenu* fileMenu;
-    QAction* loadAction;
     Ui::MainEditor *ui;
 signals:
     void AddNewNode(std::string name, std::string type);

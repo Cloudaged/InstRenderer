@@ -120,17 +120,21 @@ void PresentManager::RecreateSwapChain()
 
 void PresentManager::ClearSwapChain()
 {
+    const auto& device = VulkanContext::GetContext().device;
     for (int i = 0; i < presentFrames.size(); ++i)
     {
-        vkDestroyFramebuffer(VulkanContext::GetContext().device,presentFrames[i].framebuffer, nullptr);
+        vkDestroyFramebuffer(device,presentFrames[i].framebuffer, nullptr);
+        vkDestroySemaphore(device,presentFrames[i].renderSemaphore, nullptr);
+        vkDestroySemaphore(device,presentFrames[i].swapChainSemaphore, nullptr);
+        vkDestroyFence(device,presentFrames[i].renderFence, nullptr);
     }
 
     for (int i = 0; i < swapchainView.size(); ++i)
     {
-        vkDestroyImageView(VulkanContext::GetContext().device,swapchainView[i], nullptr);
+        vkDestroyImageView(device,swapchainView[i], nullptr);
     }
 
-    vkDestroySwapchainKHR(VulkanContext::GetContext().device,
+    vkDestroySwapchainKHR(device,
                           VulkanContext::GetContext().swapchainData.swapchain,
                           nullptr);
 
