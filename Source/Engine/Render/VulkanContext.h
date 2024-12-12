@@ -20,6 +20,7 @@
 #include "Buffer/Buffer.h"
 #include "Buffer/BufferAllocator.h"
 #include "RenderPassManager.h"
+#include "RenderSetting.h"
 class VulkanContext
 {
 public:

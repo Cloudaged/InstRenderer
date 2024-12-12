@@ -1,7 +1,8 @@
 
 #include "Presenter.h"
 #include "Resource/ResourceManager.h"
-
+#include "Render/VulkanContext.h"
+extern RenderSettingData globalRenderSettingData;
 Presenter::Presenter(std::shared_ptr<GameInstance> gameInstance,std::shared_ptr<MainEditor> mainEditor):instance(gameInstance),editor(mainEditor)
 {
     AddGameObject();
@@ -10,7 +11,7 @@ Presenter::Presenter(std::shared_ptr<GameInstance> gameInstance,std::shared_ptr<
     ChangeSelectedItem();
     UpdateComponentData();
     LoadResourceToObj();
-
+    UpdateGraphicSetting();
 
     editor->sceneEditor->UpdateTree(instance->mainScene->objects);
 }
@@ -110,5 +111,12 @@ void Presenter::AddComponentsForGo(std::string type, GameObject* go)
 
     }
 }
+
+void Presenter::UpdateGraphicSetting()
+{
+    editor->connect(editor->graphicSettingWidget,&GraphicSettingWidget::GraphicSettingUpdate,[&](RenderSettingData data)
+    {
+        globalRenderSettingData = data;
+    });}
 
 

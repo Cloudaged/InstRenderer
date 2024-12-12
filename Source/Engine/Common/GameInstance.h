@@ -13,7 +13,7 @@
 #include "Controller.h"
 #include "Core/Locker.h"
 #include "Core/WindowContext.h"
-
+#include "../Render/RenderSetting.h"
 class GameInstance
 {
 public:

@@ -8,7 +8,7 @@ enum LightType
     Spot = 2
 }
 
-public enum SoftShadowSetting
+public enum SoftShadowType
 {
     PCF = 0,
     PCSS = 1
@@ -16,7 +16,7 @@ public enum SoftShadowSetting
 
 public struct LightProperty
 {
-    public SoftShadowSetting softShadowSetting;
+    public SoftShadowType softShadowType;
     public float3 lightDir;
     public float intensity;
 }
@@ -26,17 +26,17 @@ public LightProperty GetLightProperty(Light light,float3 fragPos)
     LightProperty lightProperty;
     if (light.type == LightType::Directional)
     {
-        lightProperty.softShadowSetting = SoftShadowSetting::PCF;
+        lightProperty.softShadowType = SoftShadowType::PCF;
         lightProperty.lightDir = -normalize(light.toward.xyz);
         lightProperty.intensity = light.intensity;
     } else if (light.type == LightType::Point)
     {
-        lightProperty.softShadowSetting = SoftShadowSetting::PCSS;
+        lightProperty.softShadowType = SoftShadowType::PCSS;
         lightProperty.lightDir = normalize(fragPos - light.position.xyz);
         lightProperty.intensity = light.intensity;
     } else if (light.type == LightType::Spot)
     {
-        lightProperty.softShadowSetting = SoftShadowSetting::PCF;
+        lightProperty.softShadowType = SoftShadowType::PCSS;
         lightProperty.lightDir = -normalize(fragPos - light.position.xyz);
         float3 l = -lightProperty.lightDir;
         float3 toward = normalize(light.toward.xyz);

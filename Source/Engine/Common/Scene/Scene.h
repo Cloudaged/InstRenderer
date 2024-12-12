@@ -23,6 +23,7 @@ struct GlobalUniform
     glm::mat4 lightProjMat;
 };
 
+
 struct LightUnitsInShader
 {
     alignas(16) glm::vec4 position;
@@ -52,6 +53,7 @@ struct GlobalDescriptorData
 {
     Buffer globBuffer;
     Buffer lightBuffer;
+    Buffer graphicBuffer;
     VkDescriptorSetLayout globalDesLayout;
     VkDescriptorSet globalDes;
     SkyboxData skyboxData;

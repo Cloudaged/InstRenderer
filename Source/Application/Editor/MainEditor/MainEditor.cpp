@@ -13,7 +13,8 @@ MainEditor::MainEditor(std::shared_ptr<WindowContext> windowContext,QWidget *par
     InitCustomTitleBar();
     InitSubWidget();
     InitSubWidgetLayoutAndShow();
-
+    graphicSettingWidget = new GraphicSettingWidget();
+   // tabifyDockWidget(componentEditor,graphicSettingWidget);
 
     resize(windowContext->windowSize.width,windowContext->windowSize.height);
     this->show();

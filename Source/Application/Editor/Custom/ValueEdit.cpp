@@ -11,7 +11,7 @@ ValueEdit::ValueEdit(std::string name,float data,QWidget *parent) :
     ui->setupUi(this);
 
     tag = new DragableLabel(QString::fromStdString(name));
-    edit = new QLineEdit();
+    edit = new QLineEdit(QString::number(data));
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->addWidget(tag);

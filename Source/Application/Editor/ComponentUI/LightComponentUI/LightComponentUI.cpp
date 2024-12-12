@@ -21,7 +21,7 @@ LightComponentUI::LightComponentUI(LightComponent data,QWidget *parent) :
     this->rangeUI = new ValueEdit("Range",0 );
     this->nearUI = new ValueEdit("Near offset",1);
     this->farUI = new ValueEdit("Far offset",1000);
-    this->outerCutoffUI = new ValueEdit("Outer CutOff",0);
+    this->outerCutoffUI = new ValueEdit("LightSize",300);
     this->attenuationUI = new ValueEdit("Attenuation",0);
     layout->addWidget(this->lightTypeUI);
     layout->addWidget(this->colorUI);
@@ -51,7 +51,7 @@ void LightComponentUI::ChangeData(LightComponent data)
     nearUI->UpdateData(data.shadowCamera.near);
     farUI->UpdateData(data.shadowCamera.far);
     attenuationUI->UpdateData(data.attenuation);
-    outerCutoffUI->UpdateData(data.outerCutoff);
+    outerCutoffUI->UpdateData(data.lightSize);
     if(data.type==LightType::Directional)
     {
         ChangeToDirectionLight();

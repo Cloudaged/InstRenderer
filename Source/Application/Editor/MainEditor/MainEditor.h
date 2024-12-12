@@ -23,6 +23,7 @@
 #include "memory"
 #include "../CustomTitleBar.h"
 #include "QVBoxLayout"
+#include "../GraphicSettingWidget/GraphicSettingWidget.h"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -45,9 +46,10 @@ public:
     ResourceEditor* resourceEditor;
     RenderEditor* renderEditor;
     ConsoleEditor* consoleEditor;
+    GraphicSettingWidget* graphicSettingWidget = nullptr;
+
 private:
     void DeleteCentralWidget();
-    void InitMenuBar();
     void InitSubWidget();
     void InitSubWidgetLayoutAndShow();
     void InitCustomTitleBar();

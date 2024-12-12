@@ -3,6 +3,7 @@ import ShaderModule.PBR;
 import ShaderModule.Types;
 import ShaderModule.Shadow;
 import ShaderModule.Light;
+import ShaderModule.GraphicSetting;
 struct FragInput
 {
     float2 inUV : TEXCOORD0;
@@ -18,6 +19,7 @@ struct FragInput
 [[vk::binding(4, 0)]] Sampler2D shadowMap;
 
 [[vk::binding(1, 1)]] ConstantBuffer<LightCameraUniform> lightUniform;
+//[[vk::binding(2, 1)]] ConstantBuffer<GraphicSetting> graphicSetting;
 
 [shader("fragment")]
 float4 main(FragInput input) : SV_Target
@@ -49,10 +51,15 @@ float4 main(FragInput input) : SV_Target
         float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
         finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
+        
         // finalColor = specularBRDF;
         float bias = NormalBias(0.001, normal.xyz, lp.lightDir);
         blocker = GetAvgBlockerDepth(shadowMap, mul(input.lightProjMat, input.lightViewMat), posWS);
-        shadow = CalculateShadow(shadowMap, blocker, mul(input.lightProjMat, input.lightViewMat), posWS,lp.softShadowSetting);
+        shadow = CalculateShadow(shadowMap, blocker, 
+            mul(input.lightProjMat, input.lightViewMat),
+             posWS,
+             lp.softShadowType,
+             light.lightSize);
     }
 
     return float4(finalColor*shadow,1.0);

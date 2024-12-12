@@ -1,14 +1,16 @@
 module Shadow;
 import Light;
+import GraphicSetting;
 #define PI 3.141592653589793
 #define PI2 6.283185307179586
 #define NUM_RINGS 10
+
 #define NUM_SAMPLES PCF_SAMPLE_COUNTS
 
 static const int BLOCKER_SEARCH_COUNTS = 32;
 static const int PCF_SAMPLE_COUNTS = 32;
 static float2 poissonDisk[NUM_SAMPLES];
-static float lightSize = 300;
+
 static float searchRange = 0.1;
 float rand_2to1(float2 uv) {
     // 0 - 1
@@ -37,6 +39,7 @@ void poissonDiskSamples(const in float2 randomSeed) {
 float GetFilterAvgDepth(Sampler2D shadowMap, float2 screenPos, float shadingPointDepth)
 {
     poissonDiskSamples(screenPos.xy);
+    
     float totalDepth = 0.0;
     float blockerCount = 0.0;
     float filterSize = 2.0;
@@ -80,7 +83,7 @@ public float NormalBias(float biasValue,float3 normal,float3 lightDir)
     return bias;
 }
 
-float GetPenmubraSize(float receiverDepth, float avgBlockerDepth)
+float GetPenmubraSize(float receiverDepth, float avgBlockerDepth,float lightSize)
 {
     return lightSize * (receiverDepth - avgBlockerDepth) / avgBlockerDepth;
 }
@@ -88,7 +91,7 @@ float GetPenmubraSize(float receiverDepth, float avgBlockerDepth)
 float PCF(Sampler2D shadowMap,float2 screenPos, float camDepth,float trange,float bias)
 {
     poissonDiskSamples(screenPos.xy);
-
+    
     float sum = 0;
     for (int i = 0; i < PCF_SAMPLE_COUNTS; ++i)
     {
@@ -102,9 +105,9 @@ float PCF(Sampler2D shadowMap,float2 screenPos, float camDepth,float trange,floa
     return sum / PCF_SAMPLE_COUNTS;
 }
 
-float PCSS(Sampler2D shadowMap, float avgBlockerDepth, float2 screenPos, float camDepth)
+float PCSS(Sampler2D shadowMap, float avgBlockerDepth, float2 screenPos, float camDepth,float lightSize)
 {
-    float p = GetPenmubraSize(camDepth, avgBlockerDepth); 
+    float p = GetPenmubraSize(camDepth,avgBlockerDepth,lightSize); 
     float filterSize = 2.0;
     float textureSize = 2048.0f;
     float range = p*filterSize/textureSize ;
@@ -112,21 +115,25 @@ float PCSS(Sampler2D shadowMap, float avgBlockerDepth, float2 screenPos, float c
     return shadow;
 }
 
-public float CalculateShadow(Sampler2D shadowMap,float avgBlocker,float4x4 lightMat,float4 worldPos,SoftShadowSetting softSetting)
+public float CalculateShadow(Sampler2D shadowMap,float avgBlocker,float4x4 lightMat,float4 worldPos,SoftShadowType softSetting,float lightSize)
 {
+    // PCF_SAMPLE_COUNTS = shadowSetting.pcfSampleCount;
+    // BLOCKER_SEARCH_COUNTS = shadowSetting.blockerSearchCount;
+    // NUM_SAMPLES = PCF_SAMPLE_COUNTS;
+
     float4 posInLightNDC = mul(lightMat, worldPos);
     posInLightNDC = posInLightNDC / posInLightNDC.w;
     float2 screenPos = posInLightNDC.xy*0.5+0.5;
 
     float viewCamDepthLS = posInLightNDC.z;
     float shadow = 0.0f;
-    if (softSetting == SoftShadowSetting::PCF)
+    if (softSetting == SoftShadowType::PCF)
     {
         shadow = PCF(shadowMap, screenPos, viewCamDepthLS, 0.002, 0.001);
     }
-    if (softSetting == SoftShadowSetting::PCSS)
+    if (softSetting == SoftShadowType::PCSS)
     {
-        shadow = PCSS(shadowMap, avgBlocker, screenPos, viewCamDepthLS);
+        shadow = PCSS(shadowMap, avgBlocker, screenPos, viewCamDepthLS,lightSize);
     }
     return shadow;
 }

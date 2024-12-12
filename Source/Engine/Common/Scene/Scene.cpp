@@ -3,7 +3,7 @@
 
 #include "../../Render/VulkanContext.h"
 #include "../../Resource/ModelLoader.h"
-
+RenderSettingData globalRenderSettingData{};
 Scene::Scene():
 mainCamera(&reg,"mainCamera")
 {
@@ -113,15 +113,15 @@ void Scene::InitGlobalSet()
     light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
-    /*VkDescriptorSetLayoutBinding lightVP;
-    light.binding=2;
-    light.descriptorCount=1;
-    light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;*/
+    VkDescriptorSetLayoutBinding graphicSettingBinding;
+    graphicSettingBinding.binding=2;
+    graphicSettingBinding.descriptorCount=1;
+    graphicSettingBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    graphicSettingBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
     bindings.push_back(vp);
     bindings.push_back(light);
-    //bindings.push_back(lightVP);
+    bindings.push_back(graphicSettingBinding);
     //Layout
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -150,6 +150,7 @@ void Scene::InitGlobalSet()
     int a = sizeof(lightUniform);
     globalData.globBuffer= *VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(globUniform),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
     globalData.lightBuffer =*VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(LightUniform),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
+    globalData.graphicBuffer = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(RenderSettingData),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
 
     //std::vector<VkDescriptorBufferInfo> bufferInfos;
     VkDescriptorBufferInfo bufferInfo{};
@@ -162,6 +163,10 @@ void Scene::InitGlobalSet()
     lightBufferInfo.offset = 0;
     lightBufferInfo.range = sizeof(LightUniform);
 
+    VkDescriptorBufferInfo graphicSettingsInfo{};
+    graphicSettingsInfo.buffer =globalData.graphicBuffer.vk_buffer;
+    graphicSettingsInfo.offset = 0;
+    graphicSettingsInfo.range = sizeof(RenderSettingData);
 
     std::vector<VkWriteDescriptorSet> writes;
     VkWriteDescriptorSet descriptorWrites1{};
@@ -184,6 +189,16 @@ void Scene::InitGlobalSet()
     descriptorWrites2.descriptorCount = 1;
     descriptorWrites2.pBufferInfo = &lightBufferInfo;
     writes.push_back(descriptorWrites2);
+
+    VkWriteDescriptorSet descriptorWrites3{};
+    descriptorWrites3.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites3.dstSet =globalData.globalDes;
+    descriptorWrites3.dstBinding = 2;
+    descriptorWrites3.dstArrayElement = 0;
+    descriptorWrites3.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites3.descriptorCount = 1;
+    descriptorWrites3.pBufferInfo = &graphicSettingsInfo;
+    writes.push_back(descriptorWrites3);
 
     vkUpdateDescriptorSets(VulkanContext::GetContext().device,writes.size(),writes.data(),0, nullptr);
 
@@ -208,14 +223,14 @@ void Scene::UpdateScene()
     auto [lightV,lightP] = mainLight->GetLightMatrix(&reg,minPoint,maxPoint);
     globUniform.lightViewMat = lightV;
     globUniform.lightProjMat = lightP;
-    //UpdateLightMat(*mainLight);
     lightUniform.cameraPos= glm::vec4(mainCamera.position,1.0);
     lightUniform.cameraDir = glm::vec4(mainCamera.viewPoint-mainCamera.position,1.0);
 
     memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.globBuffer),&globUniform,sizeof(globUniform));
     memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.lightBuffer),&lightUniform,sizeof(LightUniform));
+    memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.graphicBuffer),&globalRenderSettingData,sizeof(globalRenderSettingData));
 
-}
+  }
 
 
 void Scene::InitSkyboxData()
@@ -262,7 +277,7 @@ void Scene::UpdateLightData()
         lightUniform.lights[num] = std::move(LightUnitsInShader{glm::vec4(trans.pos,1.0),rotatedDir,
                                                                 glm::vec4(lightComp.color,1.0),
                                                                 (int)lightComp.type,lightComp.Intensity,
-                                                                glm::radians(lightComp.range),glm::radians(lightComp.outerCutoff),lightComp.attenuation});
+                                                                glm::radians(lightComp.range),lightComp.lightSize,lightComp.attenuation});
         num++;
     }
     lightUniform.count=num;

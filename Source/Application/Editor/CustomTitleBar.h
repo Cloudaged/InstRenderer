@@ -25,9 +25,10 @@ class CustomTitleBar : public QWidget
     Q_OBJECT
 
 public:
-    explicit CustomTitleBar(QWidget *parent = nullptr);
+    explicit CustomTitleBar(MainEditor* mainEditor,QWidget *parent = nullptr);
     QMenuBar* menuBar;
     QMenu* fileMenu;
+    QMenu* settingMenu;
     QAction* loadAction;
     QPushButton *minimizeButton;
     QPushButton *maximizeButton;

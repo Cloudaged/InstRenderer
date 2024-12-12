@@ -45,7 +45,7 @@ struct LightComponent
     glm::vec3 color = {1.0,1.0,1.0};
     float Intensity =1;
     float range = 0;
-    float outerCutoff = 0;
+    float lightSize = 300;
     float attenuation = 0;
     ShadowCamera shadowCamera={};
 };

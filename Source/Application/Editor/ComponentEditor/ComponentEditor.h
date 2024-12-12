@@ -8,8 +8,8 @@
 #include "QLabel"
 #include "QResizeEvent"
 #include "QPushButton"
-#include "../ComponentUI/Base/MyToolPage.h"
-#include "../ComponentUI/Base/MyToolBox.h"
+#include "../Custom/MyToolPage.h"
+#include "../Custom/MyToolBox.h"
 
 #include "entt.hpp"
 #include "Common/Scene/GameObject.h"

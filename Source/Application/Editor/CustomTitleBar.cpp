@@ -5,7 +5,7 @@
 #include "ui_CustomTitleBar.h"
 #include "MainEditor/MainEditor.h"
 
-CustomTitleBar::CustomTitleBar(QWidget *parent) :
+CustomTitleBar::CustomTitleBar(MainEditor* mainEditor,QWidget *parent) :mainEditor(mainEditor),
         QWidget(parent), ui(new Ui::CustomTitleBar)
 {
     ui->setupUi(this);
@@ -33,11 +33,19 @@ void CustomTitleBar::InitMenuBar()
         auto filePath = QFileDialog::getOpenFileName(nullptr,"Load File",
                                                      QString::fromStdString(FILE_PATH("Asset")),
                                                      "所有文件(*.*)");
-        /*if(!filePath.isEmpty())
-        {
-            emit LoadAction(filePath.toStdString());
-        }*/
+    });
 
+    //Setting menu
+    settingMenu = new QMenu("Setting",menuBar);
+    menuBar->addMenu(settingMenu);
+    QAction* graphicSetting = new QAction("Graphic",settingMenu);
+    settingMenu->addAction(graphicSetting);
+    connect(graphicSetting,&QAction::triggered,[&]()
+    {
+        mainEditor->tabifyDockWidget(mainEditor->componentEditor,mainEditor->graphicSettingWidget);
+        auto w = mainEditor->graphicSettingWidget;
+        w->setFloating(true);
+        w->setVisible(true);
     });
 
     mainLayout->addLayout(titleLayout);

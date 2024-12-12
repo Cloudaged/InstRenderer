@@ -3,10 +3,10 @@
 #define INSTRENDERER_LIGHTCOMPONENTUI_H
 
 #include <QWidget>
-#include "../Custom/Transform3D.h"
+#include "../../Custom/Transform3D.h"
 #include "../Engine/Common/Component/Components.h"
-#include "../Custom/TypeSelector.h"
-#include "../Custom/ValueEdit.h"
+#include "../../Custom/TypeSelector.h"
+#include "../../Custom/ValueEdit.h"
 #include "iostream"
 QT_BEGIN_NAMESPACE
 namespace Ui
