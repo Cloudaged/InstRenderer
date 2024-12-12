@@ -56,6 +56,7 @@ private:
     void InitVulkanBackend();
     static std::unique_ptr<VulkanContext> Pcontext;
     //Init
+    VkResult SetupDebugMessenger();
     void CreateInstance();
     void CreateSurface();
     void PickupPhysicalDevice();
@@ -64,6 +65,9 @@ private:
     void CreateDrawImage();
     void CreateCommandPool();
     void CreateDescriptorPool();
+    //void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+    VkDebugUtilsMessengerEXT debugMessenger;
+
 };
 
 

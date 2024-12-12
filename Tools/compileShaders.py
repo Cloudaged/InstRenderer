@@ -27,7 +27,7 @@ entry = ['-entry','main']
 
 slangFiles =GetFileWithExtension(srcPath,extension)
 for file in slangFiles:
-    command = [slangcPath]+entry+target+[srcPath+'/'+file,'-o',outputPath+'/'+file+'.spv']
+    command = [slangcPath]+entry+target+[srcPath+'/'+file,'-g','-o',outputPath+'/'+file+'.spv']
     process= subprocess.Popen(command,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()  # 获取输出和错误信息
     returncode = process.returncode  # 获取退出码

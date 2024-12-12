@@ -12,7 +12,7 @@ public:
     void* GetMappedMemory(Buffer allocatedBuffer);
     void DestroyBuffer(Buffer buffer);
 
-    void TransitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout srcLayout, VkImageLayout dstLayout,int mipLevels=1);
+    void TransitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout srcLayout, VkImageLayout dstLayout,int mipLevels=1,int layerCount=1);
 };
 
 

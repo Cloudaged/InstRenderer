@@ -113,15 +113,15 @@ void Scene::InitGlobalSet()
     light.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     light.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
-    VkDescriptorSetLayoutBinding graphicSettingBinding;
+   /* VkDescriptorSetLayoutBinding graphicSettingBinding;
     graphicSettingBinding.binding=2;
     graphicSettingBinding.descriptorCount=1;
     graphicSettingBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    graphicSettingBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    graphicSettingBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;*/
 
     bindings.push_back(vp);
     bindings.push_back(light);
-    bindings.push_back(graphicSettingBinding);
+    //bindings.push_back(graphicSettingBinding);
     //Layout
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -163,10 +163,10 @@ void Scene::InitGlobalSet()
     lightBufferInfo.offset = 0;
     lightBufferInfo.range = sizeof(LightUniform);
 
-    VkDescriptorBufferInfo graphicSettingsInfo{};
+    /*VkDescriptorBufferInfo graphicSettingsInfo{};
     graphicSettingsInfo.buffer =globalData.graphicBuffer.vk_buffer;
     graphicSettingsInfo.offset = 0;
-    graphicSettingsInfo.range = sizeof(RenderSettingData);
+    graphicSettingsInfo.range = sizeof(RenderSettingData);*/
 
     std::vector<VkWriteDescriptorSet> writes;
     VkWriteDescriptorSet descriptorWrites1{};
@@ -190,7 +190,7 @@ void Scene::InitGlobalSet()
     descriptorWrites2.pBufferInfo = &lightBufferInfo;
     writes.push_back(descriptorWrites2);
 
-    VkWriteDescriptorSet descriptorWrites3{};
+    /*VkWriteDescriptorSet descriptorWrites3{};
     descriptorWrites3.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrites3.dstSet =globalData.globalDes;
     descriptorWrites3.dstBinding = 2;
@@ -198,7 +198,7 @@ void Scene::InitGlobalSet()
     descriptorWrites3.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptorWrites3.descriptorCount = 1;
     descriptorWrites3.pBufferInfo = &graphicSettingsInfo;
-    writes.push_back(descriptorWrites3);
+    writes.push_back(descriptorWrites3);*/
 
     vkUpdateDescriptorSets(VulkanContext::GetContext().device,writes.size(),writes.data(),0, nullptr);
 
@@ -228,7 +228,7 @@ void Scene::UpdateScene()
 
     memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.globBuffer),&globUniform,sizeof(globUniform));
     memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.lightBuffer),&lightUniform,sizeof(LightUniform));
-    memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.graphicBuffer),&globalRenderSettingData,sizeof(globalRenderSettingData));
+    //memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(globalData.graphicBuffer),&globalRenderSettingData,sizeof(globalRenderSettingData));
 
   }
 
@@ -252,16 +252,17 @@ void Scene::InitSkyboxData()
                                          texturePath+"negz.jpg"};
 
     globalData.skyboxData.skybox = new Skybox(boxPath,texPaths);
-
 }
 
 
 void Scene::InitMainLight()
 {
+
     mainLight = std::static_pointer_cast<Light>(CreateObject("MainLight","Light"));
     auto& transComp = reg.get<Transform>(mainLight->entityID);
     transComp.rotation = {90,0,0};
     UpdateLightData();
+
 }
 
 void Scene::UpdateLightData()

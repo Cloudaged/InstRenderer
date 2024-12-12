@@ -5,11 +5,13 @@ import GraphicSetting;
 #define PI2 6.283185307179586
 #define NUM_RINGS 10
 
-#define NUM_SAMPLES PCF_SAMPLE_COUNTS
+#define MAX_SMAPLE_COUNT 32
+#define BLOCKER_SEARCH_COUNTS 16
+#define PCF_SAMPLE_COUNTS 32
 
-static const int BLOCKER_SEARCH_COUNTS = 32;
-static const int PCF_SAMPLE_COUNTS = 32;
-static float2 poissonDisk[NUM_SAMPLES];
+// static const int BLOCKER_SEARCH_COUNTS = 32;
+// static const int PCF_SAMPLE_COUNTS = 32;
+static float2 poissonDisk[MAX_SMAPLE_COUNT];
 
 static float searchRange = 0.1;
 float rand_2to1(float2 uv) {
@@ -22,14 +24,14 @@ float rand_2to1(float2 uv) {
 
 void poissonDiskSamples(const in float2 randomSeed) {
 
-    float ANGLE_STEP = PI2 * float(NUM_RINGS) / float(NUM_SAMPLES);
-    float INV_NUM_SAMPLES = 1.0 / float(NUM_SAMPLES);
+    float ANGLE_STEP = PI2 * float(NUM_RINGS) / float(MAX_SMAPLE_COUNT);
+    float INV_NUM_SAMPLES = 1.0 / float(MAX_SMAPLE_COUNT);
 
     float angle = rand_2to1(randomSeed) * PI2;
     float radius = INV_NUM_SAMPLES;
     float radiusStep = radius;
 
-    for (int i = 0; i < NUM_SAMPLES; i++) {
+    for (int i = 0; i < MAX_SMAPLE_COUNT; i++) {
         poissonDisk[i] = float2(cos(angle), sin(angle)) * pow(radius, 0.75);
         radius += radiusStep;
         angle += ANGLE_STEP;
@@ -91,9 +93,10 @@ float GetPenmubraSize(float receiverDepth, float avgBlockerDepth,float lightSize
 float PCF(Sampler2D shadowMap,float2 screenPos, float camDepth,float trange,float bias)
 {
     poissonDiskSamples(screenPos.xy);
-    
+    // int sampleCount = max(globShadowSetting.pcfSampleCount, MAX_SMAPLE_COUNT);
+    int sampleCount = 32;
     float sum = 0;
-    for (int i = 0; i < PCF_SAMPLE_COUNTS; ++i)
+    for (int i = 0; i < sampleCount; ++i)
     {
         float2 offset = poissonDisk[i];
         float lightCamDepth = shadowMap.Sample(screenPos + offset*trange).r;
@@ -102,7 +105,7 @@ float PCF(Sampler2D shadowMap,float2 screenPos, float camDepth,float trange,floa
             sum += 1;
         }
     }
-    return sum / PCF_SAMPLE_COUNTS;
+    return sum / sampleCount;
 }
 
 float PCSS(Sampler2D shadowMap, float avgBlockerDepth, float2 screenPos, float camDepth,float lightSize)
@@ -120,7 +123,7 @@ public float CalculateShadow(Sampler2D shadowMap,float avgBlocker,float4x4 light
     // PCF_SAMPLE_COUNTS = shadowSetting.pcfSampleCount;
     // BLOCKER_SEARCH_COUNTS = shadowSetting.blockerSearchCount;
     // NUM_SAMPLES = PCF_SAMPLE_COUNTS;
-
+    //globShadowSetting = shadowSetting;
     float4 posInLightNDC = mul(lightMat, worldPos);
     posInLightNDC = posInLightNDC / posInLightNDC.w;
     float2 screenPos = posInLightNDC.xy*0.5+0.5;

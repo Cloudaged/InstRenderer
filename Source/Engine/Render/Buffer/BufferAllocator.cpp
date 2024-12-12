@@ -92,7 +92,7 @@ void BufferAllocator::DestroyBuffer(Buffer buffer)
 }
 
 void
-BufferAllocator::TransitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout srcLayout, VkImageLayout dstLayout,int mipLevels)
+BufferAllocator::TransitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayout srcLayout, VkImageLayout dstLayout,int mipLevels,int layerCount)
 {
     VkImageMemoryBarrier2 imageBarrier;
     imageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -118,7 +118,7 @@ BufferAllocator::TransitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayo
     subImage.baseMipLevel = 0;
     subImage.levelCount = mipLevels;
     subImage.baseArrayLayer = 0;
-    subImage.layerCount = VK_REMAINING_ARRAY_LAYERS;
+    subImage.layerCount = layerCount;
 
 
     imageBarrier.subresourceRange = subImage;
@@ -132,4 +132,6 @@ BufferAllocator::TransitionImage(VkCommandBuffer cmd, VkImage image, VkImageLayo
     depInfo.pImageMemoryBarriers = &imageBarrier;
 
     vkCmdPipelineBarrier2(cmd, &depInfo);
+
+
 }

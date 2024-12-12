@@ -1,7 +1,25 @@
 
 #include "VulkanContext.h"
 
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData) {
 
+    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+
+    return VK_FALSE;
+}
+
+static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
+{
+    createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.pfnUserCallback = debugCallback;
+}
 
 std::unique_ptr<VulkanContext> VulkanContext::Pcontext = nullptr;
 void VulkanContext::Init(SDL_Window* window,SDL_Event* event)
@@ -45,6 +63,7 @@ void VulkanContext::InitVulkanBackend()
     CreateDescriptorPool();
 }
 
+
 void VulkanContext::CreateInstance()
 {
     VkApplicationInfo appinfo{};
@@ -66,9 +85,15 @@ void VulkanContext::CreateInstance()
     SDL_Vulkan_GetInstanceExtensions(sdlWindow,&extensionCount,nullptr);
     std::vector<const char*> sdlExtensions(extensionCount);
     SDL_Vulkan_GetInstanceExtensions(sdlWindow,&extensionCount,sdlExtensions.data());
+    sdlExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-    instanceInfo.enabledExtensionCount = extensionCount;
+    instanceInfo.enabledExtensionCount = sdlExtensions.size();
     instanceInfo.ppEnabledExtensionNames = sdlExtensions.data();
+
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+    populateDebugMessengerCreateInfo(debugCreateInfo);
+    //instanceInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
+
 
     if (vkCreateInstance(&instanceInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("failed to create instance!");
@@ -76,6 +101,13 @@ void VulkanContext::CreateInstance()
     {
         std::cout<<"Instance Created successed!\n";
     }
+
+    if(SetupDebugMessenger()!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to set up debug messenger!");
+    }
+
+
 }
 
 void VulkanContext::CreateSurface()
@@ -139,8 +171,7 @@ void VulkanContext::CreateQueueAndDevice()
     if (!supportedFeatures.samplerAnisotropy) {
         throw std::runtime_error("Anisotropic filtering is not supported by the physical device.");
     }
-    VkPhysicalDeviceFeatures deviceFeatures{};
-    deviceFeatures.samplerAnisotropy =VK_TRUE;
+
 
     VkPhysicalDeviceBufferDeviceAddressFeatures addressFeatures{};
     addressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
@@ -505,6 +536,23 @@ void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer,bool isR
                              1,&commandBuffer);
     }
 
+}
+
+VkResult  VulkanContext::SetupDebugMessenger()
+{
+    VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.pfnUserCallback = debugCallback;
+    createInfo.pUserData = nullptr; // Optional
+
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        return func(instance, &createInfo, nullptr, &debugMessenger);
+    } else {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    }
 }
 
 

@@ -3,6 +3,7 @@
 #include "../VulkanContext.h"
 Skybox::Skybox(std::string boxPath, std::vector<std::string> paths)
 {
+
     this->layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     this->format = VK_FORMAT_R8G8B8A8_SRGB;
 
@@ -25,6 +26,7 @@ Skybox::Skybox(std::string boxPath, std::vector<std::string> paths)
                                                                                          | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
                                                                                          |VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                                                                                          VMA_MEMORY_USAGE_GPU_ONLY);
+
     VkBufferDeviceAddressInfo deviceAddressInfo{};
     deviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
     deviceAddressInfo.buffer = boxVertBuffer.vk_buffer;
@@ -121,7 +123,8 @@ Skybox::Skybox(std::string boxPath, std::vector<std::string> paths)
     memcpy(stagingData,resTexture->data.data(),resTexture->size);
 
     auto cmd2 = VulkanContext::GetContext().BeginSingleTimeCommands(true);
-    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd, this->vk_image,VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd2, this->vk_image,VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1,paths.size());
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -135,7 +138,7 @@ Skybox::Skybox(std::string boxPath, std::vector<std::string> paths)
     region.imageExtent = {(uint32_t)resTexture->width,(uint32_t)resTexture->height,1};
 
 
-    vkCmdCopyBufferToImage(cmd, (*imgStaging).vk_buffer, vk_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    vkCmdCopyBufferToImage(cmd2, (*imgStaging).vk_buffer, vk_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
     VulkanContext::GetContext().EndSingleTimeCommands(cmd2,true);
 
@@ -156,7 +159,7 @@ Skybox::Skybox(std::string boxPath, std::vector<std::string> paths)
 
     auto cmd4 = VulkanContext::GetContext().BeginSingleTimeCommands();
 
-    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd4,vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd4,vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1,paths.size());
 
     VulkanContext::GetContext().EndSingleTimeCommands(cmd4);
 

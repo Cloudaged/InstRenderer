@@ -22,9 +22,10 @@ void Camera::InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir)
     this->vpMat.view = glm::lookAt(position,
                                    viewPoint + position,yAxis);
 
-    this->vpMat.proj = glm::perspective(cameraData.fov,
+    /*this->vpMat.proj = glm::perspective(cameraData.fov,
                                         (float)VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
-                                        cameraData.nearPlane, cameraData.farPlane);
+                                        cameraData.nearPlane, cameraData.farPlane);*/
+    this->vpMat.proj = glm::mat4(1);
     this->vpMat.proj[1][1] *=-1;
 
 }
