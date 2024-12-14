@@ -13,7 +13,7 @@ Presenter::Presenter(std::shared_ptr<GameInstance> gameInstance,std::shared_ptr<
     LoadResourceToObj();
     UpdateGraphicSetting();
 
-    editor->sceneEditor->UpdateTree(instance->mainScene->objects);
+    editor->sceneEditor->UpdateTree(instance->mainScene->sceneRootGameObject);
 }
 
 void Presenter::AddGameObject()
@@ -97,7 +97,7 @@ void Presenter::CreateMeshObjectsForRes(std::string path)
 
 
    ResourceManager::Get().CompileModel(instance.get(),model);
-   editor->sceneEditor->UpdateTree(instance->mainScene->objects);
+   editor->sceneEditor->UpdateTree(instance->mainScene->sceneRootGameObject);
 
 }
 

@@ -59,6 +59,8 @@ struct GlobalDescriptorData
     SkyboxData skyboxData;
 };
 
+
+
 using BoundingPoint = glm::vec3;
 
 class Scene : public SceneObserver
@@ -75,6 +77,7 @@ public:
     void RenameObject(int id,std::string dstName);
     void UpdateLightData();
 public:
+    std::shared_ptr<GameObject> sceneRootGameObject;
     entt::registry reg;
     std::vector<std::shared_ptr<GameObject>> objects;
     std::vector<std::shared_ptr<Light>> lights;

@@ -11,6 +11,7 @@ mainCamera(&reg,"mainCamera")
     InitSkyboxData();
     InitMainCamera();
     InitMainLight();
+    sceneRootGameObject = CreateObject("SceneRoot");
 }
 
 Scene::~Scene()

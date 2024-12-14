@@ -9,7 +9,7 @@ Skybox::Skybox(std::string boxPath, std::vector<std::string> paths)
 
     //Allocate buffer
     auto boxModel = ModelLoader::Load(boxPath);
-    auto& mesh = boxModel->meshes[0];
+    auto& mesh = boxModel->rootNode->children[0]->meshes[0];
     auto& bufferAlloc=VulkanContext::GetContext().bufferAllocator;
 
     int verticesSize = sizeof(Vertex)*mesh->verts.size();

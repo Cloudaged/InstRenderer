@@ -21,7 +21,7 @@ class ModelLoader
 public:
     static Res::ResModel* Load(std::string path);
 private:
-    static void ProcessNode(Res::ResModel* modelNeedLoad,tinygltf::Node* node,tinygltf::Model *model);
+    static Res::ResNode* ProcessNode(Res::ResModel* modelNeedLoad,tinygltf::Node* node,tinygltf::Model *model,Res::ResNode* parent);
     static Res::ResMesh* LoadMesh(Res::ResModel* resModel,tinygltf::Model* model,tinygltf::Mesh& mesh,tinygltf::Primitive& primitive);
     static void ReadIndex(tinygltf::Model *model,  tinygltf::Accessor &accessor, std::vector<uint32_t> &outputData);
     template<typename T>

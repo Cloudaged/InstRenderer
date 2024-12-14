@@ -115,24 +115,49 @@ void ResourceManager::AsynCompile(GameInstance *instance, Res::ResModel *model)
 {
     std::lock_guard<std::mutex> guard(Locker::Get().loadResourceMtx);
 
-    for (auto& mesh:model->meshes)
+    int modelRootID = AddSceneNode(instance,model->rootNode,-1);
+    auto modelRootGo =  instance->mainScene->GetGameObject(modelRootID);
+    modelRootGo->parent = (int)instance->mainScene->sceneRootGameObject->entityID;
+    instance->mainScene->sceneRootGameObject->child.insert(modelRootID);
+
+    instance->mainScene->minPoint = glm::min(model->minPoint,instance->mainScene->minPoint);
+    instance->mainScene->maxPoint = glm::max(model->maxPoint,instance->mainScene->maxPoint);
+    instance->renderSystem.materialManager.AllocateDescriptorSets();
+}
+
+GOID ResourceManager::AddSceneNode(GameInstance* instance,Res::ResNode *node,int parentGOID)
+{
+    //This node
+    auto nodeGo =instance->mainScene->CreateObject(node->name);
+    nodeGo->parent = parentGOID;
+    glm::vec3 pos = {0.0,0.0,0.0};
+    glm::vec3 rotation = {0.0,0.0,0.0};
+    glm::vec3 scale = {1.0,1.0,1.0};
+    auto& transComp = instance->mainScene->reg.get<Transform>(nodeGo->entityID);
+    transComp = {pos,rotation,scale};
+    //This node's mesh
+    for (auto& mesh : node->meshes)
     {
-        //Backend
         auto meshGo =instance->mainScene->CreateObject(mesh->name);
+        nodeGo->parent = (int)nodeGo->entityID;
         glm::vec3 pos = {0.0,0.0,0.0};
         glm::vec3 rotation = {0.0,0.0,0.0};
         glm::vec3 scale = {1.0,1.0,1.0};
-
-        auto& transComp = instance->mainScene->reg.get<Transform>(meshGo->entityID);
+        auto& transComp = instance->mainScene->reg.get<Transform>(nodeGo->entityID);
         transComp = {pos,rotation,scale};
 
         auto meshData= ResourceManager::Get().TransMesh(mesh);
         auto materialData = ResourceManager::Get().TransMaterial(mesh->material);
         instance->mainScene->reg.emplace<Renderable>(meshGo->entityID,meshData,materialData);
-        instance->mainScene->minPoint = glm::min(model->minPoint,instance->mainScene->minPoint);
-        instance->mainScene->maxPoint = glm::max(model->maxPoint,instance->mainScene->maxPoint);
     }
-    instance->renderSystem.materialManager.AllocateDescriptorSets();
+
+    //Child
+    for (auto& child:node->children)
+    {
+        GOID childGOID = AddSceneNode(instance,node,(int)nodeGo->entityID);
+        nodeGo->child.insert(childGOID);
+    }
+    return (int)nodeGo->entityID;
 }
 
 

@@ -13,6 +13,7 @@
 #include "thread"
 #include "../Common/GameInstance.h"
 typedef std::map<std::string,Res::ResBase*> ResReg;
+using GOID = int;
 
 class ResourceManager
 {
@@ -24,6 +25,7 @@ public:
     Texture* TransTexture(Res::ResTexture* resTexture);
     std::string LoadResource(std::string path);
     void CompileModel(GameInstance* instance,Res::ResModel* model);
+    GOID AddSceneNode(GameInstance* instance,Res::ResNode* node,int parentGOID);
 public:
     static std::unique_ptr<ResourceManager> Pinstance;
     ResReg resReg;

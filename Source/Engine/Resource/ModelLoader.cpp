@@ -30,14 +30,16 @@ Res::ResModel *ModelLoader::Load(std::string path)
     for (auto& index:scene.nodes)
     {
         auto node = model.nodes[index];
-        ProcessNode(resModel,&node,&model);
+        resModel->rootNode =  ProcessNode(resModel,&node,&model, new ResNode(nullptr,scene.name));
     }
 
     return resModel;
 }
 
-void ModelLoader::ProcessNode(Res::ResModel *modelNeedLoad, tinygltf::Node *node, tinygltf::Model *model)
+Res::ResNode* ModelLoader::ProcessNode(Res::ResModel *modelNeedLoad, tinygltf::Node *node, tinygltf::Model *model,ResNode* parent)
 {
+    Res::ResNode* resNode = new ResNode(parent,node->name);
+
     if(node->mesh!=-1)
     {
         auto& gltfMesh = model->meshes[node->mesh];
@@ -45,15 +47,17 @@ void ModelLoader::ProcessNode(Res::ResModel *modelNeedLoad, tinygltf::Node *node
         {
             auto& pri = model->meshes[node->mesh].primitives[j];
             Res::ResMesh* mesh = LoadMesh(modelNeedLoad,model,gltfMesh,pri);
-            modelNeedLoad->meshes.push_back(mesh);
+            resNode->meshes.push_back(mesh);
         }
     }
 
 
     for (int i = 0; i < node->children.size(); ++i)
     {
-        ProcessNode(modelNeedLoad,&model->nodes[node->children[i]],model);
+        auto child = ProcessNode(modelNeedLoad,&model->nodes[node->children[i]],model,resNode);
+        resNode->children.push_back(child);
     }
+    return resNode;
 }
 
 

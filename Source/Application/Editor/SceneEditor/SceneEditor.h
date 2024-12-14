@@ -39,8 +39,8 @@ public:
 
     QTreeWidgetItem* FindItemsWithColumnValue(QTreeWidgetItem* parent, int column, const QString& value);
 
-    void UpdateTree(std::vector<std::shared_ptr<GameObject>> objs);
-
+    void UpdateTree(std::shared_ptr<GameObject> sceneRootGO);
+    void AddNodes(std::shared_ptr<GameObject> node);
     void DeleteItem(int id);
 
 
