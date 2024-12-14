@@ -53,9 +53,7 @@ float4 main(FragInput input) : SV_Target
         finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
         
         // finalColor = specularBRDF;
-        float bias = NormalBias(0.001, normal.xyz, lp.lightDir);
-        blocker = GetAvgBlockerDepth(shadowMap, mul(input.lightProjMat, input.lightViewMat), posWS);
-        shadow = CalculateShadow(shadowMap, blocker, 
+        shadow = CalculateShadow(shadowMap, 
             mul(input.lightProjMat, input.lightViewMat),
              posWS,
              lp.softShadowType,
