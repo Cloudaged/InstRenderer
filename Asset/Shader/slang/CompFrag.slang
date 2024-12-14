@@ -19,7 +19,7 @@ struct FragInput
 [[vk::binding(4, 0)]] Sampler2D shadowMap;
 
 [[vk::binding(1, 1)]] ConstantBuffer<LightCameraUniform> lightUniform;
-//[[vk::binding(2, 1)]] ConstantBuffer<GraphicSetting> graphicSetting;
+[[vk::binding(2, 1)]] ConstantBuffer<GraphicSetting> graphicSetting;
 
 [shader("fragment")]
 float4 main(FragInput input) : SV_Target
@@ -57,7 +57,8 @@ float4 main(FragInput input) : SV_Target
             mul(input.lightProjMat, input.lightViewMat),
              posWS,
              lp.softShadowType,
-             light.lightSize);
+             light.lightSize,
+             graphicSetting.shadowSetting);
     }
 
     return float4(finalColor*shadow,1.0);

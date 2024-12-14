@@ -6,11 +6,11 @@ import GraphicSetting;
 #define NUM_RINGS 10
 
 #define MAX_SMAPLE_COUNT 64
-#define BLOCKER_SEARCH_COUNTS 16
-#define PCF_SAMPLE_COUNTS 32
+// #define BLOCKER_SEARCH_COUNTS 16
+// #define PCF_SAMPLE_COUNTS 32
 
-// static const int BLOCKER_SEARCH_COUNTS = 32;
-// static const int PCF_SAMPLE_COUNTS = 32;
+ static int BLOCKER_SEARCH_COUNTS = 32;
+ static int PCF_SAMPLE_COUNTS = 32;
 static float2 poissonDisk[MAX_SMAPLE_COUNT];
 
 float rand_2to1(float2 uv) {
@@ -84,7 +84,7 @@ float PCF(Sampler2D shadowMap,float2 screenPos, float camDepth,float range,float
 {
     poissonDiskSamples(screenPos.xy);
     // int sampleCount = max(globShadowSetting.pcfSampleCount, MAX_SMAPLE_COUNT);
-    int sampleCount = 32;
+    int sampleCount = PCF_SAMPLE_COUNTS;
     float sum = 0;
     for (int i = 0; i < sampleCount; ++i)
     {
@@ -114,10 +114,10 @@ float PCSS(Sampler2D shadowMap, float2 screenPos, float camDepth,float lightSize
     return shadow;
 }
 
-public float CalculateShadow(Sampler2D shadowMap,float4x4 lightMat,float4 worldPos,SoftShadowType softSetting,float lightSize)
+public float CalculateShadow(Sampler2D shadowMap,float4x4 lightMat,float4 worldPos,SoftShadowType softSetting,float lightSize,ShadowSetting shadowSetting)
 {
-    // PCF_SAMPLE_COUNTS = shadowSetting.pcfSampleCount;
-    // BLOCKER_SEARCH_COUNTS = shadowSetting.blockerSearchCount;
+     PCF_SAMPLE_COUNTS = shadowSetting.pcfSampleCount;
+     BLOCKER_SEARCH_COUNTS = shadowSetting.blockerSearchCount;
     // NUM_SAMPLES = PCF_SAMPLE_COUNTS;
     // globShadowSetting = shadowSetting;
 
