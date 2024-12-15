@@ -120,7 +120,6 @@ Res::ResMesh* ModelLoader::LoadMesh(Res::ResModel* resModel,tinygltf::Model* mod
 
     //Material
     ResMaterial* resMaterial = new ResMaterial();
-
     {
         int materialIndex = primitive.material;
         if(primitive.material>=0&&materialIndex<model->materials.size())

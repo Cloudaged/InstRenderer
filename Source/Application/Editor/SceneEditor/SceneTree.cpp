@@ -42,7 +42,7 @@ void SceneTree::mouseDoubleClickEvent(QMouseEvent *event)
 
 void SceneTree::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint)
 {
-    if(selectedItems().empty())
+    if(!selectedItems().empty())
     {
         emit ItemRenamed(selectedItems()[0]->text(2).toInt(),selectedItems()[0]->text(0).toStdString());
     }

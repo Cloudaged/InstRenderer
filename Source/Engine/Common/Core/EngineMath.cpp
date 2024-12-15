@@ -4,7 +4,7 @@ namespace EngineMath
 {
     glm::mat4 GetModelMatrix(const Transform& trans)
     {
-        auto mat =  glm::translate(glm::mat4(1),trans.pos);
+        auto mat = glm::translate(glm::mat4(1),trans.pos);
         mat = glm::scale(mat,trans.scale);
         mat =  GetRotateMatrix(trans.rotation,mat);
         return mat;
@@ -84,5 +84,7 @@ namespace EngineMath
 
         return {max,min};
     }
+
+
 
 }

@@ -39,7 +39,7 @@ QTreeWidgetItem* SceneEditor::AddItem(int id,std::string name, std::string type)
     QTreeWidgetItem* item = new QTreeWidgetItem(treeWidget);
     item->setText(0,QString::fromStdString(name));
     item->setText(1,QString::fromStdString(type));
-    item->setText(2,QString::fromStdString(std::to_string(id)));
+    item->setText(2,QString::fromStdString(std::to_string(idWithoutVersion)));
 
     item->setFlags(item->flags() | Qt::ItemIsEditable);
 
@@ -78,11 +78,11 @@ QTreeWidgetItem* SceneEditor::AddItem(int id, std::string name, std::string type
     return item;*/
 
     int idWithoutVersion = id & 0xFFFFF;
-
-    QTreeWidgetItem* item = new QTreeWidgetItem(treeWidget);
+    int parentWithoutVersion = parent & 0xFFFFF;
+    QTreeWidgetItem* item = new QTreeWidgetItem();
     item->setText(0,QString::fromStdString(name));
     item->setText(1,QString::fromStdString(type));
-    item->setText(2,QString::fromStdString(std::to_string(id)));
+    item->setText(2,QString::fromStdString(std::to_string(idWithoutVersion)));
 
     item->setFlags(item->flags() | Qt::ItemIsEditable);
 
@@ -99,12 +99,10 @@ QTreeWidgetItem* SceneEditor::AddItem(int id, std::string name, std::string type
 
     auto root = this->treeWidget->invisibleRootItem();
 
-    auto parentItem = FindItemsWithColumnValue(root,2,QString::number(parent));
+    auto parentItem = FindItemsWithColumnValue(root,2,QString::number(parentWithoutVersion));
 
     parentItem->addChild(item);
 
-    if(!treeWidget->selectedItems().isEmpty())
-        treeWidget->selectedItems()[0]->addChild(item);
 
     return item;
 }
@@ -217,7 +215,7 @@ void SceneEditor::ItemChanged()
 {
     connect(treeWidget,&QTreeWidget::itemSelectionChanged,[&]()
     {
-        if(!treeWidget->selectedItems().empty())
+        if(!treeWidget->selectedItems().isEmpty())
         {
             emit SelectedItemChanged(treeWidget->selectedItems()[0]->text(2).toInt());
         }
@@ -233,17 +231,17 @@ void SceneEditor::UpdateTree(std::shared_ptr<GameObject> sceneRootGO)
 
 void SceneEditor::AddNodes(std::shared_ptr<GameObject> node)
 {
-    if(node->parent<0)
+    if(node->parent== nullptr)
     {
         AddItem((int)node->entityID,node->name,node->type);
     } else
     {
-        AddItem((int)node->entityID,node->name,node->type,node->parent);
+        AddItem((int)node->entityID,node->name,node->type,(int)node->parent->entityID);
     }
 
     for (auto& child:node->child)
     {
-        AddNodes();
+        AddNodes(child);
     }
 }
 
@@ -263,9 +261,10 @@ QTreeWidgetItem *SceneEditor::FindItemsWithColumnValue(QTreeWidgetItem *parent, 
             return found;
         }
     }
-    std::cout<<"Can't find value(columnFind)";
     return nullptr;
 }
+
+
 
 
 

@@ -77,7 +77,7 @@ void ShadowPass::Execute(entt::view<entt::get_t<Renderable, Transform>> compView
     {
         auto renderComponents = compView.get<Renderable>(entity);
         auto transComponents = compView.get<Transform>(entity);
-        modelMatrix = {EngineMath::GetModelMatrix(transComponents)};
+        modelMatrix = {transComponents.globalTransform};
 
         std::vector<VkDescriptorSet> sets = {globalDescriptorData.globalDes};
         //Bind

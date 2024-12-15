@@ -21,8 +21,8 @@ public:
     entt::entity entityID;
     entt::registry* reg;
     std::string name;
-    std::set<int> child;
-    int parent=-1;
+    std::set<std::shared_ptr<GameObject>> child;
+    std::shared_ptr<GameObject> parent;
     std::bitset<8> componentBits;
     std::string type = "GameObject";
 };

@@ -7,11 +7,11 @@ RenderSettingData globalRenderSettingData{};
 Scene::Scene():
 mainCamera(&reg,"mainCamera")
 {
+    sceneRootGameObject = CreateObject("SceneRoot");
     InitGlobalSet();
     InitSkyboxData();
     InitMainCamera();
     InitMainLight();
-    sceneRootGameObject = CreateObject("SceneRoot");
 }
 
 Scene::~Scene()
@@ -38,12 +38,23 @@ std::shared_ptr<GameObject> Scene::CreateObject(std::string name,std::string typ
     return go;
 }
 
-std::shared_ptr<GameObject> Scene::CreateObject(std::string name, int parent,std::string type)
+std::shared_ptr<GameObject> Scene::CreateObject(std::string name, std::shared_ptr<GameObject> parent,std::string type)
 {
 
-    std::shared_ptr<GameObject> go= std::make_shared<GameObject>(&reg,name,type);
-    go->parent = parent;
-
+    std::shared_ptr<GameObject> go;
+    if(type=="GameObject")
+    {
+        go = std::make_shared<GameObject>(&reg,name,type);
+        go->parent = parent;
+    }
+    if(type=="Light")
+    {
+        auto lightGo = std::make_shared<Light>(&reg,name,type);
+        lightGo->parent = parent;
+        lights.push_back(lightGo);
+        go = std::static_pointer_cast<GameObject>(lightGo);
+        UpdateLightData();
+    }
     objects.push_back(go);
 
     return go;
@@ -56,7 +67,7 @@ void Scene::DeleteObject(int id)
     for (int i = 0; i < objects.size(); ++i)
     {
         std::shared_ptr<GameObject> go = objects[i];
-        if (go->parent==id)
+        if ((int)go->parent->entityID==id)
         {
             Destroy(i);
         }
@@ -208,7 +219,7 @@ void Scene::InitGlobalSet()
 
 void Scene::UpdateScene()
 {
-
+    UpdateModelMatrix();
     mainCamera.cameraData.aspect = (float)VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height;
 
     globUniform.skyboxProj = glm::perspective(glm::radians(80.0f),
@@ -259,7 +270,8 @@ void Scene::InitSkyboxData()
 void Scene::InitMainLight()
 {
 
-    mainLight = std::static_pointer_cast<Light>(CreateObject("MainLight","Light"));
+    mainLight = std::static_pointer_cast<Light>(CreateObject("MainLight",sceneRootGameObject,"Light"));
+    sceneRootGameObject->child.insert(mainLight);
     auto& transComp = reg.get<Transform>(mainLight->entityID);
     transComp.rotation = {90,0,0};
     UpdateLightData();
@@ -312,5 +324,29 @@ void Scene::InitMainCamera()
     mainCamera.AddObserver(this);
 }
 
+void Scene::UpdateModelMatrix()
+{
+    if(!isTransformDirty)
+        return
+    UpdateChainedModelMatrix(sceneRootGameObject);
+    isTransformDirty = false;
+}
+
+void Scene::UpdateChainedModelMatrix(std::shared_ptr<GameObject> go)
+{
+    auto& trans = reg.get<Transform>(go->entityID);
+
+    trans.localTransform = EngineMath::GetModelMatrix(trans);
+    if(go->parent!= nullptr)
+    {
+        auto& parentTrans = reg.get<Transform>(go->parent->entityID);
+        trans.globalTransform = parentTrans.globalTransform*trans.localTransform;
+    }
+
+    for (auto& child : go->child)
+    {
+        UpdateChainedModelMatrix(child);
+    }
+}
 
 

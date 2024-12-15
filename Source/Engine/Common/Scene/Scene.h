@@ -69,7 +69,7 @@ public:
     Scene();
     ~Scene();
     std::shared_ptr<GameObject> CreateObject(std::string name,std::string type="GameObject");
-    std::shared_ptr<GameObject> CreateObject(std::string name,int parent,std::string type="GameObject");
+    std::shared_ptr<GameObject> CreateObject(std::string name,std::shared_ptr<GameObject> parent,std::string type="GameObject");
     std::shared_ptr<GameObject> GetGameObject(int id);
     void UpdateScene();
     void DeleteObject(int id);
@@ -77,6 +77,7 @@ public:
     void RenameObject(int id,std::string dstName);
     void UpdateLightData();
 public:
+    bool isTransformDirty = true;
     std::shared_ptr<GameObject> sceneRootGameObject;
     entt::registry reg;
     std::vector<std::shared_ptr<GameObject>> objects;
@@ -89,6 +90,8 @@ public:
     BoundingPoint minPoint;
     BoundingPoint maxPoint;
 private:
+    void UpdateChainedModelMatrix(std::shared_ptr<GameObject> go);
+    void UpdateModelMatrix();
     void InitGlobalSet();
     void InitSkyboxData();
     void InitMainCamera();

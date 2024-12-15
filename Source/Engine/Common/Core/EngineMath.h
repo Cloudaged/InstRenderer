@@ -22,7 +22,7 @@ namespace EngineMath
     glm::mat4 GetRotateMatrix(const glm::vec3& rotationAngle,glm::mat4 mat = glm::mat4(1.0f));
     glm::vec3 SphereToRectCoord(const glm::vec3& angle,const float& r);
     MaxMinPoints TransformAABB(const BoundingPoint& min,const BoundingPoint& max,const glm::mat4 mat);
-    MaxMinPoints GetFrustumBoundingBox(Camera& camera);
+    MaxMinPoints UpdateFrustumBoundingBox(Camera& camera);
 }
 
 #endif //INSTRENDERER_ENGINEMATH_H

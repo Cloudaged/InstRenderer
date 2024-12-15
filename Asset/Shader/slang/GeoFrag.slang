@@ -40,7 +40,7 @@ FragOutput main(FragInput input)
     }
     else
     {
-        output.outBaseColor = float4(0, 1, 1, 0);
+        output.outBaseColor = float4(1, 1, 1, 0);
     }
 
     if (slots.normal == 1)

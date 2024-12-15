@@ -27,7 +27,8 @@ void Presenter::AddGameObject()
 
     editor->connect(editor->sceneEditor,&SceneEditor::AddSubObjAction,[&](std::string name,std::string type,int parent)
     {
-        auto go = instance->mainScene->CreateObject(name,parent,type);
+        auto parentGO = instance->mainScene->GetGameObject(parent);
+        auto go = instance->mainScene->CreateObject(name,parentGO,type);
         editor->sceneEditor->AddItem(static_cast<int>(go->entityID),name,type,parent);
     });
 
@@ -66,6 +67,7 @@ void Presenter::UpdateComponentData()
     {
         auto& trans = instance->mainScene->reg.get<Transform>(editor->componentEditor->curID);
         trans = output;
+        instance->mainScene->isTransformDirty = true;
         instance->mainScene->UpdateLightData();
     });
 

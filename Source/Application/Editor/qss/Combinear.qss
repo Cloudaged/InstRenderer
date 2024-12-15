@@ -582,36 +582,24 @@ QTreeView
 
 QTreeView::item:selected
 {
-	color:#fff;
 	background-color: #b78620;
 	border-radius: 0px;
-
+    color: rgb(203, 203, 203);
 }
 
 
 QTreeView::item:!selected:hover
 {
     background-color: #262626;
-    border: none;
-    color: white;
-
+    color: rgb(203, 203, 203);
 }
 
 
-QTreeView::branch:has-children:!has-siblings:closed,
-QTreeView::branch:closed:has-children:has-siblings 
+QTreeView::branch
 {
-	image: url(://tree-closed.png);
-
+    color: rgb(203, 203, 203);
 }
 
-
-QTreeView::branch:open:has-children:!has-siblings,
-QTreeView::branch:open:has-children:has-siblings  
-{
-	image: url(://tree-open.png);
-
-}
 
 
 /*-----QListView-----*/
