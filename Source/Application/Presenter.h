@@ -3,6 +3,9 @@
 #define INSTRENDERER_PRESENTER_H
 #include "Common/GameInstance.h"
 #include "Editor/MainEditor/MainEditor.h"
+void UpdateTrans(std::shared_ptr<GameObject> go,entt::registry& reg);
+
+
 class Presenter
 {
 public:

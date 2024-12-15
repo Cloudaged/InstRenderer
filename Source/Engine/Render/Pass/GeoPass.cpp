@@ -92,6 +92,7 @@ void GeoPass::Execute(entt::view<entt::get_t<Renderable, Transform>> view)
         auto transComponents = view.get<Transform>(entity);
 
         perData = {transComponents.globalTransform};
+
         //Update
         memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(perObjDesBuffer),
                &perData,

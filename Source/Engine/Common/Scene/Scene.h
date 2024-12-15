@@ -77,7 +77,6 @@ public:
     void RenameObject(int id,std::string dstName);
     void UpdateLightData();
 public:
-    bool isTransformDirty = true;
     std::shared_ptr<GameObject> sceneRootGameObject;
     entt::registry reg;
     std::vector<std::shared_ptr<GameObject>> objects;
@@ -90,8 +89,6 @@ public:
     BoundingPoint minPoint;
     BoundingPoint maxPoint;
 private:
-    void UpdateChainedModelMatrix(std::shared_ptr<GameObject> go);
-    void UpdateModelMatrix();
     void InitGlobalSet();
     void InitSkyboxData();
     void InitMainCamera();

@@ -227,6 +227,8 @@ void SceneEditor::UpdateTree(std::shared_ptr<GameObject> sceneRootGO)
 {
     treeWidget->clear();
     AddNodes(sceneRootGO);
+    if(treeWidget->topLevelItem(0))
+        treeWidget->expandItem(treeWidget->topLevelItem(0));
 }
 
 void SceneEditor::AddNodes(std::shared_ptr<GameObject> node)

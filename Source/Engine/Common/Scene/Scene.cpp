@@ -219,7 +219,6 @@ void Scene::InitGlobalSet()
 
 void Scene::UpdateScene()
 {
-    UpdateModelMatrix();
     mainCamera.cameraData.aspect = (float)VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height;
 
     globUniform.skyboxProj = glm::perspective(glm::radians(80.0f),
@@ -324,29 +323,6 @@ void Scene::InitMainCamera()
     mainCamera.AddObserver(this);
 }
 
-void Scene::UpdateModelMatrix()
-{
-    if(!isTransformDirty)
-        return
-    UpdateChainedModelMatrix(sceneRootGameObject);
-    isTransformDirty = false;
-}
 
-void Scene::UpdateChainedModelMatrix(std::shared_ptr<GameObject> go)
-{
-    auto& trans = reg.get<Transform>(go->entityID);
-
-    trans.localTransform = EngineMath::GetModelMatrix(trans);
-    if(go->parent!= nullptr)
-    {
-        auto& parentTrans = reg.get<Transform>(go->parent->entityID);
-        trans.globalTransform = parentTrans.globalTransform*trans.localTransform;
-    }
-
-    for (auto& child : go->child)
-    {
-        UpdateChainedModelMatrix(child);
-    }
-}
 
 

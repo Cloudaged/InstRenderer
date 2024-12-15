@@ -61,13 +61,33 @@ void Presenter::ChangeSelectedItem()
     });
 }
 
+void UpdateTrans(std::shared_ptr<GameObject> go,entt::registry& reg)
+{
+    auto& trans = reg.get<Transform>(go->entityID);
+    if(go->parent!= nullptr)
+    {
+        trans.localTransform = EngineMath::GetModelMatrix(trans);
+        auto& parentTrans = reg.get<Transform>(go->parent->entityID);
+        trans.globalTransform = parentTrans.globalTransform*trans.localTransform;
+        trans.isDirty = false;
+    }
+
+    for (auto& child : go->child)
+    {
+        UpdateTrans(child,reg);
+    }
+}
+
 void Presenter::UpdateComponentData()
 {
     editor->connect(editor->componentEditor->transformCompUI,&TransformComponentUI::TransformCompChanged,[&](Transform output)
     {
+        auto go = instance->mainScene->GetGameObject((int)editor->componentEditor->curID);
+
         auto& trans = instance->mainScene->reg.get<Transform>(editor->componentEditor->curID);
         trans = output;
-        instance->mainScene->isTransformDirty = true;
+
+        UpdateTrans(go,instance->mainScene->reg);
         instance->mainScene->UpdateLightData();
     });
 
