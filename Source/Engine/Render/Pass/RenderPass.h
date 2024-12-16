@@ -9,7 +9,7 @@
 #include "../../Common/Component/Components.h"
 #include "../../Common/Scene/Scene.h"
 #include "../RenderState.h"
-
+#include "memory"
 typedef std::unordered_map<std::string,AttachmentDes> AttachmentMap;
 
 

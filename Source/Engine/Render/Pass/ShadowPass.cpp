@@ -2,8 +2,10 @@
 #include "ShadowPass.h"
 #include "../VulkanContext.h"
 
-ShadowPass::ShadowPass(GlobalDescriptorData globalDescriptorData): globalDescriptorData(globalDescriptorData)
+ShadowPass::ShadowPass(GlobalDescriptorData globalDescriptorData)
+: globalDescriptorData(globalDescriptorData)
 {
+   // InitCSM();
 }
 
 void ShadowPass::SetupAttachments()
@@ -98,6 +100,64 @@ void ShadowPass::Execute(entt::view<entt::get_t<Renderable, Transform>> compView
 
     vkCmdEndRenderPass(cmd);
     UpdateRecordedLayout();
+}
+
+void ShadowPass::InitCSM()
+{
+    //Get Scales
+    std::shared_ptr<Camera> viewCamera = std::make_shared<Camera>(scene->mainCamera);
+    std::shared_ptr<Light> light = scene->mainLight;
+
+    std::vector<float> scales = {0.1,0.3,0.6,1.0};
+    float camNear = viewCamera->cameraData.nearPlane;
+    float camFar = viewCamera->cameraData.farPlane;
+    float fullLength = camFar - camNear;
+    float offset = 0.0f;
+    for(int i = 0;i<cascadedCount;i++)
+    {
+        //Get subfrustum
+        float subFrustumNear = camNear+offset;
+        offset += fullLength*scales[i];
+        float subFrustumFar = camNear+offset;
+        glm::mat4 vMat = viewCamera->vpMat.view;
+        glm::mat4 pMat = viewCamera->vpMat.proj;
+
+        std::vector<glm::vec3> ndcCorners =
+                {
+                        glm::vec3(-1.0,1.0,subFrustumNear),
+                        glm::vec3(1.0,1.0,subFrustumNear),
+                        glm::vec3(1.0,-1.0,subFrustumNear),
+                        glm::vec3(-1.0,-1.0,subFrustumNear),
+
+                        glm::vec3(-1.0,1.0,subFrustumFar),
+                        glm::vec3(1.0,1.0,subFrustumFar),
+                        glm::vec3(1.0,-1.0,subFrustumFar),
+                        glm::vec3(-1.0,-1.0,subFrustumFar)
+                };
+        auto frustumCornerWS = GetFrustumCornersWS(ndcCorners,viewCamera->vpMat.view,viewCamera->vpMat.proj);
+        //Get subfrustum circumSphere
+        auto [sphereCenter,sphereRadius] = EngineMath::GetFrustumCircumsphere(frustumCornerWS,subFrustumFar-subFrustumNear);
+
+        //Create vp mat for this subfrustum
+
+
+    }
+
+    //Get frustum's AABB
+
+
+    //Get
+}
+
+std::vector<glm::vec3> ShadowPass::GetFrustumCornersWS(const std::vector<glm::vec3>& ndcCorners,const glm::mat4& vMat,const glm::mat4& pMat)
+{
+    auto invMat = glm::inverse(pMat*vMat);
+    std::vector<glm::vec3> wsCorners(8);
+    for (int i = 0; i < ndcCorners.size(); ++i)
+    {
+        wsCorners[i] = glm::vec3(invMat*glm::vec4(ndcCorners[i],1.0));
+    }
+    return wsCorners;
 }
 
 
