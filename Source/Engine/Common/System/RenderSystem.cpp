@@ -21,3 +21,7 @@ RenderSystem::RenderSystem()
     passManager = RenderPassManager();
 }
 
+void RenderSystem::SetupRenderGraph()
+{
+}
+

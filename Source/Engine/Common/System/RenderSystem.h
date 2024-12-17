@@ -5,6 +5,7 @@
 #include "../../Render/MaterialManager.h"
 #include "../Scene/Scene.h"
 #include "iostream"
+#include "../../Render/RenderGraph/RenderGraph.h"
 struct RenderSysBeginInfo
 {
     entt::registry* registry;
@@ -22,6 +23,8 @@ public:
     MaterialManager materialManager;
     RenderPassManager passManager;
 private:
+    void SetupRenderGraph();
+    //RDG::RenderGraph renderGraph;
 };
 
 
