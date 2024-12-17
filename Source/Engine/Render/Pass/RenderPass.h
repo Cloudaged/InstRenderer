@@ -11,12 +11,12 @@
 #include "memory"
 #include "../Uniforms.h"
 #include "optional"
-typedef std::unordered_map<std::string,TextureInfo> AttachmentMap;
 
 
-struct RenderResource
+
+struct PassInput
 {
-    TextureInfo& attDes;
+    ResourceRef& resRef;
     AttachmentOP opt;
 };
 
@@ -37,7 +37,6 @@ public:
     virtual ~RenderPass();
     virtual void ClearRes();
 public:
-    static AttachmentMap attachmentMap;
     VkRenderPass passHandle;
     VkFramebuffer framebufferHandle=VK_NULL_HANDLE;
     uint32_t width,height;
@@ -53,7 +52,7 @@ protected:
     virtual void SetupAttachments() = 0;
 protected:
     std::vector<TextureInfo> inputAttDes;
-    std::vector<RenderResource> outputResource;
+    std::vector<PassInput> outputResource;
     VkDescriptorSetLayout inputAttDesLayout;
     VkDescriptorSet inputAttDesSet;
 private:

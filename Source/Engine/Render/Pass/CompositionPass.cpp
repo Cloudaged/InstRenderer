@@ -7,17 +7,17 @@ void CompositionPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    inputAttDes.push_back(attachmentMap["Position"]);
-    inputAttDes.push_back(attachmentMap["Normal"]);
-    inputAttDes.push_back(attachmentMap["BaseColor"]);
-    inputAttDes.push_back(attachmentMap["MetallicRoughness"]);
-    inputAttDes.push_back(attachmentMap["ShadowMap"]);
+    inputAttDes.push_back(resourceMap["Position"]);
+    inputAttDes.push_back(resourceMap["Normal"]);
+    inputAttDes.push_back(resourceMap["BaseColor"]);
+    inputAttDes.push_back(resourceMap["MetallicRoughness"]);
+    inputAttDes.push_back(resourceMap["ShadowMap"]);
 
-    attachmentMap["Lighted"] = TextureInfo{"Lighted", winWidth, winHeight,
-                                           AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB};
+    resourceMap["Lighted"] = TextureInfo{"Lighted", winWidth, winHeight,
+                                         AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB};
 
-    outputResource.push_back({attachmentMap["Lighted"], AttachmentOP::WriteOnly});
-    outputResource.push_back({attachmentMap["Depth"], AttachmentOP::ReadAndWrite});
+    outputResource.push_back({resourceMap["Lighted"], AttachmentOP::WriteOnly});
+    outputResource.push_back({resourceMap["Depth"], AttachmentOP::ReadAndWrite});
 
 }
 

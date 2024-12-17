@@ -11,12 +11,12 @@ void PresentPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    inputAttDes.push_back(attachmentMap["Lighted"]);
+    inputAttDes.push_back(resourceMap["Lighted"]);
 
-    attachmentMap["Present"] = TextureInfo{"Present", winWidth, winHeight,
-                                           AttachmentUsage::Present, VK_FORMAT_B8G8R8A8_SRGB, nullptr};
+    resourceMap["Present"] = TextureInfo{"Present", winWidth, winHeight,
+                                         AttachmentUsage::Present, VK_FORMAT_B8G8R8A8_SRGB, nullptr};
 
-    outputResource.push_back({attachmentMap["Present"], AttachmentOP::Present});
+    outputResource.push_back({resourceMap["Present"], AttachmentOP::Present});
 }
 
 void PresentPass::Execute()

@@ -2,7 +2,7 @@
 #include "RenderPass.h"
 #include "../VulkanContext.h"
 
-AttachmentMap RenderPass::attachmentMap;
+ResourceMap RenderPass::resourceMap;
 
 RenderPass::RenderPass()
 {
@@ -133,7 +133,7 @@ void RenderPass::Build()
     int refIndex = 0;
     for (auto& res:outputResource)
     {
-        auto& att = res.attDes;
+        auto& att = res.resRef;
         if(att.usage==AttachmentUsage::Present)
         {
             BuildPresentFrame();
@@ -246,7 +246,7 @@ void RenderPass::Build()
 void RenderPass::BuildPresentFrame()
 {
     auto& res = outputResource[0];
-    auto& att = res.attDes;
+    auto& att = res.resRef;
 
     std::vector<VkImageView> views;
     std::vector<VkAttachmentDescription> attDescriptions;
@@ -389,15 +389,15 @@ void RenderPass::InputAttachmentDes(std::vector<std::string> names)
     std::vector<VkDescriptorImageInfo> imageInfos(names.size());
     for (int i = 0; i < names.size(); ++i)
     {
-        if(attachmentMap.count(names[i])==0)
+        if(resourceMap.count(names[i]) == 0)
         {
             std::cout<<"Can't match the attachment through name\n";
         }
-        auto& att = attachmentMap[names[i]];
+        auto& att = resourceMap[names[i]];
 
-        imageInfos[i].imageView = att.data->allocatedImage.imageView;
-        imageInfos[i].imageLayout = att.data->allocatedImage.layout;
-        imageInfos[i].sampler = att.data->sampler;
+        imageInfos[i].imageView = att.textureInfo->data->allocatedImage.imageView;
+        imageInfos[i].imageLayout = att.textureInfo->data->allocatedImage.layout;
+        imageInfos[i].sampler = att.textureInfo->data->sampler;
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -418,10 +418,10 @@ void RenderPass::TransAttachmentLayout(VkCommandBuffer cmd)
 {
     for (auto& res:outputResource)
     {
-        auto state = GetState(res.opt,res.attDes.usage);
-        if(res.attDes.currentLayout!=state.initLayout)
+        auto state = GetState(res.opt,res.resRef.usage);
+        if(res.resRef.currentLayout != state.initLayout)
         {
-            VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,res.attDes.data->allocatedImage.vk_image,res.attDes.currentLayout,state.initLayout);
+            VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd, res.resRef.data->allocatedImage.vk_image, res.resRef.currentLayout, state.initLayout);
         }
     }
 }
@@ -430,8 +430,8 @@ void RenderPass::UpdateRecordedLayout()
 {
     for (auto& res:outputResource)
     {
-        auto state = GetState(res.opt,res.attDes.usage);
-        res.attDes.currentLayout=state.finalLayout;
+        auto state = GetState(res.opt,res.resRef.usage);
+        res.resRef.currentLayout=state.finalLayout;
     }
 }
 

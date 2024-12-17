@@ -64,7 +64,7 @@ void RenderPassManager::ClearAtt()
 {
     //Clear Attachment
     auto& device = VulkanContext::GetContext().device;
-    for (auto& att:RenderPass::attachmentMap)
+    for (auto& att:RenderPass::resourceMap)
     {
         if(att.first=="Present")
             continue;
@@ -73,7 +73,7 @@ void RenderPassManager::ClearAtt()
         vkDestroyImage(device,data->allocatedImage.vk_image, nullptr);
         vkDestroySampler(device,data->sampler, nullptr);
     }
-    RenderPass::attachmentMap.clear();
+    RenderPass::resourceMap.clear();
 }
 
 void RenderPassManager::DeclaresResource()

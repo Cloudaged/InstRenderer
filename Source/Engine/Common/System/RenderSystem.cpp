@@ -83,6 +83,7 @@ void RenderSystem::MemoryCopy()
 
 void RenderSystem::SetupRenderGraph()
 {
+
 }
 
 void RenderSystem::InitGlobalDescriptorSet()

@@ -11,10 +11,10 @@ void PrefilterPass::SetupAttachments()
     int winWidth = VulkanContext::GetContext().windowExtent.width;
     int winHeight = VulkanContext::GetContext().windowExtent.height;
 
-    attachmentMap["Prefiltered"] = TextureInfo{"Prefiltered", winWidth, winHeight,
-                                               AttachmentUsage::Prefiltered, VK_FORMAT_R8G8B8A8_SRGB, nullptr};
+    resourceMap["Prefiltered"] = TextureInfo{"Prefiltered", winWidth, winHeight,
+                                             AttachmentUsage::Prefiltered, VK_FORMAT_R8G8B8A8_SRGB, nullptr};
 
-    outputResource.push_back({attachmentMap["Prefiltered"], AttachmentOP::WriteOnly});
+    outputResource.push_back({resourceMap["Prefiltered"], AttachmentOP::WriteOnly});
 }
 
 void PrefilterPass::Execute()

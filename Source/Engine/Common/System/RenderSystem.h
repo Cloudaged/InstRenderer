@@ -30,6 +30,7 @@ private:
     void InitGlobalDescriptorSet();
     GlobalDescriptorData globalData{};
     void SetupRenderGraph();
+
     //RDG::RenderGraph renderGraph;
 };
 

@@ -59,12 +59,14 @@ struct TextureInfo
     VkImageLayout currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     bool hasInit = false;
 };
-
+using ResourceName = std::string;
+using PassName = std::string;
 struct ResourceRef
 {
     ResourceType type;
     std::optional<TextureInfo> textureInfo;
     std::optional<BufferInfo> bufferInfo;
+    PassName producerPass;
 };
 
 #endif //INSTRENDERER_RENDERRESOURCE_H
