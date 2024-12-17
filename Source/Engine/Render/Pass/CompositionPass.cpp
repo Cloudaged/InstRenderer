@@ -13,8 +13,8 @@ void CompositionPass::SetupAttachments()
     inputAttDes.push_back(attachmentMap["MetallicRoughness"]);
     inputAttDes.push_back(attachmentMap["ShadowMap"]);
 
-    attachmentMap["Lighted"] = AttachmentDes{"Lighted", winWidth, winHeight,
-                                             AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB};
+    attachmentMap["Lighted"] = TextureInfo{"Lighted", winWidth, winHeight,
+                                           AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB};
 
     outputResource.push_back({attachmentMap["Lighted"], AttachmentOP::WriteOnly});
     outputResource.push_back({attachmentMap["Depth"], AttachmentOP::ReadAndWrite});

@@ -435,7 +435,7 @@ void RenderPass::UpdateRecordedLayout()
     }
 }
 
-void RenderPass::AllocAttachmentResource(AttachmentDes &attachment)
+void RenderPass::AllocAttachmentResource(TextureInfo &attachment)
 {
     if(!attachment.hasInit)
     {

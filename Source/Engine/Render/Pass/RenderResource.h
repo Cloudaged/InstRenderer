@@ -8,6 +8,7 @@
 #include "unordered_map"
 #include "../Buffer/Texture.h"
 #include "memory"
+#include <optional>
 
 enum class ResourceType
 {
@@ -42,7 +43,13 @@ struct AttachmentData
     VkImageView view;
     VkImage image;
 };
-struct AttachmentDes
+
+struct BufferInfo
+{
+    uint32_t size;
+};
+
+struct TextureInfo
 {
     std::string name;
     int width,height;
@@ -53,5 +60,11 @@ struct AttachmentDes
     bool hasInit = false;
 };
 
+struct ResourceRef
+{
+    ResourceType type;
+    std::optional<TextureInfo> textureInfo;
+    std::optional<BufferInfo> bufferInfo;
+};
 
 #endif //INSTRENDERER_RENDERRESOURCE_H

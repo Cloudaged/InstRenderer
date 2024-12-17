@@ -76,3 +76,8 @@ void RenderPassManager::ClearAtt()
     RenderPass::attachmentMap.clear();
 }
 
+void RenderPassManager::DeclaresResource()
+{
+
+}
+

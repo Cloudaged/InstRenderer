@@ -10,13 +10,13 @@
 #include "../RenderState.h"
 #include "memory"
 #include "../Uniforms.h"
-
-typedef std::unordered_map<std::string,AttachmentDes> AttachmentMap;
+#include "optional"
+typedef std::unordered_map<std::string,TextureInfo> AttachmentMap;
 
 
 struct RenderResource
 {
-    AttachmentDes& attDes;
+    TextureInfo& attDes;
     AttachmentOP opt;
 };
 
@@ -52,13 +52,13 @@ protected:
     virtual void SetupRenderState()=0;
     virtual void SetupAttachments() = 0;
 protected:
-    std::vector<AttachmentDes> inputAttDes;
+    std::vector<TextureInfo> inputAttDes;
     std::vector<RenderResource> outputResource;
     VkDescriptorSetLayout inputAttDesLayout;
     VkDescriptorSet inputAttDesSet;
 private:
     void InputAttachmentDes(std::vector<std::string> names);
-    void AllocAttachmentResource(AttachmentDes& attachment);
+    void AllocAttachmentResource(TextureInfo& attachment);
     void BuildPresentFrame();
 private:
 };

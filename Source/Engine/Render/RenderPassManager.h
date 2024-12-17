@@ -17,6 +17,7 @@ public:
     void RecreateAllPass();
     void ClearAtt();
 private:
+    void DeclaresResource();
     entt::view<entt::get_t<Renderable,Transform>> view;
     GlobalDescriptorData globalDescriptorData;
     std::unique_ptr<CompositionPass> compositionPass;

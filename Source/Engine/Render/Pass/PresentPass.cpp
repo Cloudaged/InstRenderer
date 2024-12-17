@@ -13,8 +13,8 @@ void PresentPass::SetupAttachments()
 
     inputAttDes.push_back(attachmentMap["Lighted"]);
 
-    attachmentMap["Present"] = AttachmentDes{"Present",winWidth,winHeight,
-                                             AttachmentUsage::Present,VK_FORMAT_B8G8R8A8_SRGB, nullptr};
+    attachmentMap["Present"] = TextureInfo{"Present", winWidth, winHeight,
+                                           AttachmentUsage::Present, VK_FORMAT_B8G8R8A8_SRGB, nullptr};
 
     outputResource.push_back({attachmentMap["Present"], AttachmentOP::Present});
 }

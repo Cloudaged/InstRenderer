@@ -5,7 +5,6 @@
 #include "../../Render/MaterialManager.h"
 #include "../Scene/Scene.h"
 #include "iostream"
-#include "../../Render/RenderGraph/RenderGraph.h"
 #include "../../Render/Uniforms.h"
 
 
