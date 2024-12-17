@@ -6,23 +6,30 @@
 #include "../Scene/Scene.h"
 #include "iostream"
 #include "../../Render/RenderGraph/RenderGraph.h"
-struct RenderSysBeginInfo
-{
-    entt::registry* registry;
-    GlobalDescriptorData globalData;
-};
+#include "../../Render/Uniforms.h"
 
 
 class RenderSystem
 {
 public:
     RenderSystem();
-    void BeginSystem(RenderSysBeginInfo info);
+    void BeginSystem(std::shared_ptr<Scene> scene);
     void Execute();
 
     MaterialManager materialManager;
     RenderPassManager passManager;
+    void UpdateLightArray();
 private:
+    LightUniform lightUniform;
+    GlobalUniform globalUniform;
+
+    void PrepareData();
+    void PrepareLight();
+    void PrepareGlobal();
+    void MemoryCopy();
+    std::shared_ptr<Scene> scene;
+    void InitGlobalDescriptorSet();
+    GlobalDescriptorData globalData{};
     void SetupRenderGraph();
     //RDG::RenderGraph renderGraph;
 };

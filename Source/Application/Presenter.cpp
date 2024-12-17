@@ -88,14 +88,14 @@ void Presenter::UpdateComponentData()
         trans = output;
 
         UpdateTrans(go,instance->mainScene->reg);
-        instance->mainScene->UpdateLightData();
+        instance->renderSystem.UpdateLightArray();
     });
 
     editor->connect(editor->componentEditor->lightComponentUI,&LightComponentUI::LightCompChanged,[&](LightComponent output)
     {
         auto& light = instance->mainScene->reg.get<LightComponent>(editor->componentEditor->curID);
         light = output;
-        instance->mainScene->UpdateLightData();
+        instance->renderSystem.UpdateLightArray();
     });
 }
 

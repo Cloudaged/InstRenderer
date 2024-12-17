@@ -14,51 +14,6 @@
 #include "Light.h"
 #include "glm/gtx/string_cast.hpp"
 #include "SceneObserver.h"
-struct GlobalUniform
-{
-    glm::mat4 view;
-    glm::mat4 proj;
-    glm::mat4 skyboxProj;
-    glm::mat4 lightViewMat;
-    glm::mat4 lightProjMat;
-};
-
-
-struct LightUnitsInShader
-{
-    alignas(16) glm::vec4 position;
-    alignas(16) glm::vec4 toward;
-    alignas(16) glm::vec4 color;
-    alignas(4) int type;
-    alignas(4) float intensity;
-    alignas(4) float range;
-    alignas(4) float outerCutoff;
-    alignas(4) float attenuation;
-};
-
-struct LightUniform
-{
-    alignas(16) glm::vec4 cameraPos;
-    alignas(16) glm::vec4 cameraDir;
-    alignas(4) int count;
-    LightUnitsInShader lights[16];
-};
-
-struct SkyboxData
-{
-    Skybox* skybox;
-};
-
-struct GlobalDescriptorData
-{
-    Buffer globBuffer;
-    Buffer lightBuffer;
-    Buffer graphicBuffer;
-    VkDescriptorSetLayout globalDesLayout;
-    VkDescriptorSet globalDes;
-    SkyboxData skyboxData;
-};
-
 
 
 using BoundingPoint = glm::vec3;
@@ -75,21 +30,17 @@ public:
     void DeleteObject(int id);
     void Destroy(int i);
     void RenameObject(int id,std::string dstName);
-    void UpdateLightData();
 public:
+    std::shared_ptr<Skybox> skybox;
     std::shared_ptr<GameObject> sceneRootGameObject;
     entt::registry reg;
     std::vector<std::shared_ptr<GameObject>> objects;
     std::vector<std::shared_ptr<Light>> lights;
     Camera mainCamera;
     std::shared_ptr<Light> mainLight;
-    GlobalDescriptorData globalData{};
-    LightUniform lightUniform{};
-    GlobalUniform globUniform{};
     BoundingPoint minPoint;
     BoundingPoint maxPoint;
 private:
-    void InitGlobalSet();
     void InitSkyboxData();
     void InitMainCamera();
     void InitMainLight();

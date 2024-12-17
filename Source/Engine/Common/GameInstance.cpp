@@ -30,10 +30,10 @@ void GameInstance::InitVulkanContext()
 
 void GameInstance::InitSystem()
 {
-    RenderSysBeginInfo renderSysInfo{};
+    /*RenderSysBeginInfo renderSysInfo{};
     renderSysInfo.registry = &mainScene->reg;
-    renderSysInfo.globalData = mainScene->globalData;
-    renderSystem.BeginSystem(renderSysInfo);
+    renderSysInfo.globalData = mainScene->globalData;*/
+    renderSystem.BeginSystem(mainScene);
     resourceSystem.BeginSystem();
 }
 

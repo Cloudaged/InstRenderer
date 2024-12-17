@@ -13,7 +13,6 @@ private:
     const int cascadedCount = 4;
     void InitCSM();
     std::vector<glm::vec3> GetFrustumCornersWS(const std::vector<glm::vec3>& ndcCorners,const glm::mat4& vMat,const glm::mat4& pMat);
-    std::shared_ptr<Scene> scene;
     glm::mat4 modelMatrix;
     uint32_t shadowMapWidth,shadowMapHeight;
     GlobalDescriptorData globalDescriptorData;

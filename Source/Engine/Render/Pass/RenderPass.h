@@ -7,9 +7,10 @@
 #include "vector"
 #include "entt.hpp"
 #include "../../Common/Component/Components.h"
-#include "../../Common/Scene/Scene.h"
 #include "../RenderState.h"
 #include "memory"
+#include "../Uniforms.h"
+
 typedef std::unordered_map<std::string,AttachmentDes> AttachmentMap;
 
 
@@ -26,6 +27,7 @@ struct AttachmentState
     VkImageLayout initLayout;
     VkImageLayout finalLayout;
 };
+struct GlobalDescriptorData;
 
 class RenderPass
 {

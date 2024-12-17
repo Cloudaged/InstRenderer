@@ -1,7 +1,7 @@
 
 #include "CompositionPass.h"
 #include "../VulkanContext.h"
-
+#include "../../Common/System/RenderSystem.h"
 void CompositionPass::SetupAttachments()
 {
     int winWidth = VulkanContext::GetContext().windowExtent.width;
@@ -86,10 +86,10 @@ void CompositionPass::Execute()
 
     VkDeviceSize offsets[] = {0};
 
-    vkCmdBindVertexBuffers(cmd,0,1,&globData.skyboxData.skybox->boxVertBuffer.vk_buffer,offsets);
+    vkCmdBindVertexBuffers(cmd,0,1,&globData.skyboxData->boxVertBuffer.vk_buffer,offsets);
 
-    vkCmdBindIndexBuffer(cmd,globData.skyboxData.skybox->boxIndexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(cmd,static_cast<uint32_t>(globData.skyboxData.skybox->indicesCount),1,0,0,0);
+    vkCmdBindIndexBuffer(cmd,globData.skyboxData->boxIndexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(cmd,static_cast<uint32_t>(globData.skyboxData->indicesCount),1,0,0,0);
 
 
 
@@ -153,7 +153,7 @@ void CompositionPass::CreateSkyboxDes()
 
     std::vector<VkWriteDescriptorSet> writes;
     //Descriptor
-    auto skybox = globData.skyboxData.skybox;
+    auto skybox = globData.skyboxData;
 
     VkDescriptorImageInfo imageInfos;
 

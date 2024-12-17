@@ -2,7 +2,6 @@
 #ifndef INSTRENDERER_COMPOSITIONPASS_H
 #define INSTRENDERER_COMPOSITIONPASS_H
 #include "RenderPass.h"
-
 class CompositionPass :public RenderPass
 {
 public:

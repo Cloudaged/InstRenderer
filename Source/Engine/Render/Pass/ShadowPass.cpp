@@ -105,7 +105,7 @@ void ShadowPass::Execute(entt::view<entt::get_t<Renderable, Transform>> compView
 void ShadowPass::InitCSM()
 {
     //Get Scales
-    std::shared_ptr<Camera> viewCamera = std::make_shared<Camera>(scene->mainCamera);
+    /*std::shared_ptr<Camera> viewCamera = std::make_shared<Camera>(scene->mainCamera);
     std::shared_ptr<Light> light = scene->mainLight;
 
     std::vector<float> scales = {0.1,0.3,0.6,1.0};
@@ -141,7 +141,7 @@ void ShadowPass::InitCSM()
         //Create vp mat for this subfrustum
 
 
-    }
+    }*/
 
     //Get frustum's AABB
 
