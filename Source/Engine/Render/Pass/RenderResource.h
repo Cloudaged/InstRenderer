@@ -51,7 +51,6 @@ struct BufferInfo
 
 struct TextureInfo
 {
-    std::string name;
     int width,height;
     AttachmentUsage usage;
     VkFormat format;
