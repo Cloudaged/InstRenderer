@@ -16,7 +16,6 @@ private:
     glm::mat4 modelMatrix;
     uint32_t shadowMapWidth,shadowMapHeight;
     GlobalDescriptorData globalDescriptorData;
-    Texture* shadowMapAttachment;
 };
 
 

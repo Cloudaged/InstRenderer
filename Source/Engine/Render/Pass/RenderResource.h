@@ -7,7 +7,7 @@
 #include "../Buffer/AllocatedImage.h"
 #include "unordered_map"
 #include "../Buffer/Texture.h"
-
+#include "memory"
 
 enum class ResourceType
 {
@@ -48,7 +48,7 @@ struct AttachmentDes
     int width,height;
     AttachmentUsage usage;
     VkFormat format;
-    Texture** data;
+    std::shared_ptr<Texture> data = nullptr;
     VkImageLayout currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     bool hasInit = false;
 };

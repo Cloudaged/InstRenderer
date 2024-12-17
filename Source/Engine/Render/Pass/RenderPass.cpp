@@ -173,7 +173,7 @@ void RenderPass::Build()
         }
         attDescriptions.push_back(attachmentDes);
 
-        views.push_back((*att.data)->allocatedImage.imageView);
+        views.push_back(att.data->allocatedImage.imageView);
         refIndex++;
     }
     //RenderPass
@@ -395,9 +395,9 @@ void RenderPass::InputAttachmentDes(std::vector<std::string> names)
         }
         auto& att = attachmentMap[names[i]];
 
-        imageInfos[i].imageView = (*att.data)->allocatedImage.imageView;
-        imageInfos[i].imageLayout = (*att.data)->allocatedImage.layout;
-        imageInfos[i].sampler = (*att.data)->sampler;
+        imageInfos[i].imageView = att.data->allocatedImage.imageView;
+        imageInfos[i].imageLayout = att.data->allocatedImage.layout;
+        imageInfos[i].sampler = att.data->sampler;
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType =VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -421,7 +421,7 @@ void RenderPass::TransAttachmentLayout(VkCommandBuffer cmd)
         auto state = GetState(res.opt,res.attDes.usage);
         if(res.attDes.currentLayout!=state.initLayout)
         {
-            VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,(*res.attDes.data)->allocatedImage.vk_image,res.attDes.currentLayout,state.initLayout);
+            VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,res.attDes.data->allocatedImage.vk_image,res.attDes.currentLayout,state.initLayout);
         }
     }
 }
@@ -453,7 +453,7 @@ void RenderPass::AllocAttachmentResource(AttachmentDes &attachment)
 
         auto img = new AllocatedImage(attachment.format,usage,VkExtent2D{(uint32_t)attachment.width,(uint32_t)attachment.height},1,aspect);
         img->layout = layout;
-        *attachment.data = new Texture(*img);
+        attachment.data = std::make_shared<Texture>(*img);
         attachment.hasInit = true;
     }
 }

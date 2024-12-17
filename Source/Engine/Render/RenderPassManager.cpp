@@ -68,7 +68,7 @@ void RenderPassManager::ClearAtt()
     {
         if(att.first=="Present")
             continue;
-        auto& data = *(att.second.data);
+        auto& data = (att.second.data);
         vkDestroyImageView(device,data->allocatedImage.imageView, nullptr);
         vkDestroyImage(device,data->allocatedImage.vk_image, nullptr);
         vkDestroySampler(device,data->sampler, nullptr);

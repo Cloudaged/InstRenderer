@@ -12,19 +12,19 @@ void GeoPass::SetupAttachments()
 
 
     attachmentMap["Position"] = AttachmentDes{"Position", winWidth, winHeight,
-                                               AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &positionAttachment};
+                                               AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT};
 
     attachmentMap["Normal"] = AttachmentDes{"Normal", winWidth, winHeight,
-                                            AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &normalAttachment};
+                                            AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT};
 
     attachmentMap["BaseColor"] = AttachmentDes{"BaseColor", winWidth, winHeight,
-                                              AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &baseColorAttachment};
+                                              AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT};
 
     attachmentMap["MetallicRoughness"] = AttachmentDes{"MetallicRoughness", winWidth, winHeight,
-                                              AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT, &mrAttachment};
+                                              AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT};
 
     attachmentMap["Depth"] = AttachmentDes{"Depth",winWidth,winHeight,
-                                           AttachmentUsage::Depth,VK_FORMAT_D32_SFLOAT,&depthAttachment};
+                                           AttachmentUsage::Depth,VK_FORMAT_D32_SFLOAT};
 
     outputResource.push_back({attachmentMap["Position"], AttachmentOP::WriteOnly});
     outputResource.push_back({attachmentMap["Normal"], AttachmentOP::WriteOnly});

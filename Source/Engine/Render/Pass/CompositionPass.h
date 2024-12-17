@@ -15,7 +15,6 @@ private:
     VkDescriptorSetLayout skyboxLayout;
     VkDescriptorSet skyboxDescriptor;
     void SetupRenderState() override;
-    Texture* lightAttachment;
 
 };
 

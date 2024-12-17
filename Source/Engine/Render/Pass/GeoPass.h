@@ -31,11 +31,11 @@ private:
     Buffer perObjDesBuffer;
 
 
-    Texture* baseColorAttachment;
-    Texture* normalAttachment;
-    Texture* positionAttachment;
-    Texture* depthAttachment;
-    Texture* mrAttachment;
+    /*std::shared_ptr<Texture> baseColorAttachment;
+    std::shared_ptr<Texture> normalAttachment;
+    std::shared_ptr<Texture> positionAttachment;
+    std::shared_ptr<Texture> depthAttachment;
+    std::shared_ptr<Texture> mrAttachment;*/
 
     //glm::mat4 GetModelMatrixFromTrans(Transform trans);
     GlobalDescriptorData globalData;

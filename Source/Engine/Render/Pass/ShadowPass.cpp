@@ -13,7 +13,7 @@ void ShadowPass::SetupAttachments()
     shadowMapWidth = 2048;
     shadowMapHeight = 2048;
     attachmentMap["ShadowMap"] = AttachmentDes{"ShadowMap", (int)shadowMapWidth, (int)shadowMapHeight,
-                                               AttachmentUsage::ShadowMap,VK_FORMAT_D32_SFLOAT, &shadowMapAttachment};
+                                               AttachmentUsage::ShadowMap,VK_FORMAT_D32_SFLOAT};
 
     outputResource.push_back({attachmentMap["ShadowMap"], AttachmentOP::WriteOnly});
 }
