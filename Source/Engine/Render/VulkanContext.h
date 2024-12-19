@@ -19,7 +19,6 @@
 #include "PresentManager.h"
 #include "Buffer/Buffer.h"
 #include "Buffer/BufferAllocator.h"
-#include "RenderPassManager.h"
 #include "RenderSetting.h"
 class VulkanContext
 {
@@ -49,12 +48,11 @@ public:
     bool isResize = false;
     SDL_Window* sdlWindow;
     SDL_Event* sdlEvent;
-    RenderPassManager* passManager;
+    //RenderPassManager* passManager;
     VkCommandBuffer drawCmd;
 private:
     VulkanContext(SDL_Window* window);
     void InitVulkanBackend();
-    static std::unique_ptr<VulkanContext> Pcontext;
     //Init
     VkResult SetupDebugMessenger();
     void CreateInstance();
@@ -65,9 +63,14 @@ private:
     void CreateDrawImage();
     void CreateCommandPool();
     void CreateDescriptorPool();
+    void CreateTestGlobalDescriptorSetLayout();
     //void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+private:
+    VkDescriptorSetLayout testLayout;
+    VkDescriptorSet testSet;
+    static std::unique_ptr<VulkanContext> Pcontext;
     VkDebugUtilsMessengerEXT debugMessenger;
-
+    bool isBindlessSupported = false;
 };
 
 

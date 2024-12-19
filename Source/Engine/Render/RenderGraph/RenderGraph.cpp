@@ -360,7 +360,7 @@ namespace RDG
 
     void RenderGraph::CreateDescriptor()
     {
-        
+
     }
 
     AttachmentState GetImageState(AttachmentUsage usage)

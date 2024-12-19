@@ -120,7 +120,7 @@ void ResourceManager::AsynCompile(GameInstance *instance, Res::ResModel *model)
 
     instance->mainScene->minPoint = glm::min(model->minPoint,instance->mainScene->minPoint);
     instance->mainScene->maxPoint = glm::max(model->maxPoint,instance->mainScene->maxPoint);
-    instance->renderSystem.materialManager.AllocateDescriptorSets();
+    //instance->renderSystem.materialManager.AllocateDescriptorSets();
 }
 
 std::shared_ptr<GameObject> ResourceManager::AddSceneNode(GameInstance* instance,Res::ResNode *node,std::shared_ptr<GameObject> parentGO)

@@ -1,12 +1,11 @@
 
 #ifndef INSTRENDERER_RENDERSYSTEM_H
 #define INSTRENDERER_RENDERSYSTEM_H
-#include "../../Render/RenderPassManager.h"
 #include "../../Render/MaterialManager.h"
 #include "../Scene/Scene.h"
 #include "iostream"
 #include "../../Render/Uniforms.h"
-
+#include "../Core/EngineMath.h"
 
 class RenderSystem
 {
@@ -15,8 +14,8 @@ public:
     void BeginSystem(std::shared_ptr<Scene> scene);
     void Execute();
 
-    MaterialManager materialManager;
-    RenderPassManager passManager;
+    //MaterialManager materialManager;
+    //RenderPassManager passManager;
     void UpdateLightArray();
 private:
     LightUniform lightUniform;

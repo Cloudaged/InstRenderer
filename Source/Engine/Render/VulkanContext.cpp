@@ -61,6 +61,7 @@ void VulkanContext::InitVulkanBackend()
     CreateSwapchain();
     CreateDrawImage();
     CreateDescriptorPool();
+    CreateTestGlobalDescriptorSetLayout();
 }
 
 
@@ -128,6 +129,7 @@ void VulkanContext::PickupPhysicalDevice()
     vkEnumeratePhysicalDevices(instance,&deviceCount,devices.data());
 
 
+
     for (auto& device:devices)
     {
         if(VulkanFuncs::IsDeviceSuitable(device))
@@ -178,11 +180,19 @@ void VulkanContext::CreateQueueAndDevice()
     addressFeatures.bufferDeviceAddress = VK_TRUE;
     addressFeatures.pNext = nullptr;
 
+    VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
+    indexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+    indexingFeatures.descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE;
+    indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+    indexingFeatures.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
+    indexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
+    indexingFeatures.runtimeDescriptorArray = VK_TRUE;
+    indexingFeatures.pNext = &addressFeatures;
+
     VkPhysicalDeviceFeatures2 features2{};
     features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     features2.features.samplerAnisotropy=VK_TRUE;
-    features2.pNext = &addressFeatures;
-
+    features2.pNext = &indexingFeatures;
 
     VkPhysicalDeviceVulkan13Features device13Features{};
     device13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
@@ -469,7 +479,7 @@ void VulkanContext::CreateDescriptorPool()
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT|VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = static_cast<uint32_t>(400);
@@ -553,6 +563,53 @@ VkResult  VulkanContext::SetupDebugMessenger()
     } else {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
+}
+
+void VulkanContext::CreateTestGlobalDescriptorSetLayout()
+{
+    std::array<VkDescriptorSetLayoutBinding, 3> bindings{};
+    std::array<VkDescriptorBindingFlags, 3> flags{};
+    std::array<VkDescriptorType, 3> types
+    {
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+    };
+
+    for (uint32_t i = 0; i < 3; ++i)
+    {
+        bindings.at(i).binding = i;
+        bindings.at(i).descriptorType = types.at(i);
+        bindings.at(i).descriptorCount = 1000;
+        bindings.at(i).stageFlags = VK_SHADER_STAGE_ALL;
+        flags.at(i) = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+    }
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlags{};
+    bindingFlags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    bindingFlags.pNext = nullptr;
+    bindingFlags.pBindingFlags = flags.data();
+    bindingFlags.bindingCount = 3;
+
+    VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
+    layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutCreateInfo.bindingCount = 3;
+    layoutCreateInfo.pBindings = bindings.data();
+    layoutCreateInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+    layoutCreateInfo.pNext = &bindingFlags;
+
+    vkCreateDescriptorSetLayout(device,&layoutCreateInfo, nullptr,&testLayout);
+
+    VkDescriptorSetAllocateInfo allocateInfo{};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocateInfo.pNext = nullptr;
+    allocateInfo.descriptorPool = pool;
+    allocateInfo.pSetLayouts = &testLayout;
+    allocateInfo.descriptorSetCount = 1;
+
+    vkAllocateDescriptorSets(device, &allocateInfo, &testSet);
+
+    vkCmdBindDescriptorSets()
 }
 
 
