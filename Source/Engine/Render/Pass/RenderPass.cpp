@@ -58,8 +58,7 @@ VkImageLayout RenderPass::GetLayout(AttachmentUsage usage)
 }
 
 AttachmentState RenderPass::GetState(AttachmentOP op,AttachmentUsage usage)
-{
-    switch (op)
+{switch (op)
     {
         case AttachmentOP::WriteOnly:
         {
@@ -116,6 +115,7 @@ AttachmentState RenderPass::GetState(AttachmentOP op,AttachmentUsage usage)
                                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
         }
     }
+
 
 }
 
@@ -270,17 +270,6 @@ void RenderPass::BuildPresentFrame()
     attachmentDes.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attachmentDes.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-    VkAttachmentReference ref{};
-    ref.attachment = refIndex;
-    if(!(att.usage==AttachmentUsage::Depth))
-    {
-        ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    } else
-    {
-        ref.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-    }
-    refs.push_back(ref);
-
     attDescriptions.push_back(attachmentDes);
 
     refIndex++;
@@ -324,24 +313,8 @@ void RenderPass::BuildPresentFrame()
         std::cout<<"failed to create pass\n";
     }
 
-
-
     VulkanContext::GetContext().presentManager.InitFrameData(passHandle,width,height);
 
-
-    std::vector<std::string> names;
-    for (auto& att:inputAttDes)
-    {
-        names.push_back(att.name);
-    }
-    InputAttachmentDes(names);
-
-    if(!renderState.isInit)
-    {
-        SetupRenderState();
-    }
-
-    renderState.isInit = true;
 }
 
 void RenderPass::InputAttachmentDes(std::vector<std::string> names)

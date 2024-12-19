@@ -7,13 +7,15 @@
 #include "../Buffer/AllocatedImage.h"
 #include "unordered_map"
 #include "../Buffer/Texture.h"
+#include "../Buffer/Buffer.h"
 #include "memory"
 #include <optional>
 
 enum class ResourceType
 {
     Uniform,
-    Attachment,
+    Texture,
+    SSBO,
     SampledTexture,
 };
 
@@ -47,11 +49,12 @@ struct AttachmentData
 struct BufferInfo
 {
     uint32_t size;
+    std::shared_ptr<Buffer> data = nullptr;
 };
 
 struct TextureInfo
 {
-    int width,height;
+    VkExtent2D extent;
     AttachmentUsage usage;
     VkFormat format;
     std::shared_ptr<Texture> data = nullptr;
