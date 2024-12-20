@@ -3,7 +3,7 @@
 #define INSTRENDERER_PRESENTMANAGER_H
 #include "vulkan/vulkan.h"
 #include "vector"
-#include "Pass/RenderResource.h"
+#include "RenderGraph/RenderResource.h"
 #include "../Common/Core/Locker.h"
 struct PresentFrame
 {

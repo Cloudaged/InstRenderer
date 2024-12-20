@@ -598,18 +598,17 @@ void VulkanContext::CreateTestGlobalDescriptorSetLayout()
     layoutCreateInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
     layoutCreateInfo.pNext = &bindingFlags;
 
-    vkCreateDescriptorSetLayout(device,&layoutCreateInfo, nullptr,&testLayout);
+    vkCreateDescriptorSetLayout(device,&layoutCreateInfo, nullptr,&bindlessLayout);
 
     VkDescriptorSetAllocateInfo allocateInfo{};
     allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocateInfo.pNext = nullptr;
     allocateInfo.descriptorPool = pool;
-    allocateInfo.pSetLayouts = &testLayout;
+    allocateInfo.pSetLayouts = &bindlessLayout;
     allocateInfo.descriptorSetCount = 1;
 
-    vkAllocateDescriptorSets(device, &allocateInfo, &testSet);
+    vkAllocateDescriptorSets(device, &allocateInfo, &bindlessSet);
 
-    vkCmdBindDescriptorSets()
 }
 
 

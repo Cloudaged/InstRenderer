@@ -13,6 +13,9 @@ namespace RDG
         uint32_t winWidth = (uint32_t)VulkanContext::GetContext().windowExtent.width;
         uint32_t winHeight = (uint32_t)VulkanContext::GetContext().windowExtent.height;
 
+        resourceMap["GlobalData"] = {.type = ResourceType::Uniform,
+                .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}};
+
         resourceMap["Position"] = {.type = ResourceType::Texture,
                 .textureInfo =TextureInfo{{winWidth, winHeight},
                                           AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}};
@@ -40,10 +43,6 @@ namespace RDG
         resourceMap["Lighted"] = {.type = ResourceType::Texture,
                                 .textureInfo = TextureInfo{{winWidth, winHeight},
                                 AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB}};
-
-        resourceMap["Present"] = {.type = ResourceType::Texture,
-                .textureInfo = TextureInfo{{winWidth, winHeight},
-                                            AttachmentUsage::Present, VK_FORMAT_B8G8R8A8_SRGB}};
 
     }
 
@@ -76,22 +75,30 @@ namespace RDG
                                         int b = 6;
                                     }};
 
-        passMap["Present"] = {.type =  RenderPassType::Present,
+        /*passMap["Present"] = {.type =  RenderPassType::Present,
                                 .input = {"Lighted"},
                                 .output = {},
                                 .pipeline = {PipelineType::RenderQuad,"CompositionVert.spv","CompositionFrag.spv"},
                                 .executeFunc = [&]()
                                 {
                                     int b = 6;
-                                }};
+                                }};*/
     }
 
     void RenderGraph::Compile()
     {
+        DeclareResource();
+        std::cout<<"Dresource\n";
+        DeclarePass();
+        std::cout<<"DPass\n";
         WriteDependency();
+        std::cout<<"Dependency\n";
         CreateResource();
+        std::cout<<"DResource\n";
         CreateRenderPass();
-
+        std::cout<<"DRenderPass\n";
+        CreateDescriptor();
+        std::cout<<"Descriptor\n";
     }
 
     void RenderGraph::Execute()
@@ -123,6 +130,7 @@ namespace RDG
     {
         for (auto& [resName,resData] : resourceMap)
         {
+            resData.handle = handleAllocator.Allocate();
             if(IsImageType(resData.type)&&resData.textureInfo.has_value())
             {
                 CreateImageResource(resData);
@@ -287,7 +295,11 @@ namespace RDG
 
     void RenderGraph::CreatePresentPass(PassRef& passData)
     {
-        std::string attName = *passData.output.begin();
+        std::string attName;
+        for (const auto& name:passData.output)
+        {
+            attName = name;
+        }
         TextureInfo& att = resourceMap[attName].textureInfo.value();
 
         std::vector<VkImageView> views;
@@ -360,6 +372,74 @@ namespace RDG
 
     void RenderGraph::CreateDescriptor()
     {
+        for (auto& [resName,resData]:resourceMap)
+        {
+            if(resData.type==ResourceType::Uniform&&resData.type==ResourceType::SSBO)
+            {
+                WriteBufferDescriptor(resData);
+            }else if(resData.type==ResourceType::Texture)
+            {
+                WriteImageDescriptor(resData);
+            }
+        }
+    }
+
+    void RenderGraph::WriteImageDescriptor(const ResourceRef& resource)
+    {
+        if(resource.textureInfo.value().usage==AttachmentUsage::Depth)
+            return;
+
+        auto data = resource.textureInfo.value().data;
+        if(data== nullptr)
+        {
+            std::cout<<"Write an unallocated res\n";
+        }
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = data->allocatedImage.imageView;
+        imageInfo.sampler = data->sampler;
+
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        write.dstBinding = (uint32_t)resource.type;
+        write.dstSet = VulkanContext::GetContext().bindlessSet;
+        write.descriptorCount = 1;
+        write.dstArrayElement = resource.handle;
+        write.pImageInfo = &imageInfo;
+
+        vkUpdateDescriptorSets(VulkanContext::GetContext().device, 1, &write, 0, nullptr);
+
+    }
+
+    void RenderGraph::WriteBufferDescriptor(const ResourceRef& resource)
+    {
+        auto data = resource.bufferInfo.value().data;
+        if(data== nullptr)
+        {
+            std::cout<<"Write an unallocated res\n";
+        }
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = data->vk_buffer;
+        bufferInfo.offset = 0;
+        bufferInfo.range = resource.bufferInfo.value().size;
+
+        VkWriteDescriptorSet write{};
+        if(resource.type==ResourceType::SSBO)
+        {
+            write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        }else if(resource.type==ResourceType::Uniform)
+        {
+            write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        }
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstBinding = (uint32_t)resource.type;
+        write.dstSet = VulkanContext::GetContext().bindlessSet;
+        write.descriptorCount = 1;
+        write.dstArrayElement = resource.handle;
+        write.pBufferInfo = &bufferInfo;
+
+        vkUpdateDescriptorSets(VulkanContext::GetContext().device, 1, &write, 0, nullptr);
 
     }
 
@@ -432,11 +512,23 @@ namespace RDG
 
     bool IsImageType(ResourceType type)
     {
-
+        if(type==ResourceType::Texture)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
     }
     bool IsBufferType(ResourceType type)
     {
-
+        if(type==ResourceType::Uniform||type==ResourceType::SSBO)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
     }
 
 } // RDG

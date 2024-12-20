@@ -50,6 +50,9 @@ public:
     SDL_Event* sdlEvent;
     //RenderPassManager* passManager;
     VkCommandBuffer drawCmd;
+
+    VkDescriptorSetLayout bindlessLayout;
+    VkDescriptorSet bindlessSet;
 private:
     VulkanContext(SDL_Window* window);
     void InitVulkanBackend();
@@ -66,8 +69,6 @@ private:
     void CreateTestGlobalDescriptorSetLayout();
     //void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 private:
-    VkDescriptorSetLayout testLayout;
-    VkDescriptorSet testSet;
     static std::unique_ptr<VulkanContext> Pcontext;
     VkDebugUtilsMessengerEXT debugMessenger;
     bool isBindlessSupported = false;
