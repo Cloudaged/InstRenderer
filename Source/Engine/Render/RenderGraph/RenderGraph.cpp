@@ -1,7 +1,7 @@
 
 #include "RenderGraph.h"
 #include "../VulkanContext.h"
-
+#include "PipelineBuilder.h"
 RDG::RenderGraph renderGraph;
 namespace RDG
 {
@@ -49,18 +49,18 @@ namespace RDG
     void RenderGraph::DeclarePass()
     {
         passMap["Geometry"] = {.type = RenderPassType::Graphic,
-                               .input = {},
+                               .input = {"GlobalData",MATERIAL_DATA,MODEL_MATRIX},
                                .output = {"Position","Normal","BaseColor","MetallicRoughness","Depth"},
-                               .pipeline = {PipelineType::Mesh,"GeometryVert.spv","GeometryFrag.spv"},
+                .pipeline = {PipelineType::Mesh,sizeof(GeoPC),"GeoVert","GeoFrag"},
                                .executeFunc = [&]()
                                {
-                                    int b = 6;
+                                    GeoPC
                                }};
 
-        passMap["Shadow"] =    {.type =  RenderPassType::Graphic,
+       /* passMap["Shadow"] =    {.type =  RenderPassType::Graphic,
                                 .input = {"Position"},
                                 .output = {"ShadowMap"},
-                                .pipeline = {PipelineType::Mesh,"ShadowMapVert.spv","ShadowMapFrag.spv"},
+                                .pipeline = {PipelineType::Mesh,"ShadowVert","ShadowFrag"},
                                 .executeFunc = [&]()
                                 {
                                     int b = 6;
@@ -69,11 +69,11 @@ namespace RDG
         passMap["Composition"] = {.type =  RenderPassType::Graphic,
                                   .input = {"Position","Normal","BaseColor","MetallicRoughness"},
                                     .output = {"Lighted"},
-                                    .pipeline = {PipelineType::RenderQuad,"CompositionVert.spv","CompositionFrag.spv"},
+                                    .pipeline = {PipelineType::RenderQuad,"CompVert","CompFrag"},
                                     .executeFunc = [&]()
                                     {
                                         int b = 6;
-                                    }};
+                                    }};*/
 
         /*passMap["Present"] = {.type =  RenderPassType::Present,
                                 .input = {"Lighted"},
@@ -88,22 +88,16 @@ namespace RDG
     void RenderGraph::Compile()
     {
         DeclareResource();
-        std::cout<<"Dresource\n";
         DeclarePass();
-        std::cout<<"DPass\n";
         WriteDependency();
-        std::cout<<"Dependency\n";
         CreateResource();
-        std::cout<<"DResource\n";
         CreateRenderPass();
-        std::cout<<"DRenderPass\n";
         CreateDescriptor();
-        std::cout<<"Descriptor\n";
+        CreateVkPipeline();
     }
 
     void RenderGraph::Execute()
     {
-
     }
 
     void RenderGraph::WriteDependency()
@@ -128,7 +122,7 @@ namespace RDG
 
     void RenderGraph::CreateResource()
     {
-        for (auto& [resName,resData] : resourceMap)
+        /*for (auto& [resName,resData] : resourceMap)
         {
             resData.handle = handleAllocator.Allocate();
             if(IsImageType(resData.type)&&resData.textureInfo.has_value())
@@ -139,6 +133,37 @@ namespace RDG
             if(IsBufferType(resData.type)&&resData.bufferInfo.has_value())
             {
                 CreateBufferResource(resData);
+            }
+        }*/
+
+        for (auto& [passName,passData]:passMap)
+        {
+            for (auto& resName:passData.input)
+            {
+                if(resName==MATERIAL_DATA)
+                {
+                    passData.isNeedMaterial = true;
+                    continue;
+                }
+                if(resName==MODEL_MATRIX)
+                {
+                    passData.isNeedModelMatrix = true;
+                    continue;
+                }
+                auto& res = resourceMap[resName];
+                res.handle = handleAllocator.Allocate();
+                if(IsImageType(res.type)&&res.textureInfo.has_value())
+                {
+                    CreateImageResource(res);
+                }
+
+                if(IsBufferType(res.type)&&res.bufferInfo.has_value())
+                {
+                    CreateBufferResource(res);
+                }
+
+
+
             }
         }
     }
@@ -441,6 +466,22 @@ namespace RDG
 
         vkUpdateDescriptorSets(VulkanContext::GetContext().device, 1, &write, 0, nullptr);
 
+    }
+
+    void RenderGraph::CreateVkPipeline()
+    {
+        for (auto& [passName,passData] : passMap)
+        {
+            int attCount = 0;
+            for (const auto& output : passData.output)
+            {
+                if(resourceMap[output].textureInfo->usage!=AttachmentUsage::Depth&&
+                        resourceMap[output].textureInfo->usage!=AttachmentUsage::ShadowMap)
+                    attCount++;
+            }
+            PipelineBuilder::CreatePipeline(passData.pipeline,attCount,passData.data.passHandle);
+
+        }
     }
 
     AttachmentState GetImageState(AttachmentUsage usage)

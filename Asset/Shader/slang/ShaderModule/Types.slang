@@ -2,6 +2,7 @@ module Types;
 
 public static const float PI = 3.1415926;
 
+
 public struct GlobalUniform
 {
     public float4x4 viewMat;

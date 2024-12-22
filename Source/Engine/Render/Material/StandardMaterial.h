@@ -6,7 +6,7 @@
 #include "vector"
 #include "../Buffer/Texture.h"
 
-
+#include "../Buffer/Buffer.h"
 struct TextureSlots
 {
     int hasAlbedo=0;

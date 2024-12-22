@@ -1,3 +1,4 @@
+import ShaderModule.Bindless;
 struct FragInput
 {
     float3 posWS : TEXCOORD0;
@@ -7,13 +8,6 @@ struct FragInput
     float3 tangentWS : TEXCOORD4;
 }
 
-struct Slots
-{
-    int albedo;
-    int normal;
-    int mr;
-}
-
 struct FragOutput
 {
     float4 outPosition:SV_TARGET0;
@@ -21,31 +15,31 @@ struct FragOutput
     float4 outBaseColor:SV_TARGET2;
     float4 outMR:SV_TARGET3;
 }
-
-[[vk::binding(0, 1)]] ConstantBuffer<Slots> slots;
-[[vk::binding(1, 1)]] Sampler2D baseColor;
-[[vk::binding(2, 1)]] Sampler2D normal;
-[[vk::binding(3, 1)]] Sampler2D mr;
+[[vk::push_constant]] ConstantBuffer<GeoHandles> handles;
+[[vk::binding(2, 0)]] Sampler2D textures[];
 
 [shader("fragment")]
 FragOutput main(FragInput input)
 {
     FragOutput output;
     output.outPosition = float4(input.posWS, 1.0);
+    int basecolorIndex = handles.material.baseColor;
+    int normalIndex = handles.material.normal;
+    int mrIndex = handles.material.metallicRoughness;
 
-    if (slots.albedo == 1)
+    if (basecolorIndex != 0)
     {
          //output.outBaseColor = pow(baseColor.Sample(input.uv),float4(2.2));
-         output.outBaseColor = baseColor.Sample(input.uv);
+         output.outBaseColor = textures[basecolorIndex].Sample(input.uv);
     }
     else
     {
         output.outBaseColor = float4(1, 1, 1, 0);
     }
 
-    if (slots.normal == 1)
+    if (normalIndex != 0)
     {
-        float3 normalColor = normal.Sample(input.uv).xyz;
+        float3 normalColor = textures[normalIndex].Sample(input.uv).xyz;
         normalColor = pow(normalColor, float3(1 / 2.2));
         normalColor = normalColor * 2.0 - 1;
         float3x3 tbn = float3x3(input.tangentWS, input.bitangentWS, input.normalWS);
@@ -58,10 +52,10 @@ FragOutput main(FragInput input)
         output.outNormal = float4(input.normalWS, 0.0);
     }
 
-    if (slots.mr == 1)
+    if (mrIndex != 0)
     {
         //float4 mrColor = mr.Sample(input.uv);
-        float4 mrColor = pow(mr.Sample(input.uv),1/2.2);
+        float4 mrColor = pow(textures[mrIndex].Sample(input.uv),1/2.2);
         output.outMR = mrColor;
     }
     else

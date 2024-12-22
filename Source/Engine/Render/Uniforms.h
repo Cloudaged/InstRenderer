@@ -14,6 +14,7 @@ struct GlobalUniform
 };
 
 
+
 struct LightUnitsInShader
 {
     alignas(16) glm::vec4 position;

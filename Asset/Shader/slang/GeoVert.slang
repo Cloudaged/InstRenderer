@@ -1,4 +1,4 @@
-
+import ShaderModule.Bindless;
 import ShaderModule.Types;
 struct VertInput
 {
@@ -19,27 +19,21 @@ struct VertOutput
     float3 tangentWS : TEXCOORD4;
 }
 
-struct PushConstantData
-{
-    float4x4 modelMat;
-}
+[[vk::push_constant]] ConstantBuffer<GeoHandles> handles;
 
-
-[[vk::push_constant]] ConstantBuffer<PushConstantData> pushConstantData;
-
-[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> globalUniform;
+[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> globalUniform[];
 
 [shader("vertex")]
 VertOutput main(VertInput input)
 {
     VertOutput output;
-    output.posWS = mul(pushConstantData.modelMat,input.position).xyz;
-    output.posSV = mul(globalUniform.projMat, mul(globalUniform.viewMat, float4(output.posWS, 1.0)));
+    output.posWS = mul(handles.modelMat, input.position).xyz;
+    output.posSV = mul(globalUniform[handles.global].projMat, mul(globalUniform[handles.global].viewMat, float4(output.posWS, 1.0)));
     output.uv = input.uv;
 
-    output.tangentWS = normalize(mul(pushConstantData.modelMat, float4(input.tangent.xyz, 0.0)).xyz);
-    output.bitangentWS = normalize(mul(pushConstantData.modelMat, float4(input.bitangent.xyz, 0.0)).xyz);
-    output.normalWS = normalize(mul(pushConstantData.modelMat, float4(input.normal.xyz,0.0)).xyz);
+    output.tangentWS = normalize(mul(handles.modelMat, float4(input.tangent.xyz, 0.0)).xyz);
+    output.bitangentWS = normalize(mul(handles.modelMat, float4(input.bitangent.xyz, 0.0)).xyz);
+    output.normalWS = normalize(mul(handles.modelMat, float4(input.normal.xyz,0.0)).xyz);
     // float3 T = normalize(input.tangent.xyz);
     // float3 B = normalize(input.bitangent.xyz);
     // float3 N = normalize(input.normal.xyz);

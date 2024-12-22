@@ -14,7 +14,7 @@ public:
     void Deallocate(Handle handle);
 private:
     std::queue<Handle> reusableHandle;
-    Handle nextHandle=0;
+    Handle nextHandle=1;
 };
 
 

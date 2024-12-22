@@ -21,6 +21,13 @@ namespace RDG
     using DescriptorHandle = uint32_t;
     using ResHandle = std::pair<Handle,DescriptorHandle>;
 
+    struct ShaderPath
+    {
+        std::string vertPath;
+        std::string fragPath;
+    };
+
+
     enum class ResourceType : uint32_t
     {
         Uniform = 0,
@@ -78,8 +85,18 @@ namespace RDG
     struct PipelineRef
     {
         PipelineType type;
+        size_t handleSize;
         ShaderName vertShader;
         ShaderName fragShader;
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+    };
+
+    struct MaterialHandles
+    {
+        Handle baseColor = 0;
+        Handle normal = 0;
+        Handle metallicRoughness = 0;
     };
 
     struct PassData
@@ -97,11 +114,14 @@ namespace RDG
         std::function<void()> executeFunc;
         std::vector<PassName> producers;
         PassData data;
+        std::vector<Handle> handleUniform;
+        bool isNeedMaterial = false;
+        bool isNeedModelMatrix = false;
     };
 
     struct ResourceRef
     {
-        Handle handle;
+        Handle handle = 0;
         ResourceType type;
         std::optional<TextureInfo> textureInfo;
         std::optional<BufferInfo> bufferInfo;

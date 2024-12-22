@@ -14,7 +14,7 @@ Handle HandleAllocator::Allocate()
 
 void HandleAllocator::Deallocate(Handle handle)
 {
-    if (handle >= 0 && handle < nextHandle)
+    if (handle > 0 && handle < nextHandle)
     {
         reusableHandle.push(handle);
     }

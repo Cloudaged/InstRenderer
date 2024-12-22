@@ -13,15 +13,18 @@
 #include "../Uniforms.h"
 #include "../../Common/Core/HandleAllocator.h"
 #include "RenderResource.h"
+#include "PassRequires.h"
 namespace RDG
 {
-
     bool IsImageType(ResourceType type);
     bool IsBufferType(ResourceType type);
     VkImageUsageFlags GetImageUsage(AttachmentUsage usage);
     VkBufferUsageFlagBits GetBufferUsage(ResourceType type);
     VkImageAspectFlagBits GetAspectFlag(AttachmentUsage usage);
     AttachmentState GetImageState(AttachmentUsage usage);
+
+
+
     class RenderGraph
     {
     public:
@@ -29,6 +32,7 @@ namespace RDG
         void Execute();
         void DeclareResource();
         void DeclarePass();
+    public:
         ResourceMap resourceMap;
         PassMap passMap;
     private:
@@ -41,11 +45,15 @@ namespace RDG
         void WriteDependency();
         void CreateResource();
         void CreateDescriptor();
+        void CreateVkPipeline();
         void InsertBarrier();
         void CreateImageResource(ResourceRef& resource);
         void CreateBufferResource(ResourceRef& resource);
     private:
         HandleAllocator handleAllocator;
+        const std::string MATERIAL_DATA = "__MATERIAL__";
+        const std::string MODEL_MATRIX = "__MODEL_MAT__"
+
     };
 
 } // RDG

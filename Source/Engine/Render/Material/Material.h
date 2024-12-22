@@ -3,7 +3,6 @@
 #define INSTRENDERER_MATERIAL_H
 #include "vulkan/vulkan.h"
 #include "vector"
-#include "../RenderState.h"
 
 enum class MaterialType
 {
