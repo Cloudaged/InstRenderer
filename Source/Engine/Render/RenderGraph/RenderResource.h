@@ -20,7 +20,7 @@ namespace RDG
     using Handle = uint32_t;
     using DescriptorHandle = uint32_t;
     using ResHandle = std::pair<Handle,DescriptorHandle>;
-
+    class CommandList;
     struct ShaderPath
     {
         std::string vertPath;
@@ -85,9 +85,9 @@ namespace RDG
     struct PipelineRef
     {
         PipelineType type;
-        size_t handleSize;
         ShaderName vertShader;
         ShaderName fragShader;
+        size_t handleSize;
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     };
@@ -108,19 +108,19 @@ namespace RDG
     struct PassRef
     {
         RenderPassType type;
-        std::unordered_set<ResourceName> input;
-        std::unordered_set<ResourceName> output;
+        uint32_t fbWidth,fbHeight;
+        std::unordered_set<Handle> input;
+        std::unordered_set<Handle> output;
         PipelineRef pipeline;
-        std::function<void()> executeFunc;
+        std::function<void(CommandList& cmd)> executeFunc;
         std::vector<PassName> producers;
         PassData data;
-        std::vector<Handle> handleUniform;
-        bool isNeedMaterial = false;
-        bool isNeedModelMatrix = false;
+        bool hasDepth = false;
     };
 
     struct ResourceRef
     {
+        ResourceName name;
         Handle handle = 0;
         ResourceType type;
         std::optional<TextureInfo> textureInfo;
@@ -137,7 +137,7 @@ namespace RDG
         VkImageLayout finalLayout;
     };
 
-    using ResourceMap = std::unordered_map<ResourceName,ResourceRef>;
+    using ResourceMap = std::unordered_map<Handle,ResourceRef>;
     using PassMap = std::unordered_map<PassName,PassRef>;
 }
 

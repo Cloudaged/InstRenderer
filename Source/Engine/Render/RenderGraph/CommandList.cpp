@@ -1,0 +1,109 @@
+
+#include "CommandList.h"
+#include "../VulkanContext.h"
+namespace RDG
+{
+    void CommandList::BeginCommand()
+    {
+       this->cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+    }
+
+
+    void CommandList::EndCommand()
+    {
+        VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+    }
+
+
+    void CommandList::BeginRenderPass(const PassRef& passRef)
+    {
+        curPass = std::make_shared<PassRef>(passRef);
+
+        auto presentM = VulkanContext::GetContext().presentManager;
+
+        VkExtent2D extent = VulkanContext::GetContext().windowExtent;
+
+        std::vector<VkClearValue> clearValues;
+        if (!passRef.hasDepth)
+        {
+            for (int i = 0; i < passRef.output.size(); ++i)
+            {
+                clearValues.push_back({.color ={0, 0, 0, 0}});
+            }
+        } else
+        {
+            for (int i = 0; i < passRef.output.size()-1; ++i)
+            {
+                clearValues.push_back({.color ={0, 0, 0, 0}});
+            }
+            clearValues.push_back({.depthStencil = {1.0f,0}});
+        }
+
+        VkRenderPassBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        beginInfo.renderPass = passRef.data.passHandle;
+        beginInfo.framebuffer = passRef.data.framebufferHandle;
+        beginInfo.renderArea.offset ={0,0};
+        beginInfo.renderArea.extent = extent;
+        beginInfo.clearValueCount =clearValues.size();
+        beginInfo.pClearValues = clearValues.data();
+
+        if(VulkanContext::GetContext().isResize)
+            return;
+
+        vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = extent.width;
+        viewport.height = extent.height;
+        //viewport.width =width;
+        //viewport.height =height;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = extent;
+        vkCmdSetScissor(cmd, 0, 1, &scissor);
+    }
+
+    void CommandList::EndRenderPass()
+    {
+        vkCmdEndRenderPass(cmd);
+    }
+
+    void CommandList::PushConstantsForHandles(void* data)
+    {
+        vkCmdPushConstants(cmd,curPass->pipeline.pipelineLayout,VK_SHADER_STAGE_ALL,0,curPass->pipeline.handleSize,data);
+    }
+
+    void CommandList::BindDescriptor()
+    {
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                curPass->pipeline.pipelineLayout,
+                                0, 1,&VulkanContext::GetContext().bindlessSet,0, nullptr);
+    }
+
+    void CommandList::BindPipeline()
+    {
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, curPass->pipeline.pipeline);
+    }
+
+    void CommandList::DrawMesh(const Buffer &vertBuffer, const Buffer &indexBuffer, const size_t &indexSize)
+    {
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(cmd,0,1,&vertBuffer.vk_buffer, offsets);
+
+        vkCmdBindIndexBuffer(cmd,indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
+        //Draw
+        vkCmdDrawIndexed(cmd,static_cast<uint32_t>(indexSize),1,0,0,0);
+    }
+
+    void CommandList::DrawRenderQuad()
+    {
+        vkCmdDraw(cmd, 3, 1, 0, 0);
+    }
+
+} // RDG

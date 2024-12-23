@@ -1,10 +1,13 @@
-
 #include "RenderGraph.h"
 #include "../VulkanContext.h"
 #include "PipelineBuilder.h"
-RDG::RenderGraph renderGraph;
 namespace RDG
 {
+    RenderGraph::RenderGraph()
+    {
+
+    }
+
     void RenderGraph::DeclareResource()
     {
         uint32_t shadowMapWidth = 2048;
@@ -13,49 +16,78 @@ namespace RDG
         uint32_t winWidth = (uint32_t)VulkanContext::GetContext().windowExtent.width;
         uint32_t winHeight = (uint32_t)VulkanContext::GetContext().windowExtent.height;
 
-        resourceMap["GlobalData"] = {.type = ResourceType::Uniform,
-                .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}};
+        auto globalData = AddResource({.name = "GlobalData",.type = ResourceType::Uniform,
+                                              .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}});
 
-        resourceMap["Position"] = {.type = ResourceType::Texture,
-                .textureInfo =TextureInfo{{winWidth, winHeight},
-                                          AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}};
+       auto position = AddResource({.name = "Position",.type = ResourceType::Texture,
+                                           .textureInfo =TextureInfo{{winWidth, winHeight},
+                                                                     AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        resourceMap["Normal"] = {.type = ResourceType::Texture,
+       auto normal = AddResource({.name = "Normal",.type = ResourceType::Texture,
                 .textureInfo = TextureInfo{{winWidth, winHeight},
-                                           AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}};
+                                           AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        resourceMap["BaseColor"] = {.type = ResourceType::Texture,
+        auto baseColor = AddResource({.name = "BaseColor",.type = ResourceType::Texture,
                 .textureInfo = TextureInfo{{winWidth, winHeight},
-                                           AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}};
+                                           AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        resourceMap["MetallicRoughness"] = {.type = ResourceType::Texture,
+        auto metallicRoughness = AddResource({.name = "MetallicRoughness",.type = ResourceType::Texture,
                 .textureInfo = TextureInfo{{winWidth, winHeight},
-                                           AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}};
+                                           AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        resourceMap["Depth"] = {.type = ResourceType::Texture,
+        auto depth = AddResource({.name = "Depth",.type = ResourceType::Texture,
                 .textureInfo = TextureInfo{{winWidth, winHeight},
-                                           AttachmentUsage::Depth, VK_FORMAT_D32_SFLOAT}};
+                                           AttachmentUsage::Depth, VK_FORMAT_D32_SFLOAT}});
 
-        resourceMap["ShadowMap"] = {.type = ResourceType::Texture,
+        auto shadowMap = AddResource({.name = "ShadowMap",.type = ResourceType::Texture,
                 .textureInfo = TextureInfo{{winWidth, winHeight},
-                                           AttachmentUsage::ShadowMap, VK_FORMAT_D32_SFLOAT}};
+                                           AttachmentUsage::ShadowMap, VK_FORMAT_D32_SFLOAT}});
 
-        resourceMap["Lighted"] = {.type = ResourceType::Texture,
+        auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Texture,
                                 .textureInfo = TextureInfo{{winWidth, winHeight},
-                                AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB}};
+                                AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB}});
+
+        auto view =scene->reg.view<Renderable, Transform>();
+        //Pass
+        //GeoPass
+        {
+            struct alignas(16) Mat
+            {
+                Handle baseColor;
+                Handle normal;
+                Handle mr;
+            };
+
+            struct alignas(16) GeoPC
+            {
+                Handle global;
+                Mat mat;
+                glm::mat4 model;
+            };
+
+            passMap["Geometry"] = {.type = RenderPassType::Graphic,.fbWidth = winWidth,.fbHeight = winHeight,
+                    .input = {globalData},
+                    .output = {position, normal, baseColor, metallicRoughness, depth},
+                    .pipeline = {PipelineType::Mesh, "GeoVert", "GeoFrag", sizeof(GeoPC)},
+                    .executeFunc = [&](CommandList& cmd)
+                    {
+                        for (auto& entity:view)
+                        {
+                            auto renderComp = view.get<Renderable>(entity);
+                            auto transComp = view.get<Transform>(entity);
+                            GeoPC pushConstants = {globalData,baseColor,metallicRoughness,normal,glm::mat4(1)};
+                            cmd.PushConstantsForHandles(&pushConstants);
+                        }
+
+
+                    }};
+        }
 
     }
 
     void RenderGraph::DeclarePass()
     {
-        passMap["Geometry"] = {.type = RenderPassType::Graphic,
-                               .input = {"GlobalData",MATERIAL_DATA,MODEL_MATRIX},
-                               .output = {"Position","Normal","BaseColor","MetallicRoughness","Depth"},
-                .pipeline = {PipelineType::Mesh,sizeof(GeoPC),"GeoVert","GeoFrag"},
-                               .executeFunc = [&]()
-                               {
-                                    GeoPC
-                               }};
+
 
        /* passMap["Shadow"] =    {.type =  RenderPassType::Graphic,
                                 .input = {"Position"},
@@ -85,8 +117,10 @@ namespace RDG
                                 }};*/
     }
 
-    void RenderGraph::Compile()
+    void RenderGraph::Compile(std::shared_ptr<Scene> scene)
     {
+        this->scene = scene;
+
         DeclareResource();
         DeclarePass();
         WriteDependency();
@@ -98,6 +132,16 @@ namespace RDG
 
     void RenderGraph::Execute()
     {
+        commandList.BeginCommand();
+        for (auto& [passName,passData] : passMap)
+        {
+            commandList.BeginRenderPass(passData);
+            commandList.BindPipeline();
+            commandList.BindDescriptor();
+            passData.executeFunc(commandList);
+            commandList.EndRenderPass();
+        }
+        commandList.EndCommand();
     }
 
     void RenderGraph::WriteDependency()
@@ -105,26 +149,25 @@ namespace RDG
         //Write Resources' producer
         for (auto& [passName,passData] :passMap)
         {
-            for (auto& resName : passData.output)
+            for (auto& resHandle : passData.output)
             {
-                resourceMap[resName].producerPass = passName;
+                resourceMap[resHandle].producerPass = passName;
             }
         }
         //Write Passes' producer
         for (auto& [passName,passData] : passMap)
         {
-            for (auto& resName : passData.input)
+            for (auto& resHandle : passData.input)
             {
-                passData.producers.push_back(resourceMap[resName].producerPass);
+                passData.producers.push_back(resourceMap[resHandle].producerPass);
             }
         }
     }
 
     void RenderGraph::CreateResource()
     {
-        /*for (auto& [resName,resData] : resourceMap)
+        for (auto& [resHandle,resData] : resourceMap)
         {
-            resData.handle = handleAllocator.Allocate();
             if(IsImageType(resData.type)&&resData.textureInfo.has_value())
             {
                 CreateImageResource(resData);
@@ -133,37 +176,6 @@ namespace RDG
             if(IsBufferType(resData.type)&&resData.bufferInfo.has_value())
             {
                 CreateBufferResource(resData);
-            }
-        }*/
-
-        for (auto& [passName,passData]:passMap)
-        {
-            for (auto& resName:passData.input)
-            {
-                if(resName==MATERIAL_DATA)
-                {
-                    passData.isNeedMaterial = true;
-                    continue;
-                }
-                if(resName==MODEL_MATRIX)
-                {
-                    passData.isNeedModelMatrix = true;
-                    continue;
-                }
-                auto& res = resourceMap[resName];
-                res.handle = handleAllocator.Allocate();
-                if(IsImageType(res.type)&&res.textureInfo.has_value())
-                {
-                    CreateImageResource(res);
-                }
-
-                if(IsBufferType(res.type)&&res.bufferInfo.has_value())
-                {
-                    CreateBufferResource(res);
-                }
-
-
-
             }
         }
     }
@@ -216,15 +228,13 @@ namespace RDG
         std::vector<VkAttachmentReference> outputRefs;
         VkAttachmentReference depthRef = {};
 
-        bool hasDepth = false;
-
         uint32_t width;
         uint32_t height;
 
         int refIndex = 0;
-        for (auto& resName : passData.output)
+        for (auto& resHandle : passData.output)
         {
-            auto& res = resourceMap[resName];
+            auto& res = resourceMap[resHandle];
             auto& att = res.textureInfo;
 
             width = att->extent.width;
@@ -249,7 +259,7 @@ namespace RDG
             {
                 depthRef.attachment = refIndex;
                 depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                hasDepth = true;
+                passData.hasDepth = true;
             } else
             {
                 VkAttachmentReference ref{};
@@ -268,7 +278,7 @@ namespace RDG
         subpass.colorAttachmentCount = outputRefs.size();
         subpass.pColorAttachments = outputRefs.data();
         subpass.inputAttachmentCount = 0;
-        if(hasDepth)
+        if(passData.hasDepth)
         {
             subpass.pDepthStencilAttachment = &depthRef;
         } else
@@ -320,12 +330,12 @@ namespace RDG
 
     void RenderGraph::CreatePresentPass(PassRef& passData)
     {
-        std::string attName;
+        Handle attHandle;
         for (const auto& name:passData.output)
         {
-            attName = name;
+            attHandle = name;
         }
-        TextureInfo& att = resourceMap[attName].textureInfo.value();
+        TextureInfo& att = resourceMap[attHandle].textureInfo.value();
 
         std::vector<VkImageView> views;
         std::vector<VkAttachmentDescription> attDescriptions;
@@ -397,7 +407,7 @@ namespace RDG
 
     void RenderGraph::CreateDescriptor()
     {
-        for (auto& [resName,resData]:resourceMap)
+        for (auto& [resHandle,resData]:resourceMap)
         {
             if(resData.type==ResourceType::Uniform&&resData.type==ResourceType::SSBO)
             {
@@ -472,16 +482,21 @@ namespace RDG
     {
         for (auto& [passName,passData] : passMap)
         {
-            int attCount = 0;
-            for (const auto& output : passData.output)
+            int attCount = passData.output.size();
+            if(passData.hasDepth)
             {
-                if(resourceMap[output].textureInfo->usage!=AttachmentUsage::Depth&&
-                        resourceMap[output].textureInfo->usage!=AttachmentUsage::ShadowMap)
-                    attCount++;
+                attCount--;
             }
             PipelineBuilder::CreatePipeline(passData.pipeline,attCount,passData.data.passHandle);
 
         }
+    }
+
+    Handle RenderGraph::AddResource(const ResourceRef& resource)
+    {
+        Handle handle = handleAllocator.Allocate();
+        resourceMap[handle] = std::move(resource);
+        return handle;
     }
 
     AttachmentState GetImageState(AttachmentUsage usage)

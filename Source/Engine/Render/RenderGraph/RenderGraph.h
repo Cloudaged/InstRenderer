@@ -14,6 +14,8 @@
 #include "../../Common/Core/HandleAllocator.h"
 #include "RenderResource.h"
 #include "PassRequires.h"
+#include "CommandList.h"
+#include "../../Common/Scene/Scene.h"
 namespace RDG
 {
     bool IsImageType(ResourceType type);
@@ -28,7 +30,8 @@ namespace RDG
     class RenderGraph
     {
     public:
-        void Compile();
+        RenderGraph();
+        void Compile(std::shared_ptr<Scene> scene);
         void Execute();
         void DeclareResource();
         void DeclarePass();
@@ -36,6 +39,7 @@ namespace RDG
         ResourceMap resourceMap;
         PassMap passMap;
     private:
+        Handle AddResource(const ResourceRef& resource);
         void CreateRenderPass();
         void CreateGraphicPass(PassRef& passData);
         void CreateComputePass(PassRef& passData);
@@ -50,9 +54,9 @@ namespace RDG
         void CreateImageResource(ResourceRef& resource);
         void CreateBufferResource(ResourceRef& resource);
     private:
+        std::shared_ptr<Scene> scene;
+        CommandList commandList;
         HandleAllocator handleAllocator;
-        const std::string MATERIAL_DATA = "__MATERIAL__";
-        const std::string MODEL_MATRIX = "__MODEL_MAT__"
 
     };
 

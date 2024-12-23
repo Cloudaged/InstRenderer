@@ -7,7 +7,7 @@ void RenderSystem::BeginSystem(std::shared_ptr<Scene> scene)
 {
     this->scene = scene;
     UpdateLightArray();
-    renderGraph.Compile();
+    renderGraph.Compile(scene);
     //passManager.Setup(scene->reg.view<Renderable,Transform>(),globalData);
     //materialManager.Setup(passManager.geoPass->materialLayout,scene->reg.view<Renderable>());
     //VulkanContext::GetContext().passManager = &this->passManager;
@@ -17,7 +17,7 @@ void RenderSystem::Execute()
 {
     PrepareData();
     VulkanContext::GetContext().DrawPrepare();
-    //passManager.ExecuteAllPass();
+    renderGraph.Execute();
     VulkanContext::GetContext().Submit();
 }
 

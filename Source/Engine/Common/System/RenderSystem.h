@@ -20,18 +20,17 @@ public:
 public:
     RDG::RenderGraph renderGraph;
 private:
-    LightUniform lightUniform;
-    GlobalUniform globalUniform;
-    std::shared_ptr<Scene> scene;
-private:
     void PrepareData();
     void PrepareLight();
     void PrepareGlobal();
     void MemoryCopy();
     void InitGlobalDescriptorSet();
-    GlobalDescriptorData globalData{};
     void SetupRenderGraph();
-
+private:
+    LightUniform lightUniform;
+    GlobalUniform globalUniform;
+    std::shared_ptr<Scene> scene;
+    GlobalDescriptorData globalData{};
     //RDG::RenderGraph renderGraph;
 };
 

@@ -185,6 +185,9 @@ namespace RDG
 
             pipelineLayoutInfo.pushConstantRangeCount = 1;
             pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+        }else
+        {
+            std::cout<<"This pass don't have handle pushConstants\n";
         }
 
         if(vkCreatePipelineLayout(VulkanContext::GetContext().device,&pipelineLayoutInfo, nullptr,&pipelineRef.pipelineLayout) != VK_SUCCESS)
