@@ -51,17 +51,10 @@ namespace RDG
         //Pass
         //GeoPass
         {
-            struct alignas(16) Mat
-            {
-                Handle baseColor;
-                Handle normal;
-                Handle mr;
-            };
-
             struct alignas(16) GeoPC
             {
                 Handle global;
-                Mat mat;
+                Material mat;
                 glm::mat4 model;
             };
 
@@ -75,54 +68,39 @@ namespace RDG
                         {
                             auto renderComp = view.get<Renderable>(entity);
                             auto transComp = view.get<Transform>(entity);
-                            GeoPC pushConstants = {globalData,baseColor,metallicRoughness,normal,glm::mat4(1)};
+                            GeoPC pushConstants = {globalData,renderComp.material,transComp.globalTransform};
                             cmd.PushConstantsForHandles(&pushConstants);
+                            cmd.DrawMesh(renderComp.mesh);
                         }
+                    }};
+        }
 
+        {
+            struct alignas(16) PresentPC
+            {
+                Handle baseColor;
+            };
 
+            passMap["Present"] = {.type = RenderPassType::Present,.fbWidth = winWidth,.fbHeight = winHeight,
+                    .input = {baseColor},
+                    .output = {},
+                    .pipeline = {PipelineType::RenderQuad, "PresentVert", "PresentFrag", sizeof(PresentPC)},
+                    .executeFunc = [&](CommandList& cmd)
+                    {
+                        PresentPC pushConstants = {baseColor};
+                        cmd.PushConstantsForHandles(&pushConstants);
+                        cmd.DrawRenderQuad();
                     }};
         }
 
     }
 
-    void RenderGraph::DeclarePass()
-    {
-
-
-       /* passMap["Shadow"] =    {.type =  RenderPassType::Graphic,
-                                .input = {"Position"},
-                                .output = {"ShadowMap"},
-                                .pipeline = {PipelineType::Mesh,"ShadowVert","ShadowFrag"},
-                                .executeFunc = [&]()
-                                {
-                                    int b = 6;
-                                }};
-
-        passMap["Composition"] = {.type =  RenderPassType::Graphic,
-                                  .input = {"Position","Normal","BaseColor","MetallicRoughness"},
-                                    .output = {"Lighted"},
-                                    .pipeline = {PipelineType::RenderQuad,"CompVert","CompFrag"},
-                                    .executeFunc = [&]()
-                                    {
-                                        int b = 6;
-                                    }};*/
-
-        /*passMap["Present"] = {.type =  RenderPassType::Present,
-                                .input = {"Lighted"},
-                                .output = {},
-                                .pipeline = {PipelineType::RenderQuad,"CompositionVert.spv","CompositionFrag.spv"},
-                                .executeFunc = [&]()
-                                {
-                                    int b = 6;
-                                }};*/
-    }
 
     void RenderGraph::Compile(std::shared_ptr<Scene> scene)
     {
         this->scene = scene;
 
         DeclareResource();
-        DeclarePass();
         WriteDependency();
         CreateResource();
         CreateRenderPass();
@@ -135,6 +113,7 @@ namespace RDG
         commandList.BeginCommand();
         for (auto& [passName,passData] : passMap)
         {
+            InsertBarrier(commandList,passData);
             commandList.BeginRenderPass(passData);
             commandList.BindPipeline();
             commandList.BindDescriptor();
@@ -197,6 +176,7 @@ namespace RDG
         auto usage = GetBufferUsage(resource.type);
         auto b  = VulkanContext::GetContext().bufferAllocator.CreateBuffer(resource.bufferInfo->size,usage,VMA_MEMORY_USAGE_CPU_ONLY);
         buffer = std::shared_ptr<Buffer>(b);
+        resource.bufferInfo.value().mappedAddress = VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*buffer);
     }
 
     void RenderGraph::CreateRenderPass()
@@ -216,11 +196,6 @@ namespace RDG
         }
     }
 
-    void RenderGraph::InsertBarrier()
-    {
-
-    }
-
     void RenderGraph::CreateGraphicPass(PassRef& passData)
     {
         std::vector<VkAttachmentDescription> attDescriptions;
@@ -235,6 +210,11 @@ namespace RDG
         for (auto& resHandle : passData.output)
         {
             auto& res = resourceMap[resHandle];
+            if(!res.textureInfo.has_value())
+            {
+                std::cout<<"There is no textureInfo\n";
+                continue;
+            }
             auto& att = res.textureInfo;
 
             width = att->extent.width;
@@ -335,17 +315,16 @@ namespace RDG
         {
             attHandle = name;
         }
-        TextureInfo& att = resourceMap[attHandle].textureInfo.value();
+
 
         std::vector<VkImageView> views;
         std::vector<VkAttachmentDescription> attDescriptions;
-        std::vector<VkAttachmentReference> refs;
         int refIndex = 0;
 
-        uint32_t width = att.extent.width;
-        uint32_t height = att.extent.height;
+        uint32_t width = VulkanContext::GetContext().windowExtent.width;
+        uint32_t height = VulkanContext::GetContext().windowExtent.height;
 
-        VkFormat format = att.format;
+        VkFormat format = VK_FORMAT_B8G8R8A8_SRGB;
 
         //Attachment
         VkAttachmentDescription attachmentDes{};
@@ -360,8 +339,8 @@ namespace RDG
 
         attDescriptions.push_back(attachmentDes);
 
-        refIndex++;
-
+        std::vector<VkAttachmentReference> refs;
+        refs.push_back({0,VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
 
         //RenderPass
         VkSubpassDescription subpass{};
@@ -409,7 +388,7 @@ namespace RDG
     {
         for (auto& [resHandle,resData]:resourceMap)
         {
-            if(resData.type==ResourceType::Uniform&&resData.type==ResourceType::SSBO)
+            if(resData.type==ResourceType::Uniform||resData.type==ResourceType::SSBO)
             {
                 WriteBufferDescriptor(resData);
             }else if(resData.type==ResourceType::Texture)
@@ -421,6 +400,12 @@ namespace RDG
 
     void RenderGraph::WriteImageDescriptor(const ResourceRef& resource)
     {
+        if(!resource.textureInfo.has_value())
+        {
+            std::cout<<"Failed to load texture\n";
+            return;
+        }
+
         if(resource.textureInfo.value().usage==AttachmentUsage::Depth)
             return;
 
@@ -449,6 +434,11 @@ namespace RDG
 
     void RenderGraph::WriteBufferDescriptor(const ResourceRef& resource)
     {
+        if(!resource.bufferInfo.has_value())
+        {
+            std::cout<<"Failed to load buffer\n";
+            return;
+        }
         auto data = resource.bufferInfo.value().data;
         if(data== nullptr)
         {
@@ -482,11 +472,19 @@ namespace RDG
     {
         for (auto& [passName,passData] : passMap)
         {
-            int attCount = passData.output.size();
-            if(passData.hasDepth)
+            int attCount;
+            if(passData.type==RenderPassType::Present)
             {
-                attCount--;
+                attCount = 1;
+            } else
+            {
+                attCount = passData.output.size();
+                if(passData.hasDepth)
+                {
+                    attCount--;
+                }
             }
+
             PipelineBuilder::CreatePipeline(passData.pipeline,attCount,passData.data.passHandle);
 
         }
@@ -497,6 +495,38 @@ namespace RDG
         Handle handle = handleAllocator.Allocate();
         resourceMap[handle] = std::move(resource);
         return handle;
+    }
+
+    Handle RenderGraph::GetResourceHandle(std::string name)
+    {
+        for (const auto& [resHandle,resData]:resourceMap)
+        {
+            if(resData.name==name)
+            {
+                return resHandle;
+            }
+        }
+        std::cout<<"Can't find"+name+"\n";
+        return 0;
+    }
+
+    void RenderGraph::InsertBarrier(const CommandList &cmd, const PassRef &passRef)
+    {
+        for (auto& output : passRef.output)
+        {
+            auto& res = resourceMap[output];
+            if(res.textureInfo.has_value())
+            {
+                auto& textureInfo = res.textureInfo;
+                auto state = GetImageState(textureInfo->usage);
+                VulkanContext::GetContext().bufferAllocator.TransitionImage(
+                        cmd.cmd,textureInfo->data->allocatedImage.vk_image,
+                        textureInfo->currentLayout,
+                        state.initLayout
+                        );
+                textureInfo->currentLayout = state.finalLayout;
+            }
+        }
     }
 
     AttachmentState GetImageState(AttachmentUsage usage)

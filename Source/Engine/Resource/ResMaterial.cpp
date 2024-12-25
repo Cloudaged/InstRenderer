@@ -3,7 +3,7 @@
 
 namespace Res
 {
-    void ResMaterial::AddTexture(ResTexture* texture)
+    void ResMaterial::AddTexture(std::shared_ptr<ResTexture> texture)
     {
         textures.push_back(texture);
     }

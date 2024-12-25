@@ -5,9 +5,9 @@
 #include "tiny_gltf.h"
 
 
-Res::ResModel *ModelLoader::Load(std::string path)
+std::shared_ptr<Res::ResModel> ModelLoader::Load(std::string path)
 {
-    Res::ResModel* resModel = new ResModel(path);
+    std::shared_ptr<Res::ResModel> resModel = std::make_shared<Res::ResModel>(path);
 
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -30,15 +30,16 @@ Res::ResModel *ModelLoader::Load(std::string path)
     for (auto& index:scene.nodes)
     {
         auto node = model.nodes[index];
-        resModel->rootNode =  ProcessNode(resModel,&node,&model, new ResNode(nullptr,scene.name));
+        resModel->rootNode =  ProcessNode(resModel,std::make_shared<ResNode>(nullptr,scene.name),&node,&model);
     }
 
     return resModel;
 }
 
-Res::ResNode* ModelLoader::ProcessNode(Res::ResModel *modelNeedLoad, tinygltf::Node *node, tinygltf::Model *model,ResNode* parent)
+std::shared_ptr<Res::ResNode> ModelLoader::ProcessNode(std::shared_ptr<Res::ResModel> modelNeedLoad,std::shared_ptr<ResNode> parent,
+                                       tinygltf::Node *node, tinygltf::Model *model)
 {
-    Res::ResNode* resNode = new ResNode(parent,node->name);
+    std::shared_ptr<Res::ResNode> resNode = std::make_shared<ResNode>(parent,node->name);
 
     if(node->mesh!=-1)
     {
@@ -46,7 +47,7 @@ Res::ResNode* ModelLoader::ProcessNode(Res::ResModel *modelNeedLoad, tinygltf::N
         for(int j =0;j<gltfMesh.primitives.size();++j)
         {
             auto& pri = model->meshes[node->mesh].primitives[j];
-            Res::ResMesh* mesh = LoadMesh(modelNeedLoad,model,gltfMesh,pri);
+            std::shared_ptr<Res::ResMesh> mesh = LoadMesh(modelNeedLoad,model,gltfMesh,pri);
             resNode->meshes.push_back(mesh);
         }
     }
@@ -54,14 +55,14 @@ Res::ResNode* ModelLoader::ProcessNode(Res::ResModel *modelNeedLoad, tinygltf::N
 
     for (int i = 0; i < node->children.size(); ++i)
     {
-        auto child = ProcessNode(modelNeedLoad,&model->nodes[node->children[i]],model,resNode);
+        auto child = ProcessNode(modelNeedLoad,resNode,&model->nodes[node->children[i]],model);
         resNode->children.push_back(child);
     }
     return resNode;
 }
 
 
-Res::ResMesh* ModelLoader::LoadMesh(Res::ResModel* resModel,tinygltf::Model* model,tinygltf::Mesh& mesh, tinygltf::Primitive& primitive)
+std::shared_ptr<Res::ResMesh> ModelLoader::LoadMesh(std::shared_ptr<Res::ResModel> resModel,tinygltf::Model* model,tinygltf::Mesh& mesh, tinygltf::Primitive& primitive)
 {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
@@ -145,7 +146,7 @@ Res::ResMesh* ModelLoader::LoadMesh(Res::ResModel* resModel,tinygltf::Model* mod
                 size_t imageSize = image.image.size();
 
                 //TODO ResManager to create
-                Res::ResTexture* resTexture = new Res::ResTexture(width,height,imageSize,imageData,image.uri);
+                std::shared_ptr<Res::ResTexture> resTexture = std::make_shared<Res::ResTexture>(RESTAG(image.name),width,height,imageSize,imageData,image.uri);
                 resTexture->textureType = TextureType::BaseColor;
                 resMaterial->AddTexture(resTexture);
             }
@@ -166,7 +167,7 @@ Res::ResMesh* ModelLoader::LoadMesh(Res::ResModel* resModel,tinygltf::Model* mod
 
 
                 //TODO ResManager to create
-                Res::ResTexture* resTexture = new Res::ResTexture(width,height,imageSize,imageData,image.uri);
+                std::shared_ptr<Res::ResTexture> resTexture = std::make_shared<Res::ResTexture>(RESTAG(image.name),width,height,imageSize,imageData,image.uri);
                 resTexture->textureType = TextureType::Normal;
                 resMaterial->AddTexture(resTexture);
             }
@@ -187,7 +188,7 @@ Res::ResMesh* ModelLoader::LoadMesh(Res::ResModel* resModel,tinygltf::Model* mod
                 size_t imageSize = image.image.size();
 
                 //TODO ResManager to create
-                Res::ResTexture* resTexture = new Res::ResTexture(width,height,imageSize,imageData,image.uri);
+                std::shared_ptr<Res::ResTexture> resTexture = std::make_shared<Res::ResTexture>(RESTAG(image.name),width,height,imageSize,imageData,image.uri);
                 resTexture->textureType = TextureType::RoughnessMetallic;
                 resMaterial->AddTexture(resTexture);
             }
@@ -196,7 +197,7 @@ Res::ResMesh* ModelLoader::LoadMesh(Res::ResModel* resModel,tinygltf::Model* mod
     }
 
 
-    return new Res::ResMesh(vertices,indices,mesh.name,resMaterial);
+    return std::make_shared<Res::ResMesh>(vertices,indices,mesh.name,resMaterial);
 }
 
 

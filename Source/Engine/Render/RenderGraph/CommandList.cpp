@@ -5,15 +5,15 @@ namespace RDG
 {
     void CommandList::BeginCommand()
     {
-       this->cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+        auto& pr =VulkanContext::GetContext().presentManager;
+        this->cmd = pr.presentFrames[pr.currentFrame].cmd;
+        pr.BeginRecordCommand();
     }
-
 
     void CommandList::EndCommand()
     {
-        VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+        vkEndCommandBuffer(cmd);
     }
-
 
     void CommandList::BeginRenderPass(const PassRef& passRef)
     {
@@ -21,32 +21,47 @@ namespace RDG
 
         auto presentM = VulkanContext::GetContext().presentManager;
 
-        VkExtent2D extent = VulkanContext::GetContext().windowExtent;
+        VkExtent2D extent = {passRef.fbWidth,passRef.fbHeight};
+        VkRenderPassBeginInfo beginInfo{};
 
-        std::vector<VkClearValue> clearValues;
-        if (!passRef.hasDepth)
+        if(passRef.type==RenderPassType::Present)
         {
-            for (int i = 0; i < passRef.output.size(); ++i)
-            {
-                clearValues.push_back({.color ={0, 0, 0, 0}});
-            }
+            std::vector<VkClearValue> clearValues = {{0,0,0,0}};
+
+
+            beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            beginInfo.renderPass = passRef.data.passHandle;
+            beginInfo.framebuffer = presentM.presentFrames[presentM.currentFrame].framebuffer;
+            beginInfo.renderArea.offset = {0, 0};
+            beginInfo.renderArea.extent = extent;
+            beginInfo.clearValueCount = clearValues.size();
+            beginInfo.pClearValues = clearValues.data();
         } else
         {
-            for (int i = 0; i < passRef.output.size()-1; ++i)
+            std::vector<VkClearValue> clearValues;
+            if (!passRef.hasDepth)
             {
-                clearValues.push_back({.color ={0, 0, 0, 0}});
+                for (int i = 0; i < passRef.output.size(); ++i)
+                {
+                    clearValues.push_back({.color ={0, 0, 0, 0}});
+                }
+            } else
+            {
+                for (int i = 0; i < passRef.output.size() - 1; ++i)
+                {
+                    clearValues.push_back({.color ={0, 0, 0, 0}});
+                }
+                clearValues.push_back({.depthStencil = {1.0f, 0}});
             }
-            clearValues.push_back({.depthStencil = {1.0f,0}});
-        }
 
-        VkRenderPassBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        beginInfo.renderPass = passRef.data.passHandle;
-        beginInfo.framebuffer = passRef.data.framebufferHandle;
-        beginInfo.renderArea.offset ={0,0};
-        beginInfo.renderArea.extent = extent;
-        beginInfo.clearValueCount =clearValues.size();
-        beginInfo.pClearValues = clearValues.data();
+            beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            beginInfo.renderPass = passRef.data.passHandle;
+            beginInfo.framebuffer = passRef.data.framebufferHandle;
+            beginInfo.renderArea.offset = {0, 0};
+            beginInfo.renderArea.extent = extent;
+            beginInfo.clearValueCount = clearValues.size();
+            beginInfo.pClearValues = clearValues.data();
+        }
 
         if(VulkanContext::GetContext().isResize)
             return;
@@ -91,19 +106,20 @@ namespace RDG
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, curPass->pipeline.pipeline);
     }
 
-    void CommandList::DrawMesh(const Buffer &vertBuffer, const Buffer &indexBuffer, const size_t &indexSize)
+    void CommandList::DrawMesh(const Mesh& mesh)
     {
         VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(cmd,0,1,&vertBuffer.vk_buffer, offsets);
+        vkCmdBindVertexBuffers(cmd,0,1,&mesh.vertBuffer.vk_buffer, offsets);
 
-        vkCmdBindIndexBuffer(cmd,indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(cmd,mesh.indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
         //Draw
-        vkCmdDrawIndexed(cmd,static_cast<uint32_t>(indexSize),1,0,0,0);
+        vkCmdDrawIndexed(cmd,static_cast<uint32_t>(mesh.indexSize),1,0,0,0);
     }
 
     void CommandList::DrawRenderQuad()
     {
         vkCmdDraw(cmd, 3, 1, 0, 0);
     }
+
 
 } // RDG

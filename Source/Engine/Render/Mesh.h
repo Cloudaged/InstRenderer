@@ -9,15 +9,12 @@
 class Mesh
 {
 public:
-    Mesh(std::vector<Vertex> vertData, std::vector<uint32_t> index);
+    Mesh(const std::vector<Vertex>& vertData,const std::vector<uint32_t>& index);
     Buffer vertBuffer;
     Buffer indexBuffer;
-
+    size_t indexSize = 0;
     VkDeviceAddress vertAddress;
     VkDeviceAddress indexAddress;
-
-    std::vector<Vertex> vertData;
-    std::vector<uint32_t> index;
 };
 
 

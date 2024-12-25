@@ -3,16 +3,17 @@
 #define INSTRENDERER_RESNODE_H
 #include <vector>
 #include "ResMesh.h"
+#include "memory"
 namespace Res
 {
     class ResNode
     {
     public:
-        ResNode(ResNode* parent,std::string name);
+        ResNode(std::shared_ptr<ResNode>,std::string name);
         std::string name;
-        ResNode* parent;
-        std::vector<ResNode*> children;
-        std::vector<Res::ResMesh*> meshes;
+        std::shared_ptr<ResNode> parent;
+        std::vector<std::shared_ptr<ResNode>> children;
+        std::vector<std::shared_ptr<Res::ResMesh>> meshes;
     };
 
 }

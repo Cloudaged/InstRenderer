@@ -19,10 +19,10 @@
 class ModelLoader
 {
 public:
-    static Res::ResModel* Load(std::string path);
+    static std::shared_ptr<Res::ResModel> Load(std::string path);
 private:
-    static Res::ResNode* ProcessNode(Res::ResModel* modelNeedLoad,tinygltf::Node* node,tinygltf::Model *model,Res::ResNode* parent);
-    static Res::ResMesh* LoadMesh(Res::ResModel* resModel,tinygltf::Model* model,tinygltf::Mesh& mesh,tinygltf::Primitive& primitive);
+    static std::shared_ptr<Res::ResNode> ProcessNode(std::shared_ptr<Res::ResModel> modelNeedLoad,std::shared_ptr<Res::ResNode> parent,tinygltf::Node* node,tinygltf::Model *model);
+    static std::shared_ptr<Res::ResMesh> LoadMesh(std::shared_ptr<Res::ResModel> resModel,tinygltf::Model* model,tinygltf::Mesh& mesh,tinygltf::Primitive& primitive);
     static void ReadIndex(tinygltf::Model *model,  tinygltf::Accessor &accessor, std::vector<uint32_t> &outputData);
     template<typename T>
     static void ReadVertAtt(tinygltf::Model* model,tinygltf::Accessor& accessor,std::vector<T>& outputData);

@@ -2,12 +2,12 @@
 #include "Mesh.h"
 #include "VulkanContext.h"
 
-Mesh::Mesh(std::vector<Vertex> vertData, std::vector<uint32_t> index): vertData(vertData), index(index)
+Mesh::Mesh(const std::vector<Vertex>& vertData,const std::vector<uint32_t>& index)
 {
 
     uint32_t verticesSize = vertData.size()*sizeof(Vertex);
     uint32_t indicesSize = index.size()*sizeof(int);
-
+    this->indexSize = index.size();
     vertBuffer = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(verticesSize,
                                                                       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
                                                                       | VK_BUFFER_USAGE_TRANSFER_DST_BIT

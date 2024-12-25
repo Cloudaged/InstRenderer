@@ -1,7 +1,6 @@
 
 #ifndef INSTRENDERER_RENDERSYSTEM_H
 #define INSTRENDERER_RENDERSYSTEM_H
-#include "../../Render/MaterialManager.h"
 #include "../Scene/Scene.h"
 #include "iostream"
 #include "../../Render/Uniforms.h"
@@ -23,12 +22,16 @@ private:
     void PrepareData();
     void PrepareLight();
     void PrepareGlobal();
-    void MemoryCopy();
+    void UniformCopy();
     void InitGlobalDescriptorSet();
     void SetupRenderGraph();
+
+    template<typename T>
+    void MemoryCopy(std::pair<Handle,T> uniform);
 private:
-    LightUniform lightUniform;
-    GlobalUniform globalUniform;
+    std::pair<Handle,GlobalUniform> globalUniform;
+    std::pair<Handle,LightUniform> lightUniform;
+
     std::shared_ptr<Scene> scene;
     GlobalDescriptorData globalData{};
     //RDG::RenderGraph renderGraph;

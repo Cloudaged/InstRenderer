@@ -115,7 +115,7 @@ void Presenter::LoadResourceToObj()
 void Presenter::CreateMeshObjectsForRes(std::string path)
 {
     auto resName = ResourceManager::Get().LoadResource(path);
-    auto model= (Res::ResModel*)ResourceManager::Get().resReg[resName];
+    std::shared_ptr<Res::ResModel> model= std::static_pointer_cast<Res::ResModel>(ResourceManager::Get().resReg[resName]);
 
 
    ResourceManager::Get().CompileModel(instance.get(),model);

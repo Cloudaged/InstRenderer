@@ -2,7 +2,7 @@
 #include "ResNode.h"
 
 
-Res::ResNode::ResNode(Res::ResNode *parent, std::string name):parent(parent),name(name)
+Res::ResNode::ResNode(std::shared_ptr<ResNode> parent, std::string name):parent(parent),name(name)
 {
 
 }

@@ -17,10 +17,10 @@ std::string ResourceManager::LoadResource(std::string path)
     }
     else if(extension==".png"||extension==".jpg")
     {
-        auto pTexture = ImageLoader::Load(path);
+        /*auto pTexture = ImageLoader::Load(path);
         auto name = GetNameFromPath(path);
         resReg[name] = pTexture;
-        return name;
+        return name;*/
     }
     else if(extension==".spv")
     {
@@ -54,41 +54,43 @@ ResourceManager::ResourceManager()
 
 }
 
-Mesh *ResourceManager::TransMesh(Res::ResMesh *resMesh)
+Mesh ResourceManager::TransMesh(std::shared_ptr<Res::ResMesh> resMesh)
 {
-    Mesh* mesh = new Mesh(resMesh->verts,resMesh->index);
-    return mesh;
+    return Mesh(resMesh->verts,resMesh->index);
 }
 
-StandardMaterial *ResourceManager::TransMaterial(Res::ResMaterial *resMaterial)
+Material ResourceManager::TransMaterial(RDG::RenderGraph& renderGraph,std::shared_ptr<Res::ResMaterial> resMaterial)
 {
-    StandardMaterial* mat = new StandardMaterial;
-    TextureSlots* slots = new TextureSlots{};
-    int a=1;
+    Material mat;
     for (auto& tex:resMaterial->textures)
     {
         if(tex->textureType==TextureType::BaseColor)
         {
-            slots->hasAlbedo=1;
+            auto texData = AllocTexture(tex);
+            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Texture,
+                                                .textureInfo =RDG::TextureInfo{{(uint32_t)tex->width, (uint32_t)tex->height},
+                                                                          RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
+            mat.baseColor = handle;
         } else if(tex->textureType==TextureType::Normal)
         {
-            slots->hasNormal=1;
+            auto texData = AllocTexture(tex);
+            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Texture,
+                                                          .textureInfo =RDG::TextureInfo{{(uint32_t)tex->width, (uint32_t)tex->height},
+                                                                                         RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
+            mat.normal = handle;
         }else if(tex->textureType==TextureType::RoughnessMetallic)
         {
-            slots->hasMetallicRoughness=1;
+            auto texData = AllocTexture(tex);
+            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Texture,
+                                                          .textureInfo =RDG::TextureInfo{{(uint32_t)tex->width, (uint32_t)tex->height},
+                                                                                         RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
+            mat.metallicRoughness = handle;
         }
-
-        mat->AddTexture(TransTexture(tex));
     }
-
-    Buffer* buffer=VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(TextureSlots),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
-    void* mappedMemory= VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*buffer);
-    memcpy(mappedMemory,slots,sizeof(TextureSlots));
-    mat->slotBuffer = buffer;
     return mat;
 }
 
-Texture *ResourceManager::TransTexture(Res::ResTexture* resTexture)
+std::shared_ptr<Texture> ResourceManager::AllocTexture(std::shared_ptr<Res::ResTexture> resTexture)
 {
 
     uint32_t mipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(resTexture->width, resTexture->height)))) + 1;
@@ -97,12 +99,12 @@ Texture *ResourceManager::TransTexture(Res::ResTexture* resTexture)
                        {(uint32_t)resTexture->width,(uint32_t)resTexture->height},mipLevel,VK_IMAGE_ASPECT_COLOR_BIT);
 
     img.LoadData(resTexture);
-    auto tex = new Texture(img,resTexture->textureType);
+    auto tex = std::make_shared<Texture>(img,resTexture->textureType);
     tex->textureType = resTexture->textureType;
     return tex;
 }
 
-void ResourceManager::CompileModel(GameInstance *instance, Res::ResModel *model)
+void ResourceManager::CompileModel(GameInstance *instance,std::shared_ptr<Res::ResModel> model)
 {
     std::thread t([&]()
     {
@@ -111,11 +113,11 @@ void ResourceManager::CompileModel(GameInstance *instance, Res::ResModel *model)
     t.join();
 }
 
-void ResourceManager::AsynCompile(GameInstance *instance, Res::ResModel *model)
+void ResourceManager::AsynCompile(GameInstance *instance, std::shared_ptr<Res::ResModel> model)
 {
     std::lock_guard<std::mutex> guard(Locker::Get().loadResourceMtx);
 
-    auto modelRootGo = AddSceneNode(instance,model->rootNode, instance->mainScene->sceneRootGameObject);
+    auto modelRootGo = AddSceneNode(instance,model->rootNode.get(), instance->mainScene->sceneRootGameObject);
     instance->mainScene->sceneRootGameObject->child.insert(modelRootGo);
 
     instance->mainScene->minPoint = glm::min(model->minPoint,instance->mainScene->minPoint);
@@ -144,7 +146,7 @@ std::shared_ptr<GameObject> ResourceManager::AddSceneNode(GameInstance* instance
         transComp = {pos,rotation,scale};
 
         auto meshData= ResourceManager::Get().TransMesh(mesh);
-        auto materialData = ResourceManager::Get().TransMaterial(mesh->material);
+        auto materialData = ResourceManager::Get().TransMaterial(instance->renderSystem.renderGraph,mesh->material);
         instance->mainScene->reg.emplace<Renderable>(meshGo->entityID,meshData,materialData);
     }
 

@@ -69,6 +69,7 @@ namespace RDG
     struct BufferInfo
     {
         uint32_t size;
+        void* mappedAddress = nullptr;
         std::shared_ptr<Buffer> data = nullptr;
     };
 

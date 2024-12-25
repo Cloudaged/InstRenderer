@@ -4,8 +4,8 @@
 
 #include "glm/glm.hpp"
 #include "string"
-#include "../../Render/Material/StandardMaterial.h"
 #include "../../Render/Mesh.h"
+#include "../../Render/Material/Material.h"
 enum class ComponentType:int
 {
     Transform=0,
@@ -33,8 +33,8 @@ struct Transform
 
 struct Renderable
 {
-    Mesh* mesh;
-    StandardMaterial* material;
+    Mesh mesh;
+    Material material;
 };
 
 struct ShadowCamera

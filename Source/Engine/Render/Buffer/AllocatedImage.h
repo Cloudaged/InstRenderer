@@ -3,14 +3,14 @@
 #define INSTRENDERER_ALLOCATEDIMAGE_H
 #include "vma/vk_mem_alloc.h"
 #include "vulkan/vulkan.h"
-
+#include "memory"
 #include "../../Resource/ResTexture.h"
 class AllocatedImage
 {
 public:
     AllocatedImage();
     AllocatedImage(VkFormat format,VkImageUsageFlags usageFlags,VkExtent2D extent,int mipLevel,VkImageAspectFlags aspectFlags);
-    void LoadData(Res::ResTexture* resTexture);
+    void LoadData(std::shared_ptr<Res::ResTexture> resTexture);
     VkImage vk_image;
     VkImageView imageView;
     VmaAllocation allocation;

@@ -3,21 +3,15 @@
 #define INSTRENDERER_MATERIAL_H
 #include "vulkan/vulkan.h"
 #include "vector"
+using Handle = uint32_t;
 
-enum class MaterialType
+struct alignas(16) Material
 {
-    Pbr
+    Handle baseColor;
+    Handle normal;
+    Handle metallicRoughness;
 };
 
-
-
-class Material
-{
-public:
-    Material(){};
-    VkDescriptorSet set;
-    MaterialType type;
-};
 
 
 #endif //INSTRENDERER_MATERIAL_H

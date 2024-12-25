@@ -16,7 +16,7 @@ namespace Res
     {
     public:
         ResModel(std::string path);
-        ResNode* rootNode;
+        std::shared_ptr<ResNode> rootNode;
         BoundingPoint minPoint = glm::vec3(std::numeric_limits<float>::max());
         BoundingPoint maxPoint = glm::vec3(std::numeric_limits<float>::lowest());
     private:

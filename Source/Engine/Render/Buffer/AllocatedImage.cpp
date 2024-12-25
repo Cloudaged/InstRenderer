@@ -63,7 +63,7 @@ AllocatedImage::AllocatedImage()
 
 }
 
-void AllocatedImage::LoadData(Res::ResTexture* resTexture)
+void AllocatedImage::LoadData(std::shared_ptr<Res::ResTexture> resTexture)
 {
     Buffer* staging = VulkanContext::GetContext().bufferAllocator.CreateBuffer(resTexture->size,VK_BUFFER_USAGE_TRANSFER_SRC_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
 

@@ -5,6 +5,7 @@
 #include "RenderResource.h"
 #include "memory"
 #include "../Buffer/Buffer.h"
+#include "../Mesh.h"
 namespace RDG
 {
 
@@ -17,12 +18,13 @@ namespace RDG
         void EndRenderPass();
         void BindDescriptor();
         void BindPipeline();
-        void DrawMesh(const Buffer& vertBuffer,const Buffer& indexBuffer,const size_t& indexSize);
+        void DrawMesh(const Mesh& mesh);
         void DrawRenderQuad();
         void PushConstantsForHandles(void* data);
+    public:
+        VkCommandBuffer cmd;
     private:
         std::shared_ptr<PassRef> curPass;
-        VkCommandBuffer cmd;
     };
 
 } // RDG

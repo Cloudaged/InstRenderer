@@ -16,7 +16,8 @@ namespace Res
     class ResTexture:public ResBase
     {
     public:
-        ResTexture(int width,int height,int size,std::vector<unsigned char>,std::string path);
+        ResTexture(std::string name,int width,int height,int size,std::vector<unsigned char>,std::string path);
+        std::string name;
         int width,height,size;
         TextureType textureType=TextureType::DontCare;
         std::vector<unsigned char> data;

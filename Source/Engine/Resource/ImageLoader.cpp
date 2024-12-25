@@ -18,7 +18,7 @@ ResTexture *ImageLoader::Load(std::string path)
     }
 
     std::vector<unsigned char> data(pixels,pixels+imageSize);
-    ResTexture* texture = new ResTexture(texWidth,texHeight,imageSize,data,path);
+    ResTexture* texture = new ResTexture(" ",texWidth,texHeight,imageSize,data,path);
     return texture;
 }
 
@@ -40,6 +40,6 @@ ResTexture *ImageLoader::Load(std::vector<std::string> path)
         data.insert(data.end(),pixels,pixels+imageSize);
     }
 
-    ResTexture* texture = new ResTexture(texWidth,texHeight,totalSize,data,"Skybox");
+    ResTexture* texture = new ResTexture(" ",texWidth,texHeight,totalSize,data,"Skybox");
     return texture;
 }

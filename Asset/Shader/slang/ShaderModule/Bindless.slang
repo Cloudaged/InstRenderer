@@ -18,6 +18,11 @@ public struct GeoHandles
     public float4x4 modelMat;    
 }
 
+public struct PresentHandle
+{
+    public int lighted;
+}
+
 public struct GlobalUniform_B
 {
     public float4 color;
