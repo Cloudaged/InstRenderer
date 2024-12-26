@@ -82,6 +82,7 @@ void RenderSystem::UniformCopy()
 void RenderSystem::SetupRenderGraph()
 {
     renderGraph.Compile(scene);
+    VulkanContext::GetContext().presentManager.recreatePassFunc = std::bind(&RDG::RenderGraph::RecreateAllPass,&renderGraph);
     globalUniform.first = renderGraph.GetResourceHandle("GlobalData");
 }
 

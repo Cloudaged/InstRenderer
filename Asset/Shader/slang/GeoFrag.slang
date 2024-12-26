@@ -29,12 +29,13 @@ FragOutput main(FragInput input)
 
     if (basecolorIndex != 0)
     {
-         //output.outBaseColor = pow(baseColor.Sample(input.uv),float4(2.2));
-         output.outBaseColor = textures[basecolorIndex].Sample(input.uv);
+        // output.outBaseColor = pow(baseColor.Sample(input.uv),float4(2.2));
+        // output.outBaseColor = textures[basecolorIndex].Sample(input.uv);
+        output.outBaseColor = float4(1, 0, 0, 1);
     }
     else
     {
-        output.outBaseColor = float4(1, 1, 1, 0);
+        output.outBaseColor = float4(1, 0, 0, 1);
     }
 
     if (normalIndex != 0)

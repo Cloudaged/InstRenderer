@@ -19,35 +19,34 @@ namespace RDG
         auto globalData = AddResource({.name = "GlobalData",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}});
 
-       auto position = AddResource({.name = "Position",.type = ResourceType::Texture,
-                                           .textureInfo =TextureInfo{{winWidth, winHeight},
+       auto position = AddResource({.name = "Position",.type = ResourceType::Attachment,
+                                           .textureInfo =TextureInfo{WINDOW_EXTENT,
                                                                      AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-       auto normal = AddResource({.name = "Normal",.type = ResourceType::Texture,
-                .textureInfo = TextureInfo{{winWidth, winHeight},
+       auto normal = AddResource({.name = "Normal",.type = ResourceType::Attachment,
+                .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        auto baseColor = AddResource({.name = "BaseColor",.type = ResourceType::Texture,
-                .textureInfo = TextureInfo{{winWidth, winHeight},
+        auto baseColor = AddResource({.name = "BaseColor",.type = ResourceType::Attachment,
+                .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        auto metallicRoughness = AddResource({.name = "MetallicRoughness",.type = ResourceType::Texture,
-                .textureInfo = TextureInfo{{winWidth, winHeight},
+        auto metallicRoughness = AddResource({.name = "MetallicRoughness",.type = ResourceType::Attachment,
+                .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        auto depth = AddResource({.name = "Depth",.type = ResourceType::Texture,
-                .textureInfo = TextureInfo{{winWidth, winHeight},
+        auto depth = AddResource({.name = "Depth",.type = ResourceType::Attachment,
+                .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::Depth, VK_FORMAT_D32_SFLOAT}});
 
-        auto shadowMap = AddResource({.name = "ShadowMap",.type = ResourceType::Texture,
-                .textureInfo = TextureInfo{{winWidth, winHeight},
+        auto shadowMap = AddResource({.name = "ShadowMap",.type = ResourceType::Attachment,
+                .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::ShadowMap, VK_FORMAT_D32_SFLOAT}});
 
-        auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Texture,
-                                .textureInfo = TextureInfo{{winWidth, winHeight},
+        auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Attachment,
+                                .textureInfo = TextureInfo{WINDOW_EXTENT,
                                 AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB}});
 
-        auto view =scene->reg.view<Renderable, Transform>();
         //Pass
         //GeoPass
         {
@@ -58,7 +57,7 @@ namespace RDG
                 glm::mat4 model;
             };
 
-            passMap["Geometry"] = {.type = RenderPassType::Graphic,.fbWidth = winWidth,.fbHeight = winHeight,
+            AddPass({.name = "Geometry",.type = RenderPassType::Graphic,.fbExtent = WINDOW_EXTENT,
                     .input = {globalData},
                     .output = {position, normal, baseColor, metallicRoughness, depth},
                     .pipeline = {PipelineType::Mesh, "GeoVert", "GeoFrag", sizeof(GeoPC)},
@@ -72,7 +71,7 @@ namespace RDG
                             cmd.PushConstantsForHandles(&pushConstants);
                             cmd.DrawMesh(renderComp.mesh);
                         }
-                    }};
+                    }});
         }
 
         {
@@ -81,7 +80,7 @@ namespace RDG
                 Handle baseColor;
             };
 
-            passMap["Present"] = {.type = RenderPassType::Present,.fbWidth = winWidth,.fbHeight = winHeight,
+            AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
                     .input = {baseColor},
                     .output = {},
                     .pipeline = {PipelineType::RenderQuad, "PresentVert", "PresentFrag", sizeof(PresentPC)},
@@ -90,7 +89,7 @@ namespace RDG
                         PresentPC pushConstants = {baseColor};
                         cmd.PushConstantsForHandles(&pushConstants);
                         cmd.DrawRenderQuad();
-                    }};
+                    }});
         }
 
     }
@@ -99,7 +98,7 @@ namespace RDG
     void RenderGraph::Compile(std::shared_ptr<Scene> scene)
     {
         this->scene = scene;
-
+        view = scene->reg.view<Renderable, Transform>();
         DeclareResource();
         WriteDependency();
         CreateResource();
@@ -111,10 +110,13 @@ namespace RDG
     void RenderGraph::Execute()
     {
         commandList.BeginCommand();
-        for (auto& [passName,passData] : passMap)
+        for (auto& passData : passArr)
         {
             InsertBarrier(commandList,passData);
-            commandList.BeginRenderPass(passData);
+            if(!commandList.BeginRenderPass(passData))
+            {
+                continue;
+            }
             commandList.BindPipeline();
             commandList.BindDescriptor();
             passData.executeFunc(commandList);
@@ -125,8 +127,8 @@ namespace RDG
 
     void RenderGraph::WriteDependency()
     {
-        //Write Resources' producer
-        for (auto& [passName,passData] :passMap)
+        /*//Write Resources' producer
+        for (auto& passData : passArr)
         {
             for (auto& resHandle : passData.output)
             {
@@ -140,7 +142,7 @@ namespace RDG
             {
                 passData.producers.push_back(resourceMap[resHandle].producerPass);
             }
-        }
+        }*/
     }
 
     void RenderGraph::CreateResource()
@@ -166,7 +168,7 @@ namespace RDG
         auto usage = GetImageUsage(textureInfo->usage);
         auto aspect = GetAspectFlag(textureInfo->usage);
 
-        auto img = AllocatedImage(textureInfo->format,usage,textureInfo->extent,1,aspect);
+        auto img = AllocatedImage(textureInfo->format,usage,textureInfo->extent.GetVkExtent(),1,aspect);
         texture = std::make_shared<Texture>(std::move(img));
     }
 
@@ -181,7 +183,7 @@ namespace RDG
 
     void RenderGraph::CreateRenderPass()
     {
-        for (auto& [passName,passData] : passMap)
+        for (auto& passData : passArr)
         {
             if(passData.type==RenderPassType::Graphic)
             {
@@ -203,8 +205,7 @@ namespace RDG
         std::vector<VkAttachmentReference> outputRefs;
         VkAttachmentReference depthRef = {};
 
-        uint32_t width;
-        uint32_t height;
+        VkExtent2D attExtent;
 
         int refIndex = 0;
         for (auto& resHandle : passData.output)
@@ -217,8 +218,7 @@ namespace RDG
             }
             auto& att = res.textureInfo;
 
-            width = att->extent.width;
-            height = att->extent.height;
+            attExtent = att->extent.GetVkExtent();
             VkFormat format = att->format;
 
 
@@ -291,8 +291,8 @@ namespace RDG
         VkFramebufferCreateInfo fbInfo{};
         fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         fbInfo.renderPass = passData.data.passHandle;
-        fbInfo.width = width;
-        fbInfo.height = height;
+        fbInfo.width = attExtent.width;
+        fbInfo.height = attExtent.height;
         fbInfo.attachmentCount = passData.output.size();
         fbInfo.pAttachments = views.data();
         fbInfo.layers =1;
@@ -388,10 +388,10 @@ namespace RDG
     {
         for (auto& [resHandle,resData]:resourceMap)
         {
-            if(resData.type==ResourceType::Uniform||resData.type==ResourceType::SSBO)
+            if(IsBufferType(resData.type))
             {
                 WriteBufferDescriptor(resData);
-            }else if(resData.type==ResourceType::Texture)
+            }else if(IsImageType(resData.type))
             {
                 WriteImageDescriptor(resData);
             }
@@ -422,7 +422,7 @@ namespace RDG
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        write.dstBinding = (uint32_t)resource.type;
+        write.dstBinding = TEXTURE_BINDING;
         write.dstSet = VulkanContext::GetContext().bindlessSet;
         write.descriptorCount = 1;
         write.dstArrayElement = resource.handle;
@@ -458,7 +458,13 @@ namespace RDG
             write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         }
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.dstBinding = (uint32_t)resource.type;
+        if(resource.type==ResourceType::Uniform)
+        {
+            write.dstBinding = UBO_BINDING;
+        } else if(resource.type == ResourceType::SSBO)
+        {
+            write.dstBinding = SSBO_BINDING;
+        }
         write.dstSet = VulkanContext::GetContext().bindlessSet;
         write.descriptorCount = 1;
         write.dstArrayElement = resource.handle;
@@ -470,7 +476,7 @@ namespace RDG
 
     void RenderGraph::CreateVkPipeline()
     {
-        for (auto& [passName,passData] : passMap)
+        for (auto& passData : passArr)
         {
             int attCount;
             if(passData.type==RenderPassType::Present)
@@ -495,6 +501,11 @@ namespace RDG
         Handle handle = handleAllocator.Allocate();
         resourceMap[handle] = std::move(resource);
         return handle;
+    }
+
+    void RenderGraph::AddPass(const PassRef &pass)
+    {
+        passArr.push_back(std::move(pass));
     }
 
     Handle RenderGraph::GetResourceHandle(std::string name)
@@ -528,6 +539,68 @@ namespace RDG
             }
         }
     }
+
+    Handle RenderGraph::AddOuterResource(const ResourceRef &resource)
+    {
+        Handle handle = handleAllocator.Allocate();
+        resourceMap[handle] = std::move(resource);
+
+        if(IsBufferType(resource.type))
+        {
+            WriteBufferDescriptor(resource);
+        }else if(IsImageType(resource.type))
+        {
+            WriteImageDescriptor(resource);
+        }
+
+        return handle;
+    }
+
+    void RenderGraph::RecreateAllPass()
+    {
+        std::cout<<"RECREATE\n";
+        for (auto& pass:passArr)
+        {
+            RecreatePass(pass);
+        }
+    }
+
+    void RenderGraph::RecreatePass(PassRef &pass)
+    {
+        //Clear Pass
+        auto device = VulkanContext::GetContext().device;
+        vkDeviceWaitIdle(device);
+        vkDestroyRenderPass(device,pass.data.passHandle, nullptr);
+        //Clear FrameBuffer
+        if(pass.data.framebufferHandle!=VK_NULL_HANDLE)
+        {
+            vkDestroyFramebuffer(device,pass.data.framebufferHandle, nullptr);
+        }
+        //Clear and recreate resource
+        for (auto& output:pass.output)
+        {
+            auto& resource = resourceMap[output];
+            if(IsImageType(resource.type)&&resource.textureInfo.has_value())
+            {
+                if(resource.textureInfo->extent == WINDOW_EXTENT&&resource.textureInfo->usage==AttachmentUsage::Present)
+                {
+                    //Clear
+                    auto& data = resource.textureInfo->data;
+                    vkDestroyImageView(device,data->allocatedImage.imageView, nullptr);
+                    vkDestroyImage(device,data->allocatedImage.vk_image, nullptr);
+                    vkDestroySampler(device,data->sampler, nullptr);
+                    //Recreate
+                    CreateImageResource(resource);
+                }
+            }
+        }
+        //Recreate RenderPass
+        CreateRenderPass();
+
+
+
+    }
+
 
     AttachmentState GetImageState(AttachmentUsage usage)
     {
@@ -598,7 +671,7 @@ namespace RDG
 
     bool IsImageType(ResourceType type)
     {
-        if(type==ResourceType::Texture)
+        if(type==ResourceType::Attachment||type==ResourceType::MaterialTexture)
         {
             return true;
         } else

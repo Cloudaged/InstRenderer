@@ -67,22 +67,23 @@ Material ResourceManager::TransMaterial(RDG::RenderGraph& renderGraph,std::share
         if(tex->textureType==TextureType::BaseColor)
         {
             auto texData = AllocTexture(tex);
-            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Texture,
-                                                .textureInfo =RDG::TextureInfo{{(uint32_t)tex->width, (uint32_t)tex->height},
+
+            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Attachment,
+                                                .textureInfo =RDG::TextureInfo{{tex->width,tex->height},
                                                                           RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
             mat.baseColor = handle;
         } else if(tex->textureType==TextureType::Normal)
         {
             auto texData = AllocTexture(tex);
-            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Texture,
-                                                          .textureInfo =RDG::TextureInfo{{(uint32_t)tex->width, (uint32_t)tex->height},
+            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Attachment,
+                                                          .textureInfo =RDG::TextureInfo{{tex->width, tex->height},
                                                                                          RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
             mat.normal = handle;
         }else if(tex->textureType==TextureType::RoughnessMetallic)
         {
             auto texData = AllocTexture(tex);
-            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Texture,
-                                                          .textureInfo =RDG::TextureInfo{{(uint32_t)tex->width, (uint32_t)tex->height},
+            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Attachment,
+                                                          .textureInfo =RDG::TextureInfo{{tex->width,tex->height},
                                                                                          RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
             mat.metallicRoughness = handle;
         }
@@ -99,6 +100,13 @@ std::shared_ptr<Texture> ResourceManager::AllocTexture(std::shared_ptr<Res::ResT
                        {(uint32_t)resTexture->width,(uint32_t)resTexture->height},mipLevel,VK_IMAGE_ASPECT_COLOR_BIT);
 
     img.LoadData(resTexture);
+
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
+
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,img.vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,img.mipLevels);
+
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
+
     auto tex = std::make_shared<Texture>(img,resTexture->textureType);
     tex->textureType = resTexture->textureType;
     return tex;

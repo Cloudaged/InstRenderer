@@ -6,6 +6,7 @@
 #include "memory"
 #include "../Buffer/Buffer.h"
 #include "../Mesh.h"
+#include "../TextureExtent.h"
 namespace RDG
 {
 
@@ -14,7 +15,7 @@ namespace RDG
     public:
         void BeginCommand();
         void EndCommand();
-        void BeginRenderPass(const PassRef& passRef);
+        bool BeginRenderPass(const PassRef& passRef);
         void EndRenderPass();
         void BindDescriptor();
         void BindPipeline();

@@ -113,6 +113,7 @@ void PresentManager::RecreateSwapChain()
     VulkanContext::GetContext().CreateSwapchain();
     extent = VulkanContext::GetContext().windowExtent;
     InitFrameData(lastRenderpass,(uint32_t)extent.width,(uint32_t)extent.height);
+    recreatePassFunc();
     //VulkanContext::GetContext().passManager->RecreateAllPass();
     VulkanContext::GetContext().isResize = false;
 

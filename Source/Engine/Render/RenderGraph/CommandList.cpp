@@ -15,13 +15,13 @@ namespace RDG
         vkEndCommandBuffer(cmd);
     }
 
-    void CommandList::BeginRenderPass(const PassRef& passRef)
+    bool CommandList::BeginRenderPass(const PassRef& passRef)
     {
         curPass = std::make_shared<PassRef>(passRef);
 
         auto presentM = VulkanContext::GetContext().presentManager;
 
-        VkExtent2D extent = {passRef.fbWidth,passRef.fbHeight};
+        VkExtent2D extent = passRef.fbExtent.GetVkExtent();
         VkRenderPassBeginInfo beginInfo{};
 
         if(passRef.type==RenderPassType::Present)
@@ -64,7 +64,7 @@ namespace RDG
         }
 
         if(VulkanContext::GetContext().isResize)
-            return;
+            return false;
 
         vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
         VkViewport viewport{};
@@ -82,6 +82,7 @@ namespace RDG
         scissor.offset = {0, 0};
         scissor.extent = extent;
         vkCmdSetScissor(cmd, 0, 1, &scissor);
+        return true;
     }
 
     void CommandList::EndRenderPass()

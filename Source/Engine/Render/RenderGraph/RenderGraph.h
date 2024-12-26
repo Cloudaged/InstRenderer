@@ -19,13 +19,16 @@
 class RenderSystem;
 namespace RDG
 {
+#define UBO_BINDING 0
+#define SSBO_BINDING 1
+#define TEXTURE_BINDING 2
+
     bool IsImageType(ResourceType type);
     bool IsBufferType(ResourceType type);
     VkImageUsageFlags GetImageUsage(AttachmentUsage usage);
     VkBufferUsageFlagBits GetBufferUsage(ResourceType type);
     VkImageAspectFlagBits GetAspectFlag(AttachmentUsage usage);
     AttachmentState GetImageState(AttachmentUsage usage);
-
 
     class RenderGraph
     {
@@ -35,10 +38,12 @@ namespace RDG
         void Compile(std::shared_ptr<Scene> scene);
         void Execute();
         Handle AddResource(const ResourceRef& resource);
+        Handle AddOuterResource(const ResourceRef& resource);
         Handle GetResourceHandle(std::string name);
     public:
 
     private:
+        void AddPass(const PassRef& pass);
         void DeclareResource();
         void CreateRenderPass();
         void CreateGraphicPass(PassRef& passData);
@@ -53,13 +58,16 @@ namespace RDG
         void InsertBarrier(const CommandList& cmd,const PassRef& passRef);
         void CreateImageResource(ResourceRef& resource);
         void CreateBufferResource(ResourceRef& resource);
+        void RecreateAllPass();
+        void RecreatePass(PassRef& pass);
+        void ClearImageResource(ResourceRef& resource);
     private:
         ResourceMap resourceMap;
-        PassMap passMap;
+        PassMap passArr;
         std::shared_ptr<Scene> scene;
         CommandList commandList;
         HandleAllocator handleAllocator;
-
+        entt::view<entt::get_t<Renderable,Transform>> view;
     };
 
 } // RDG

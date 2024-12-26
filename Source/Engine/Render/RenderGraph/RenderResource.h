@@ -12,6 +12,7 @@
 #include <optional>
 #include <unordered_set>
 #include <functional>
+#include "../TextureExtent.h"
 namespace RDG
 {
     using ResourceName = std::string;
@@ -32,7 +33,8 @@ namespace RDG
     {
         Uniform = 0,
         SSBO = 1,
-        Texture = 2
+        Attachment = 2,
+        MaterialTexture = 3
     };
 
     enum class PipelineType
@@ -58,7 +60,8 @@ namespace RDG
         Present,
         Depth,
         Prefiltered,
-        ShadowMap
+        ShadowMap,
+        MaterialTexture
     };
 
     struct RenderParam
@@ -75,11 +78,12 @@ namespace RDG
 
     struct TextureInfo
     {
-        VkExtent2D extent;
+        TextureExtent extent;
         AttachmentUsage usage;
         VkFormat format;
         std::shared_ptr<Texture> data = nullptr;
         VkImageLayout currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        bool followWindowExtent = false;
         bool hasInit = false;
     };
 
@@ -108,8 +112,9 @@ namespace RDG
 
     struct PassRef
     {
+        PassName name;
         RenderPassType type;
-        uint32_t fbWidth,fbHeight;
+        TextureExtent fbExtent;
         std::unordered_set<Handle> input;
         std::unordered_set<Handle> output;
         PipelineRef pipeline;
@@ -139,7 +144,7 @@ namespace RDG
     };
 
     using ResourceMap = std::unordered_map<Handle,ResourceRef>;
-    using PassMap = std::unordered_map<PassName,PassRef>;
+    using PassMap = std::vector<PassRef>;
 }
 
 
