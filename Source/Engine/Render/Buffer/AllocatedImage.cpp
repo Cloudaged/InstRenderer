@@ -16,7 +16,7 @@ AllocatedImage::AllocatedImage(ImageType type,VkFormat format,VkImageUsageFlags 
     info.format = format;
     info.extent = VkExtent3D{extent.width,extent.height,1};
     info.mipLevels = mipLevel;
-    info.arrayLayers = 1;
+    info.arrayLayers = layer;
     info.samples = VK_SAMPLE_COUNT_1_BIT;
     info.tiling = VK_IMAGE_TILING_OPTIMAL;
     info.usage = usageFlags;
@@ -75,7 +75,7 @@ void AllocatedImage::LoadData(std::shared_ptr<Res::ResTexture> resTexture)
     memcpy(stagingData,resTexture->data.data(),resTexture->size);
 
     auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
-    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd, this->vk_image,VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mipLevels);
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd, this->vk_image,VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mipLevels,layer);
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
