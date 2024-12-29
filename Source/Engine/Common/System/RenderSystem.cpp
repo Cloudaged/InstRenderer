@@ -55,6 +55,7 @@ void RenderSystem::SetupUniforms()
     {
         renderSettingU->data = globalRenderSettingData;
     };
+    uniArr.push_back(renderSettingU);
 }
 
 
@@ -94,11 +95,6 @@ void RenderSystem::SetupRenderGraph()
     renderGraph.Compile(scene);
     VulkanContext::GetContext().presentManager.recreatePassFunc = std::bind(&RDG::RenderGraph::RecreateAllPass,&renderGraph);
     SetupUniforms();
-}
-
-void RenderSystem::PrepareRenderSetting()
-{
-
 }
 
 

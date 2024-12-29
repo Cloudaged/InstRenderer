@@ -7,8 +7,6 @@
 #include "../Core/EngineMath.h"
 #include "../../Render/RenderGraph/RenderGraph.h"
 #include "../../Render/UniContainer.h"
-template<typename T>
-using UniPair = std::pair<Handle,T>;
 class RenderSystem
 {
 public:
@@ -20,7 +18,6 @@ public:
     RDG::RenderGraph renderGraph;
 private:
     void PrepareData();
-    void PrepareRenderSetting();
     void SetupRenderGraph();
     void SetupUniforms();
 private:
