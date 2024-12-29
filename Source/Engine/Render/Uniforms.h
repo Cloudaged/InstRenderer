@@ -46,4 +46,16 @@ struct GlobalDescriptorData
     Skybox* skyboxData;
 };
 
+struct ShadowSetting
+{
+    int pcfSampleCount = 32;
+    int blockerSearchCount = 32;
+};
+
+struct RenderSettingUniform
+{
+    ShadowSetting shadowDebug{};
+};
+
+
 #endif //INSTRENDERER_UNIFORMS_H

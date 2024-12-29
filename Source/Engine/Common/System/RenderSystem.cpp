@@ -1,16 +1,13 @@
 
 #include "RenderSystem.h"
 #include "../../Render/VulkanContext.h"
-RenderSettingData globalRenderSettingData{};
+RenderSettingUniform globalRenderSettingData{};
 
 void RenderSystem::BeginSystem(std::shared_ptr<Scene> scene)
 {
     this->scene = scene;
     SetupRenderGraph();
     UpdateLightArray();
-    //passManager.Setup(scene->reg.view<Renderable,Transform>(),globalData);
-    //materialManager.Setup(passManager.geoPass->materialLayout,scene->reg.view<Renderable>());
-    //VulkanContext::GetContext().passManager = &this->passManager;
 }
 
 void RenderSystem::Execute()
@@ -23,14 +20,51 @@ void RenderSystem::Execute()
 
 RenderSystem::RenderSystem()
 {
-    //passManager = RenderPassManager();
 }
+
+void RenderSystem::SetupUniforms()
+{
+    auto globalU = INIT_UNIPTR(GlobalUniform);
+    globalU->Setup("GlobalData",renderGraph);
+    globalU->CustomUpdate = [=](){
+        globalU->data.skyboxProj = glm::perspective(glm::radians(80.0f),
+                                                   scene->mainCamera.cameraData.aspect,
+                                                   0.001f, 256.0f);
+        globalU->data.skyboxProj[1][1] *=-1;
+        globalU->data.view = scene->mainCamera.vpMat.view;
+        globalU->data.proj = scene->mainCamera.vpMat.proj;
+
+        auto [lightV,lightP] = scene->mainLight->GetLightMatrix(&scene->reg,scene->minPoint,scene->maxPoint);
+        globalU->data.lightViewMat = lightV;
+        globalU->data.lightProjMat = lightP;
+    };
+    uniArr.push_back(globalU);
+
+    this->lightU = INIT_UNIPTR(LightUniform);
+    lightU->Setup("Lights",renderGraph);
+    lightU->CustomUpdate = [=]()
+    {
+        lightU->data.cameraPos= glm::vec4(scene->mainCamera.position,1.0);
+        lightU->data.cameraDir = glm::vec4(scene->mainCamera.viewPoint-scene->mainCamera.position,1.0);
+    };
+    uniArr.push_back(lightU);
+
+    auto renderSettingU = INIT_UNIPTR(RenderSettingUniform);
+    renderSettingU->Setup("RenderSettings",renderGraph);
+    renderSettingU->CustomUpdate = [=]()
+    {
+        renderSettingU->data = globalRenderSettingData;
+    };
+}
+
+
 
 void RenderSystem::PrepareData()
 {
-    PrepareGlobal();
-    PrepareLight();
-    UniformCopy();
+    for (auto& uni:uniArr)
+    {
+        uni->UpdateData();
+    }
 }
 
 void RenderSystem::UpdateLightArray()
@@ -43,57 +77,30 @@ void RenderSystem::UpdateLightArray()
         auto& trans = view.get<Transform>(entityID);
         glm::mat4 mat = EngineMath::GetRotateMatrix(trans.rotation);
         glm::vec4 rotatedDir = mat*glm::vec4(0.0,0.0,1.0,0.0);
-        lightUniform.second.lights[num] = std::move(LightUnitsInShader{glm::vec4(trans.pos,1.0),rotatedDir,
+        lightU->data.lights[num] = std::move(LightUnitsInShader{glm::vec4(trans.pos,1.0),rotatedDir,
                                                                 glm::vec4(lightComp.color,1.0),
                                                                 (int)lightComp.type,lightComp.Intensity,
                                                                 glm::radians(lightComp.range),lightComp.lightSize,lightComp.attenuation});
         num++;
     }
-    lightUniform.second.count=num;
+    lightU->data.count=num;
 }
 
-void RenderSystem::PrepareLight()
-{
 
-    lightUniform.second.cameraPos= glm::vec4(scene->mainCamera.position,1.0);
-    lightUniform.second.cameraDir = glm::vec4(scene->mainCamera.viewPoint-scene->mainCamera.position,1.0);
-}
 
-void RenderSystem::PrepareGlobal()
-{
-    globalUniform.second.skyboxProj = glm::perspective(glm::radians(80.0f),
-                                                scene->mainCamera.cameraData.aspect,
-                                                0.001f, 256.0f);
-    globalUniform.second.skyboxProj[1][1] *=-1;
-    globalUniform.second.view = scene->mainCamera.vpMat.view;
-    globalUniform.second.proj = scene->mainCamera.vpMat.proj;
-
-    auto [lightV,lightP] = scene->mainLight->GetLightMatrix(&scene->reg,scene->minPoint,scene->maxPoint);
-    globalUniform.second.lightViewMat = lightV;
-    globalUniform.second.lightProjMat = lightP;
-}
-
-void RenderSystem::UniformCopy()
-{
-    MemoryCopy(globalUniform);
-    MemoryCopy(lightUniform);
-}
 
 void RenderSystem::SetupRenderGraph()
 {
     renderGraph.Compile(scene);
     VulkanContext::GetContext().presentManager.recreatePassFunc = std::bind(&RDG::RenderGraph::RecreateAllPass,&renderGraph);
-    globalUniform.first = renderGraph.GetResourceHandle("GlobalData");
+    SetupUniforms();
 }
 
-template<typename T>
-void RenderSystem::MemoryCopy(std::pair<Handle, T> uniform)
+void RenderSystem::PrepareRenderSetting()
 {
-    const RDG::ResourceRef& res = renderGraph.resourceMap[uniform.first];
-    if(!res.bufferInfo.has_value())
-        std::cout<<"copy to null address\n";
-    memcpy(res.bufferInfo->mappedAddress,&uniform.second,sizeof(T));
+
 }
+
 
 
 

@@ -19,7 +19,7 @@
 #include "PresentManager.h"
 #include "Buffer/Buffer.h"
 #include "Buffer/BufferAllocator.h"
-#include "RenderSetting.h"
+#include "Uniforms.h"
 class VulkanContext
 {
 public:

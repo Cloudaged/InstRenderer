@@ -41,7 +41,7 @@ namespace RDG
         Handle AddOuterResource(ResourceRef&& resource);
         Handle GetResourceHandle(std::string name);
     public:
-
+        ResourceMap resourceMap;
     private:
         void AddPass(const PassRef& pass);
         void DeclareResource();
@@ -63,7 +63,6 @@ namespace RDG
         void RecreatePass(PassRef& pass);
         void ClearImageResource(ResourceRef& resource);
     private:
-        ResourceMap resourceMap;
         PassMap passArr;
         std::shared_ptr<Scene> scene;
         CommandList commandList;

@@ -67,7 +67,7 @@ void GraphicSettingWidget::resizeEvent(QResizeEvent *event)
     QWidget::resizeEvent(event);
 }
 
-RenderSettingData GraphicSettingWidget::UpdateAllData()
+RenderSettingUniform GraphicSettingWidget::UpdateAllData()
 {
     this->renderSettingData.shadowDebug.pcfSampleCount = pcfEdit->edit->text().toFloat();
     this->renderSettingData.shadowDebug.blockerSearchCount = bsEdit->edit->text().toFloat();

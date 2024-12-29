@@ -6,35 +6,28 @@
 #include "../../Render/Uniforms.h"
 #include "../Core/EngineMath.h"
 #include "../../Render/RenderGraph/RenderGraph.h"
+#include "../../Render/UniContainer.h"
+template<typename T>
+using UniPair = std::pair<Handle,T>;
 class RenderSystem
 {
 public:
     RenderSystem();
     void BeginSystem(std::shared_ptr<Scene> scene);
     void Execute();
-
-    //MaterialManager materialManager;
-    //RenderPassManager passManager;
     void UpdateLightArray();
 public:
     RDG::RenderGraph renderGraph;
 private:
     void PrepareData();
-    void PrepareLight();
-    void PrepareGlobal();
-    void UniformCopy();
-    void InitGlobalDescriptorSet();
+    void PrepareRenderSetting();
     void SetupRenderGraph();
-
-    template<typename T>
-    void MemoryCopy(std::pair<Handle,T> uniform);
+    void SetupUniforms();
 private:
-    std::pair<Handle,GlobalUniform> globalUniform;
-    std::pair<Handle,LightUniform> lightUniform;
-
+    UniPtr<LightUniform> lightU;
+    std::vector<std::shared_ptr<UniBase>> uniArr;
     std::shared_ptr<Scene> scene;
     GlobalDescriptorData globalData{};
-    //RDG::RenderGraph renderGraph;
 };
 
 

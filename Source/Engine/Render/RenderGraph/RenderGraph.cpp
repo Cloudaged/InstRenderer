@@ -19,6 +19,12 @@ namespace RDG
         auto globalData = AddResource({.name = "GlobalData",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}});
 
+        auto lightData = AddResource({.name = "Lights",.type = ResourceType::Uniform,
+                                              .bufferInfo = BufferInfo{.size = sizeof(LightUniform)}});
+
+        auto renderSettings = AddResource({.name = "RenderSettings",.type = ResourceType::Uniform,
+                                             .bufferInfo = BufferInfo{.size = sizeof(RenderSettingUniform)}});
+
        auto position = AddResource({.name = "Position",.type = ResourceType::Attachment,
                                            .textureInfo =TextureInfo{WINDOW_EXTENT,
                                                                      AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});

@@ -9,7 +9,7 @@
 #include "QTextEdit"
 #include "../Custom/MyToolBox.h"
 #include "../Custom/MyToolPage.h"
-#include "Render/RenderSetting.h"
+#include "Render/Uniforms.h"
 #include "../Custom/ValueEdit.h"
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -33,7 +33,7 @@ private:
     void ShadowSettings();
     void resizeEvent(QResizeEvent *event) override;
 private:
-    RenderSettingData renderSettingData;
+    RenderSettingUniform renderSettingData;
     std::vector<ContentWithType> pages;
     MyToolBox* toolBox;
     QScrollArea* scrollArea;
@@ -41,9 +41,9 @@ private:
 
     ValueEdit* pcfEdit;
     ValueEdit* bsEdit;
-    RenderSettingData UpdateAllData();
+    RenderSettingUniform UpdateAllData();
 signals:
-    void GraphicSettingUpdate(RenderSettingData data);
+    void GraphicSettingUpdate(RenderSettingUniform data);
 };
 
 

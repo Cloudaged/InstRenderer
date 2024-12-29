@@ -31,3 +31,14 @@ public struct LightCameraUniform
     public int lightCount;
     public Light light[16];
 }
+
+public struct ShadowSetting
+{
+    public const int pcfSampleCount;
+    public const int blockerSearchCount;
+}
+
+public struct GraphicSetting
+{
+    public ShadowSetting shadowSetting;
+}

@@ -1,9 +1,5 @@
 module Bindless;
 
-#define USING_UBO [[vk::binding(0, 0)]] uniform Sampler2D textures[];
-#define USING_SSBO [[vk::binding(1, 0)]] uniform Sampler2D textures[];
-#define USING_TEXTURE [[vk::binding(2, 0)]] uniform Sampler2D textures[];
-
 public struct Material
 {
    public int baseColor;
@@ -23,10 +19,6 @@ public struct PresentHandle
     public int lighted;
 }
 
-public struct GlobalUniform_B
-{
-    public float4 color;
-}
 
 public struct ShadowSettings
 {
