@@ -61,7 +61,7 @@ namespace RDG
                     .input = {globalData},
                     .output = {position, normal, baseColor, metallicRoughness, depth},
                     .pipeline = {PipelineType::Mesh, "GeoVert", "GeoFrag", sizeof(GeoPC)},
-                    .executeFunc = [&](CommandList& cmd)
+                    .executeFunc = [=](CommandList& cmd)
                     {
                         for (auto& entity:view)
                         {
@@ -84,7 +84,7 @@ namespace RDG
                     .input = {baseColor},
                     .output = {},
                     .pipeline = {PipelineType::RenderQuad, "PresentVert", "PresentFrag", sizeof(PresentPC)},
-                    .executeFunc = [&](CommandList& cmd)
+                    .executeFunc = [=](CommandList& cmd)
                     {
                         PresentPC pushConstants = {baseColor};
                         cmd.PushConstantsForHandles(&pushConstants);
@@ -100,8 +100,8 @@ namespace RDG
         this->scene = scene;
         view = scene->reg.view<Renderable, Transform>();
         DeclareResource();
-        WriteDependency();
         CreateResource();
+        WriteDependency();
         CreateRenderPass();
         CreateDescriptor();
         CreateVkPipeline();
@@ -121,6 +121,7 @@ namespace RDG
             commandList.BindDescriptor();
             passData.executeFunc(commandList);
             commandList.EndRenderPass();
+            UpdateResourceLayout(passData);
         }
         commandList.EndCommand();
     }
@@ -165,9 +166,9 @@ namespace RDG
     {
         auto& texture = resource.textureInfo->data;
         auto& textureInfo = resource.textureInfo;
+        textureInfo->currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         auto usage = GetImageUsage(textureInfo->usage);
         auto aspect = GetAspectFlag(textureInfo->usage);
-
         auto img = AllocatedImage(textureInfo->format,usage,textureInfo->extent.GetVkExtent(),1,aspect);
         texture = std::make_shared<Texture>(std::move(img));
     }
@@ -496,9 +497,10 @@ namespace RDG
         }
     }
 
-    Handle RenderGraph::AddResource(const ResourceRef& resource)
+    Handle RenderGraph::AddResource(ResourceRef&& resource)
     {
         Handle handle = handleAllocator.Allocate();
+        resource.handle = handle;
         resourceMap[handle] = std::move(resource);
         return handle;
     }
@@ -535,16 +537,14 @@ namespace RDG
                         textureInfo->currentLayout,
                         state.initLayout
                         );
-                textureInfo->currentLayout = state.finalLayout;
             }
         }
     }
 
-    Handle RenderGraph::AddOuterResource(const ResourceRef &resource)
+    Handle RenderGraph::AddOuterResource(ResourceRef&& resource)
     {
         Handle handle = handleAllocator.Allocate();
-        resourceMap[handle] = std::move(resource);
-
+        resource.handle = handle;
         if(IsBufferType(resource.type))
         {
             WriteBufferDescriptor(resource);
@@ -552,13 +552,13 @@ namespace RDG
         {
             WriteImageDescriptor(resource);
         }
+        resourceMap[handle] = std::move(resource);
 
         return handle;
     }
 
     void RenderGraph::RecreateAllPass()
     {
-        std::cout<<"RECREATE\n";
         for (auto& pass:passArr)
         {
             RecreatePass(pass);
@@ -582,7 +582,8 @@ namespace RDG
             auto& resource = resourceMap[output];
             if(IsImageType(resource.type)&&resource.textureInfo.has_value())
             {
-                if(resource.textureInfo->extent == WINDOW_EXTENT&&resource.textureInfo->usage==AttachmentUsage::Present)
+                if(resource.textureInfo->extent == WINDOW_EXTENT &&
+                   resource.textureInfo->usage != AttachmentUsage::Present)
                 {
                     //Clear
                     auto& data = resource.textureInfo->data;
@@ -591,6 +592,7 @@ namespace RDG
                     vkDestroySampler(device,data->sampler, nullptr);
                     //Recreate
                     CreateImageResource(resource);
+                    WriteImageDescriptor(resource);
                 }
             }
         }
@@ -601,25 +603,39 @@ namespace RDG
 
     }
 
+    void RenderGraph::UpdateResourceLayout(const PassRef &passRef)
+    {
+        for (auto& output : passRef.output)
+        {
+            auto& res = resourceMap[output];
+            if(res.textureInfo.has_value())
+            {
+                auto& textureInfo = res.textureInfo;
+                auto state = GetImageState(textureInfo->usage);
+                textureInfo->currentLayout = state.finalLayout;
+            }
+        }
+    }
+
 
     AttachmentState GetImageState(AttachmentUsage usage)
     {
         if(usage==AttachmentUsage::Depth)
         {
-            return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
+            return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
                                    VK_ATTACHMENT_STORE_OP_STORE,
                                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
                                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
         }else if (usage==AttachmentUsage::ShadowMap)
         {
-            return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
+            return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
                                    VK_ATTACHMENT_STORE_OP_STORE,
                                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
         }
         else
         {
-            return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
+            return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
                                    VK_ATTACHMENT_STORE_OP_STORE,
                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};

@@ -68,21 +68,21 @@ Material ResourceManager::TransMaterial(RDG::RenderGraph& renderGraph,std::share
         {
             auto texData = AllocTexture(tex);
 
-            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Attachment,
+            auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::MaterialTexture,
                                                 .textureInfo =RDG::TextureInfo{{tex->width,tex->height},
                                                                           RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
             mat.baseColor = handle;
         } else if(tex->textureType==TextureType::Normal)
         {
             auto texData = AllocTexture(tex);
-            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Attachment,
+            auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::MaterialTexture,
                                                           .textureInfo =RDG::TextureInfo{{tex->width, tex->height},
                                                                                          RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
             mat.normal = handle;
         }else if(tex->textureType==TextureType::RoughnessMetallic)
         {
             auto texData = AllocTexture(tex);
-            auto handle = renderGraph.AddResource({.name = tex->name,.type = RDG::ResourceType::Attachment,
+            auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::MaterialTexture,
                                                           .textureInfo =RDG::TextureInfo{{tex->width,tex->height},
                                                                                          RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
             mat.metallicRoughness = handle;

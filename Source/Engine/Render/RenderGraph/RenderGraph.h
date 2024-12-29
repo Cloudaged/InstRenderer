@@ -37,8 +37,8 @@ namespace RDG
         RenderGraph();
         void Compile(std::shared_ptr<Scene> scene);
         void Execute();
-        Handle AddResource(const ResourceRef& resource);
-        Handle AddOuterResource(const ResourceRef& resource);
+        Handle AddResource(ResourceRef&& resource);
+        Handle AddOuterResource(ResourceRef&& resource);
         Handle GetResourceHandle(std::string name);
     public:
 
@@ -56,6 +56,7 @@ namespace RDG
         void CreateDescriptor();
         void CreateVkPipeline();
         void InsertBarrier(const CommandList& cmd,const PassRef& passRef);
+        void UpdateResourceLayout(const PassRef& passRef);
         void CreateImageResource(ResourceRef& resource);
         void CreateBufferResource(ResourceRef& resource);
         void RecreateAllPass();

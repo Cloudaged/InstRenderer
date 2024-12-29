@@ -17,6 +17,9 @@ namespace RDG
 
     bool CommandList::BeginRenderPass(const PassRef& passRef)
     {
+        if(VulkanContext::GetContext().isResize)
+            return false;
+
         curPass = std::make_shared<PassRef>(passRef);
 
         auto presentM = VulkanContext::GetContext().presentManager;
@@ -26,32 +29,38 @@ namespace RDG
 
         if(passRef.type==RenderPassType::Present)
         {
-            std::vector<VkClearValue> clearValues = {{0,0,0,0}};
-
-
+            VkClearValue clearValue{};
+            clearValue.color = {0,0,0,0};
+            clearValue.depthStencil = {0,0};
             beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             beginInfo.renderPass = passRef.data.passHandle;
             beginInfo.framebuffer = presentM.presentFrames[presentM.currentFrame].framebuffer;
             beginInfo.renderArea.offset = {0, 0};
             beginInfo.renderArea.extent = extent;
-            beginInfo.clearValueCount = clearValues.size();
-            beginInfo.pClearValues = clearValues.data();
+            beginInfo.clearValueCount = 1;
+            beginInfo.pClearValues = &clearValue;
+
+            vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
         } else
         {
-            std::vector<VkClearValue> clearValues;
+            std::vector<VkClearValue> clearValues(passRef.output.size());
             if (!passRef.hasDepth)
             {
                 for (int i = 0; i < passRef.output.size(); ++i)
                 {
-                    clearValues.push_back({.color ={0, 0, 0, 0}});
+                    clearValues[i].color={1.0, 0, 0, 0};
+                    clearValues[i].depthStencil = {0,0};
                 }
             } else
             {
                 for (int i = 0; i < passRef.output.size() - 1; ++i)
                 {
-                    clearValues.push_back({.color ={0, 0, 0, 0}});
+                    clearValues[i].color = {1.0, 0, 0, 0};
+                    clearValues[i].depthStencil = {0,0};
                 }
-                clearValues.push_back({.depthStencil = {1.0f, 0}});
+                clearValues[passRef.output.size()-1].color ={0.0f, 0,0,0};
+                clearValues[passRef.output.size()-1].depthStencil ={1.0f, 0};
             }
 
             beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -61,12 +70,13 @@ namespace RDG
             beginInfo.renderArea.extent = extent;
             beginInfo.clearValueCount = clearValues.size();
             beginInfo.pClearValues = clearValues.data();
+
+            vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
         }
 
-        if(VulkanContext::GetContext().isResize)
-            return false;
 
-        vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
