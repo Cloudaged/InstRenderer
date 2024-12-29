@@ -2,7 +2,6 @@
 #ifndef INSTRENDERER_UNIFORMS_H
 #define INSTRENDERER_UNIFORMS_H
 #include "glm/glm.hpp"
-#include "Buffer/Skybox.h"
 
 struct GlobalUniform
 {
@@ -35,16 +34,6 @@ struct LightUniform
     LightUnitsInShader lights[16];
 };
 
-
-struct GlobalDescriptorData
-{
-    Buffer globBuffer;
-    Buffer lightBuffer;
-    Buffer graphicBuffer;
-    VkDescriptorSetLayout globalDesLayout;
-    VkDescriptorSet globalDes;
-    Skybox* skyboxData;
-};
 
 struct ShadowSetting
 {

@@ -6,7 +6,7 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-ResTexture *ImageLoader::Load(std::string path)
+std::shared_ptr<ResTexture> ImageLoader::Load(std::string path)
 {
     int texWidth, texHeight, texChannels;
 
@@ -18,11 +18,11 @@ ResTexture *ImageLoader::Load(std::string path)
     }
 
     std::vector<unsigned char> data(pixels,pixels+imageSize);
-    ResTexture* texture = new ResTexture(" ",texWidth,texHeight,imageSize,data,path);
+    std::shared_ptr<ResTexture> texture =  std::make_shared<ResTexture>(" ",texWidth,texHeight,imageSize,data,path,1);
     return texture;
 }
 
-ResTexture *ImageLoader::Load(std::vector<std::string> path)
+std::shared_ptr<ResTexture> ImageLoader::Load(std::vector<std::string> path)
 {
     int texWidth, texHeight, texChannels;
     VkDeviceSize totalSize=0;
@@ -40,6 +40,6 @@ ResTexture *ImageLoader::Load(std::vector<std::string> path)
         data.insert(data.end(),pixels,pixels+imageSize);
     }
 
-    ResTexture* texture = new ResTexture(" ",texWidth,texHeight,totalSize,data,"Skybox");
+    std::shared_ptr<ResTexture> texture = std::make_shared<ResTexture>(" ",texWidth,texHeight,totalSize,data," ",path.size());
     return texture;
 }

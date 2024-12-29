@@ -9,12 +9,11 @@
 #include "../../Render/Buffer/Buffer.h"
 #include "glm/gtc/matrix_transform.hpp"
 #include "../../Resource/ImageLoader.h"
-#include "../../Render/Buffer/Skybox.h"
 #include "Camera.h"
 #include "Light.h"
 #include "glm/gtx/string_cast.hpp"
 #include "SceneObserver.h"
-
+#include "Skybox.h"
 
 using BoundingPoint = glm::vec3;
 

@@ -22,9 +22,11 @@ namespace RDG
 #define UBO_BINDING 0
 #define SSBO_BINDING 1
 #define TEXTURE_BINDING 2
+#define CUBEMAP_BINDING 3
 
     bool IsImageType(ResourceType type);
     bool IsBufferType(ResourceType type);
+    bool IsDepthType(AttachmentUsage usage);
     VkImageUsageFlags GetImageUsage(AttachmentUsage usage);
     VkBufferUsageFlagBits GetBufferUsage(ResourceType type);
     VkImageAspectFlagBits GetAspectFlag(AttachmentUsage usage);

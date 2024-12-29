@@ -24,7 +24,7 @@ private:
     UniPtr<LightUniform> lightU;
     std::vector<std::shared_ptr<UniBase>> uniArr;
     std::shared_ptr<Scene> scene;
-    GlobalDescriptorData globalData{};
+    //GlobalDescriptorData globalData{};
 };
 
 

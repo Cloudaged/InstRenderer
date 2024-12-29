@@ -9,11 +9,7 @@ class Texture
 {
 public:
     Texture(AllocatedImage image,TextureType type=TextureType::DontCare);
-    void TransLayout();
-
-    TextureType textureType;
-    const char *name = nullptr;
-    VkDescriptorImageInfo desInfo;
+public:
     VkSampler sampler;
     AllocatedImage allocatedImage;
 };

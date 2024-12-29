@@ -105,7 +105,6 @@ std::shared_ptr<GameObject> Scene::GetGameObject(int id)
     return nullptr;
 }
 
-
 void Scene::UpdateScene()
 {
     mainCamera.cameraData.aspect = (float)VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height;
@@ -114,7 +113,6 @@ void Scene::UpdateScene()
     mainCamera.vpMat.proj[1][1] *=-1;
 
   }
-
 
 void Scene::InitSkyboxData()
 {

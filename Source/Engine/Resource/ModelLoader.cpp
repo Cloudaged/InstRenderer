@@ -146,7 +146,7 @@ std::shared_ptr<Res::ResMesh> ModelLoader::LoadMesh(std::shared_ptr<Res::ResMode
                 size_t imageSize = image.image.size();
 
                 //TODO ResManager to create
-                std::shared_ptr<Res::ResTexture> resTexture = std::make_shared<Res::ResTexture>(RESTAG(image.name),width,height,imageSize,imageData,image.uri);
+                std::shared_ptr<Res::ResTexture> resTexture = std::make_shared<Res::ResTexture>(RESTAG(image.name),width,height,imageSize,imageData,image.uri,1);
                 resTexture->textureType = TextureType::BaseColor;
                 resMaterial->AddTexture(resTexture);
             }
@@ -167,7 +167,7 @@ std::shared_ptr<Res::ResMesh> ModelLoader::LoadMesh(std::shared_ptr<Res::ResMode
 
 
                 //TODO ResManager to create
-                std::shared_ptr<Res::ResTexture> resTexture = std::make_shared<Res::ResTexture>(RESTAG(image.name),width,height,imageSize,imageData,image.uri);
+                std::shared_ptr<Res::ResTexture> resTexture = std::make_shared<Res::ResTexture>(RESTAG(image.name),width,height,imageSize,imageData,image.uri,1);
                 resTexture->textureType = TextureType::Normal;
                 resMaterial->AddTexture(resTexture);
             }
@@ -188,7 +188,7 @@ std::shared_ptr<Res::ResMesh> ModelLoader::LoadMesh(std::shared_ptr<Res::ResMode
                 size_t imageSize = image.image.size();
 
                 //TODO ResManager to create
-                std::shared_ptr<Res::ResTexture> resTexture = std::make_shared<Res::ResTexture>(RESTAG(image.name),width,height,imageSize,imageData,image.uri);
+                std::shared_ptr<Res::ResTexture> resTexture = std::make_shared<Res::ResTexture>(RESTAG(image.name),width,height,imageSize,imageData,image.uri,1);
                 resTexture->textureType = TextureType::RoughnessMetallic;
                 resMaterial->AddTexture(resTexture);
             }

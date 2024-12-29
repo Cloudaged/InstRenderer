@@ -96,8 +96,8 @@ std::shared_ptr<Texture> ResourceManager::AllocTexture(std::shared_ptr<Res::ResT
 
     uint32_t mipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(resTexture->width, resTexture->height)))) + 1;
 
-    AllocatedImage img(VK_FORMAT_R8G8B8A8_SRGB,VK_IMAGE_USAGE_TRANSFER_SRC_BIT |VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,
-                       {(uint32_t)resTexture->width,(uint32_t)resTexture->height},mipLevel,VK_IMAGE_ASPECT_COLOR_BIT);
+    AllocatedImage img(ImageType::Color,VK_FORMAT_R8G8B8A8_SRGB,VK_IMAGE_USAGE_TRANSFER_SRC_BIT |VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,
+                       {(uint32_t)resTexture->width,(uint32_t)resTexture->height},mipLevel,1);
 
     img.LoadData(resTexture);
 
@@ -107,9 +107,7 @@ std::shared_ptr<Texture> ResourceManager::AllocTexture(std::shared_ptr<Res::ResT
 
     VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
 
-    auto tex = std::make_shared<Texture>(img,resTexture->textureType);
-    tex->textureType = resTexture->textureType;
-    return tex;
+    return std::make_shared<Texture>(img,resTexture->textureType);
 }
 
 void ResourceManager::CompileModel(GameInstance *instance,std::shared_ptr<Res::ResModel> model)

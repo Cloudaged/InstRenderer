@@ -170,12 +170,20 @@ namespace RDG
 
     void RenderGraph::CreateImageResource(ResourceRef& resource)
     {
-        auto& texture = resource.textureInfo->data;
-        auto& textureInfo = resource.textureInfo;
+        auto &texture = resource.textureInfo->data;
+        auto &textureInfo = resource.textureInfo;
         textureInfo->currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         auto usage = GetImageUsage(textureInfo->usage);
-        auto aspect = GetAspectFlag(textureInfo->usage);
-        auto img = AllocatedImage(textureInfo->format,usage,textureInfo->extent.GetVkExtent(),1,aspect);
+        //auto aspect = GetAspectFlag(textureInfo->usage);
+        ImageType imageType;
+        if (IsDepthType(textureInfo->usage))
+        {
+            imageType = ImageType::Depth;
+        } else
+        {
+            imageType = ImageType::Color;
+        }
+        auto img = AllocatedImage(imageType,textureInfo->format,usage,textureInfo->extent.GetVkExtent(),1,1);
         texture = std::make_shared<Texture>(std::move(img));
     }
 
@@ -692,6 +700,18 @@ namespace RDG
             return VK_IMAGE_ASPECT_COLOR_BIT;
         }
     }
+
+    bool IsDepthType(AttachmentUsage usage)
+    {
+        if(usage==AttachmentUsage::Depth||usage==AttachmentUsage::ShadowMap)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
 
 
     bool IsImageType(ResourceType type)

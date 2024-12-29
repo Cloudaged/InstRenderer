@@ -6,13 +6,14 @@
 #include "vulkan/vulkan.h"
 #include "string"
 #include "ResTexture.h"
+#include "memory"
 using namespace Res;
 
 class ImageLoader
 {
 public:
-    static ResTexture* Load(std::string path);
-    static ResTexture* Load(std::vector<std::string> path);
+    static std::shared_ptr<ResTexture> Load(std::string path);
+    static std::shared_ptr<ResTexture> Load(std::vector<std::string> path);
 };
 
 

@@ -34,7 +34,8 @@ namespace RDG
         Uniform = 0,
         SSBO = 1,
         Attachment = 2,
-        MaterialTexture = 3
+        MaterialTexture = 3,
+        CubeMap
     };
 
     enum class PipelineType
@@ -83,8 +84,6 @@ namespace RDG
         VkFormat format;
         std::shared_ptr<Texture> data = nullptr;
         VkImageLayout currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        bool followWindowExtent = false;
-        bool hasInit = false;
     };
 
     struct PipelineRef

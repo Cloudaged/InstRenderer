@@ -27,58 +27,7 @@ Buffer* BufferAllocator::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage
     return buffer;
 }
 
-AllocatedImage* BufferAllocator::CreateImageBuffer(VkExtent2D extent2D, VkFormat format, VkImageUsageFlags usage)
-{
-    AllocatedImage* allocatedImage  = new AllocatedImage();
-    allocatedImage->imageFormat = format;
-    allocatedImage->imageExtent.width = extent2D.width;
-    allocatedImage->imageExtent.height = extent2D.height;
-    allocatedImage->usage = usage;
 
-    VmaAllocationCreateInfo imageAllocateInfo{};
-    imageAllocateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-    VkImageCreateInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    info.pNext = nullptr;
-    info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    info.imageType = VK_IMAGE_TYPE_2D;
-    info.format = format;
-    info.extent = {extent2D.width,extent2D.height,1};
-    info.mipLevels = 0;
-    info.arrayLayers = 1;
-    info.samples = VK_SAMPLE_COUNT_1_BIT;
-    info.tiling = VK_IMAGE_TILING_OPTIMAL;
-    info.usage = usage;
-    info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-    auto result = vmaCreateImage(VulkanContext::GetContext().allocator,&info,&imageAllocateInfo,&allocatedImage->vk_image,
-                                 &allocatedImage->allocation, &allocatedImage->allocationInfo);
-
-    if(result != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create allocatedImage");
-    }
-
-    VkImageViewCreateInfo viewInfo = {};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.pNext = nullptr;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.image = allocatedImage->vk_image;
-    viewInfo.format = format;
-    viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 0;
-    viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-    if(vkCreateImageView(VulkanContext::GetContext().device,&viewInfo, nullptr,&allocatedImage->imageView)!=VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create imageview");
-    }
-
-    return allocatedImage;
-}
 
 void *BufferAllocator::GetMappedMemory(Buffer allocatedBuffer)
 {
