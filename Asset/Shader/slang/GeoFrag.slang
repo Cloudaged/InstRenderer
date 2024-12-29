@@ -34,7 +34,7 @@ FragOutput main(FragInput input)
     }
     else
     {
-        output.outBaseColor = float4(1, 0, 0, 1);
+        output.outBaseColor = float4(1, 0, 1, 1);
     }
 
     if (normalIndex != 0)
@@ -60,7 +60,7 @@ FragOutput main(FragInput input)
     }
     else
     {
-        output.outMR = float4(0.0, 0.0, 0.0, 0.0);
+        output.outMR = float4(1.0, 0.0, 1.0, 0.0);
     }
     return output;
 }

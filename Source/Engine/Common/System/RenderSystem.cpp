@@ -76,7 +76,7 @@ void RenderSystem::PrepareGlobal()
 void RenderSystem::UniformCopy()
 {
     MemoryCopy(globalUniform);
-    //MemoryCopy(lightUniform);
+    MemoryCopy(lightUniform);
 }
 
 void RenderSystem::SetupRenderGraph()

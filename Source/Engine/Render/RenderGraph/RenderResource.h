@@ -115,8 +115,8 @@ namespace RDG
         PassName name;
         RenderPassType type;
         TextureExtent fbExtent;
-        std::unordered_set<Handle> input;
-        std::unordered_set<Handle> output;
+        std::vector<Handle> input;
+        std::vector<Handle> output;
         PipelineRef pipeline;
         std::function<void(CommandList& cmd)> executeFunc;
         std::vector<PassName> producers;

@@ -532,11 +532,14 @@ namespace RDG
             {
                 auto& textureInfo = res.textureInfo;
                 auto state = GetImageState(textureInfo->usage);
-                VulkanContext::GetContext().bufferAllocator.TransitionImage(
-                        cmd.cmd,textureInfo->data->allocatedImage.vk_image,
-                        textureInfo->currentLayout,
-                        state.initLayout
-                        );
+                if(textureInfo->currentLayout!=state.initLayout)
+                {
+                    VulkanContext::GetContext().bufferAllocator.TransitionImage(
+                            cmd.cmd, textureInfo->data->allocatedImage.vk_image,
+                            textureInfo->currentLayout,
+                            state.initLayout
+                    );
+                }
             }
         }
     }
@@ -624,7 +627,7 @@ namespace RDG
         {
             return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
                                    VK_ATTACHMENT_STORE_OP_STORE,
-                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
         }else if (usage==AttachmentUsage::ShadowMap)
         {

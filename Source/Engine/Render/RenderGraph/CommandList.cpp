@@ -50,16 +50,16 @@ namespace RDG
                 for (int i = 0; i < passRef.output.size(); ++i)
                 {
                     clearValues[i].color={1.0, 0, 0, 0};
-                    clearValues[i].depthStencil = {0,0};
+                    //clearValues[i].depthStencil = {0,0};
                 }
             } else
             {
                 for (int i = 0; i < passRef.output.size() - 1; ++i)
                 {
                     clearValues[i].color = {1.0, 0, 0, 0};
-                    clearValues[i].depthStencil = {0,0};
+                    //clearValues[i].depthStencil = {0,0};
                 }
-                clearValues[passRef.output.size()-1].color ={0.0f, 0,0,0};
+                //clearValues[passRef.output.size()-1].color ={0.0f, 0,0,0};
                 clearValues[passRef.output.size()-1].depthStencil ={1.0f, 0};
             }
 
