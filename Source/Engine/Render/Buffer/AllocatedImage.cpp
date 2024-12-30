@@ -172,3 +172,17 @@ void AllocatedImage::GenerateMipmap()
     VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
 
 }
+
+AllocatedImage::~AllocatedImage()
+{
+   auto& device = VulkanContext::GetContext().device;
+   if(imageView!=VK_NULL_HANDLE)
+   {
+       vkDestroyImageView(device,imageView, nullptr);
+   }
+    if(vk_image!=VK_NULL_HANDLE)
+    {
+        vkDestroyImage(device,vk_image, nullptr);
+    }
+    std::cout<<"IMGWork\n";
+}

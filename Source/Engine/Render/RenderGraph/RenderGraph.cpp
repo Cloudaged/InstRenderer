@@ -183,8 +183,8 @@ namespace RDG
         {
             imageType = ImageType::Color;
         }
-        auto img = AllocatedImage(imageType,textureInfo->format,usage,textureInfo->extent.GetVkExtent(),1,1);
-        texture = std::make_shared<Texture>(std::move(img));
+        auto img = std::make_shared<AllocatedImage>(imageType,textureInfo->format,usage,textureInfo->extent.GetVkExtent(),1,1);
+        texture = std::make_shared<Texture>(img);
     }
 
     void RenderGraph::CreateBufferResource(ResourceRef& resource)
@@ -264,7 +264,7 @@ namespace RDG
             }
             attDescriptions.push_back(attachmentDes);
 
-            views.push_back(att->data->allocatedImage.imageView);
+            views.push_back(att->data->allocatedImage->imageView);
             refIndex++;
         }
         //RenderPass
@@ -431,7 +431,7 @@ namespace RDG
         }
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = data->allocatedImage.imageView;
+        imageInfo.imageView = data->allocatedImage->imageView;
         imageInfo.sampler = data->sampler;
 
         VkWriteDescriptorSet write{};
@@ -549,7 +549,7 @@ namespace RDG
                 if(textureInfo->currentLayout!=state.initLayout)
                 {
                     VulkanContext::GetContext().bufferAllocator.TransitionImage(
-                            cmd.cmd, textureInfo->data->allocatedImage.vk_image,
+                            cmd.cmd, textureInfo->data->allocatedImage->vk_image,
                             textureInfo->currentLayout,
                             state.initLayout
                     );
@@ -604,9 +604,7 @@ namespace RDG
                 {
                     //Clear
                     auto& data = resource.textureInfo->data;
-                    vkDestroyImageView(device,data->allocatedImage.imageView, nullptr);
-                    vkDestroyImage(device,data->allocatedImage.vk_image, nullptr);
-                    vkDestroySampler(device,data->sampler, nullptr);
+                    data.reset();
                     //Recreate
                     CreateImageResource(resource);
                     WriteImageDescriptor(resource);

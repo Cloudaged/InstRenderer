@@ -13,6 +13,7 @@
 #include "../Common/GameInstance.h"
 #include "memory"
 #include "../Render/Material/Material.h"
+
 typedef std::map<std::string,std::shared_ptr<Res::ResBase>> ResReg;
 
 class ResourceManager

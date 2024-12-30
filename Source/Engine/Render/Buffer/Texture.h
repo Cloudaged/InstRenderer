@@ -8,10 +8,11 @@
 class Texture
 {
 public:
-    Texture(AllocatedImage image,TextureType type=TextureType::DontCare);
+    Texture(std::shared_ptr<AllocatedImage> image,TextureType type=TextureType::DontCare);
+    ~Texture();
 public:
     VkSampler sampler;
-    AllocatedImage allocatedImage;
+    std::shared_ptr<AllocatedImage> allocatedImage;
 };
 
 

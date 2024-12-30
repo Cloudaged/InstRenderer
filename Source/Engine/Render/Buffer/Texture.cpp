@@ -3,7 +3,7 @@
 #include "../VulkanContext.h"
 
 
-Texture::Texture(AllocatedImage image,TextureType type): allocatedImage(std::move(image))
+Texture::Texture(std::shared_ptr<AllocatedImage> image,TextureType type): allocatedImage(image)
 {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(VulkanContext::GetContext().gpu, &properties);
@@ -26,12 +26,21 @@ Texture::Texture(AllocatedImage image,TextureType type): allocatedImage(std::mov
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod =allocatedImage.mipLevels;
+    samplerInfo.maxLod =allocatedImage->mipLevels;
 
     if(vkCreateSampler(VulkanContext::GetContext().device,&samplerInfo, nullptr, &this->sampler)!=VK_SUCCESS)
     {
         std::runtime_error("Failed to create sampler\n");
     }
 
+}
+
+Texture::~Texture()
+{
+    if(sampler!=VK_NULL_HANDLE)
+    {
+        vkDestroySampler(VulkanContext::GetContext().device,sampler, nullptr);
+    }
+    std::cout<<"TexWork\n";
 }
 

@@ -96,14 +96,15 @@ std::shared_ptr<Texture> ResourceManager::AllocTexture(std::shared_ptr<Res::ResT
 
     uint32_t mipLevel = static_cast<uint32_t>(std::floor(std::log2(std::max(resTexture->width, resTexture->height)))) + 1;
 
-    AllocatedImage img(ImageType::Color,VK_FORMAT_R8G8B8A8_SRGB,VK_IMAGE_USAGE_TRANSFER_SRC_BIT |VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,
-                       {(uint32_t)resTexture->width,(uint32_t)resTexture->height},mipLevel,1);
+    auto img = std::make_shared<AllocatedImage>(ImageType::Color,VK_FORMAT_R8G8B8A8_SRGB,
+                                                VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,
+                                                VkExtent2D{(uint32_t)resTexture->width,(uint32_t)resTexture->height},mipLevel,1);
 
-    img.LoadData(resTexture);
+    img->LoadData(resTexture);
 
     auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
 
-    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,img.vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,img.mipLevels);
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,img->vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,img->mipLevels);
 
     VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
 

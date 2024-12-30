@@ -16,6 +16,7 @@ class AllocatedImage
 {
 public:
     AllocatedImage(ImageType type,VkFormat format,VkImageUsageFlags usageFlags,VkExtent2D extent,int mipLevel,int layer);
+    ~AllocatedImage();
     void LoadData(std::shared_ptr<Res::ResTexture> resTexture);
     VkImage vk_image;
     VkImageView imageView;
