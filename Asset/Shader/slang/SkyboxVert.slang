@@ -1,4 +1,5 @@
 import ShaderModule.Types;
+import ShaderModule.Bindless;
 struct VertInput
 {
     float4 position : POSITION;
@@ -12,12 +13,14 @@ struct VertOutput
     float3 outUVW : TEXCOORD0;
     float2 outUV2 : TEXCOORD1;
 }
-
-[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> globalUniform;
+[[vk::push_constant]] ConstantBuffer<SkyboxHandles> handles;
+[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> Arr_globalUniform[];
 
 [shader("vertex")]
 VertOutput main(VertInput input)
 {
+    GlobalUniform globalUniform = Arr_globalUniform[handles.global];
+
     VertOutput output;
     float3x3 viewMat3 = (float3x3)globalUniform.viewMat; 
     float4x4 viewMat = float4x4(

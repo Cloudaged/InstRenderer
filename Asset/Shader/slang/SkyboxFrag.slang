@@ -1,3 +1,4 @@
+import ShaderModule.Bindless;
 struct FragInput
 {
     float3 inUVW : TEXCOORD0;
@@ -9,14 +10,14 @@ struct FragOutput
     float4 color : SV_Target;
     float depth : SV_Depth;
 }
-
-[[vk::binding(0, 1)]] SamplerCube cubeMap;
+[[vk::push_constant]] ConstantBuffer<SkyboxHandles> handles;
+[[vk::binding(2, 0)]] SamplerCube cubeMap[];
 
 [shader("fragment")]
 FragOutput main(FragInput input)
 {
     FragOutput output;
-    output.color = cubeMap.Sample(input.inUVW);
+    output.color = cubeMap[handles.skyboxTex].Sample(input.inUVW);
     output.depth = 1.0f;
     return output;
 }

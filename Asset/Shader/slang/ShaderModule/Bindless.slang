@@ -27,6 +27,12 @@ public struct ShadowMapHandles
     Handle global;
 }
 
+public struct SkyboxHandles
+{
+    Handle skyboxTex;
+    Handle global;
+}
+
 public struct CompHandles
 {
     Handle position;

@@ -19,10 +19,9 @@ namespace RDG
         auto globalData = AddResource({.name = "GlobalData",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}});
 
-        /*auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::MaterialTexture,
+        auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::MaterialTexture,
                                                 .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},
                                                                            AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB,sceneSkybox->texture}});
-*/
         auto lightData = AddResource({.name = "Lights",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(LightUniform)}});
 
@@ -56,6 +55,10 @@ namespace RDG
         auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Attachment,
                                 .textureInfo = TextureInfo{WINDOW_EXTENT,
                                 AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB}});
+
+        auto skyboxDrawn = AddResource({.name = "SkyboxDrawn",.type = ResourceType::Attachment,
+                                         .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB}});
 
         //Pass
         //GeoPass
@@ -141,18 +144,38 @@ namespace RDG
         }
 
         {
+            struct alignas(16) SkyboxPC
+            {
+                Handle skyboxTex;
+                Handle globalData;
+            };
+
+            AddPass({.name = "SkyboxDraw", .type = RenderPassType::Graphic, .fbExtent = WINDOW_EXTENT,
+                            .input = {lighted},
+                            .output = {skyboxDrawn},
+                            .pipeline = {PipelineType::Skybox, "SkyboxVert", "SkyboxFrag", sizeof(SkyboxPC)},
+                            .executeFunc = [=](CommandList& cmd)
+                            {
+                                SkyboxPC pushConstant = {skyboxTex,globalData};
+                                cmd.PushConstantsForHandles(&pushConstant);
+                                cmd.DrawMesh(*sceneSkybox->mesh);
+                            }
+            });
+        }
+
+        {
             struct alignas(16) PresentPC
             {
-                Handle lighted;
+                Handle lastAtt;
             };
 
             AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
-                    .input = {lighted},
+                    .input = {skyboxDrawn},
                     .output = {},
                     .pipeline = {PipelineType::RenderQuad, "PresentVert", "PresentFrag", sizeof(PresentPC)},
                     .executeFunc = [=](CommandList& cmd)
                     {
-                        PresentPC pushConstants = {lighted};
+                        PresentPC pushConstants = {skyboxDrawn};
                         cmd.PushConstantsForHandles(&pushConstants);
                         cmd.DrawRenderQuad();
                     }});
@@ -501,7 +524,9 @@ namespace RDG
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
         write.dstBinding = TEXTURE_BINDING;
+
         write.dstSet = VulkanContext::GetContext().bindlessSet;
         write.descriptorCount = 1;
         write.dstArrayElement = resource.handle;

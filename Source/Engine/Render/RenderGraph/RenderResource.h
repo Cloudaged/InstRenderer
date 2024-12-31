@@ -35,7 +35,6 @@ namespace RDG
         SSBO = 1,
         Attachment = 2,
         MaterialTexture = 3,
-        CubeMap
     };
 
     enum class PipelineType
