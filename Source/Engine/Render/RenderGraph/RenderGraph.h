@@ -62,7 +62,7 @@ namespace RDG
         void CreateImageResource(ResourceRef& resource);
         void CreateBufferResource(ResourceRef& resource);
         void RecreateAllPass();
-        void RecreatePass(PassRef& pass);
+        void RecreatePassResource(PassRef& pass);
         void ClearImageResource(ResourceRef& resource);
     private:
         PassMap passArr;

@@ -38,7 +38,7 @@ public struct ShadowSetting
     public const int blockerSearchCount;
 }
 
-public struct GraphicSetting
+public struct RenderSetting
 {
     public ShadowSetting shadowSetting;
 }

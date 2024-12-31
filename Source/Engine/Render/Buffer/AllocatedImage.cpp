@@ -184,5 +184,4 @@ AllocatedImage::~AllocatedImage()
     {
         vkDestroyImage(device,vk_image, nullptr);
     }
-    std::cout<<"IMGWork\n";
 }

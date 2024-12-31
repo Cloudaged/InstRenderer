@@ -3,31 +3,29 @@ import ShaderModule.PBR;
 import ShaderModule.Types;
 import ShaderModule.Shadow;
 import ShaderModule.Light;
-import ShaderModule.GraphicSetting;
+import ShaderModule.Bindless;
 struct FragInput
 {
     float2 inUV : TEXCOORD0;
-    float4x4 lightViewMat : TEXCOORD1;
-    float4x4 lightProjMat : TEXCOORD2;
 }
-
-
-[[vk::binding(0, 0)]] Sampler2D inputPosition;
-[[vk::binding(1, 0)]] Sampler2D inputNormal;
-[[vk::binding(2, 0)]] Sampler2D inputAlbedo;
-[[vk::binding(3, 0)]] Sampler2D inputMR;
-[[vk::binding(4, 0)]] Sampler2D shadowMap;
-
-[[vk::binding(1, 1)]] ConstantBuffer<LightCameraUniform> lightUniform;
-[[vk::binding(2, 1)]] ConstantBuffer<GraphicSetting> graphicSetting;
+[[vk::push_constant]] ConstantBuffer<CompHandles> ps;
+[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> Arr_globalUnifom[];
+[[vk::binding(0, 0)]] ConstantBuffer<LightCameraUniform> Arr_lightUniform[];
+[[vk::binding(0, 0)]] ConstantBuffer<RenderSetting> Arr_graphicSetting[];
+[[vk::binding(2, 0)]] Sampler2D textures[];
 
 [shader("fragment")]
 float4 main(FragInput input) : SV_Target
 {
-    float4 posWS = inputPosition.Sample(input.inUV);
-    float4 normal = normalize(inputNormal.Sample(input.inUV));
-    float4 baseColor = inputAlbedo.Sample(input.inUV);
-    float4 metallicRoughness = inputMR.Sample(input.inUV);
+    //Resource
+    float4 posWS = textures[ps.position].Sample(input.inUV);
+    float4 normal = normalize(textures[ps.normal].Sample(input.inUV));
+    float4 baseColor = textures[ps.baseColor].Sample(input.inUV);
+    float4 metallicRoughness = textures[ps.mr].Sample(input.inUV);
+
+    LightCameraUniform lightUniform = Arr_lightUniform[ps.lightUniform];
+    GlobalUniform globalUnifom = Arr_globalUnifom[ps.globalUniform];
+    RenderSetting graphicSetting = Arr_graphicSetting[ps.renderSettingUniform];
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
 
@@ -51,10 +49,10 @@ float4 main(FragInput input) : SV_Target
         float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
         finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
-        
+
         // finalColor = specularBRDF;
-        shadow = CalculateShadow(shadowMap, 
-            mul(input.lightProjMat, input.lightViewMat),
+        shadow = CalculateShadow(textures[ps.shadowMap], 
+            mul(globalUnifom.lightProjMat, globalUnifom.lightViewMat),
              posWS,
              lp.softShadowType,
              light.lightSize,

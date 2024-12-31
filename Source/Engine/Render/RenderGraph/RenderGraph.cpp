@@ -10,15 +10,19 @@ namespace RDG
 
     void RenderGraph::DeclareResource()
     {
-        uint32_t shadowMapWidth = 2048;
-        uint32_t shadowMapHeight = 2048;
+        int shadowMapWidth = 2048;
+        int shadowMapHeight = 2048;
 
         uint32_t winWidth = (uint32_t)VulkanContext::GetContext().windowExtent.width;
         uint32_t winHeight = (uint32_t)VulkanContext::GetContext().windowExtent.height;
-
+        auto sceneSkybox = scene->skybox;
         auto globalData = AddResource({.name = "GlobalData",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}});
 
+        /*auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::MaterialTexture,
+                                                .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},
+                                                                           AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB,sceneSkybox->texture}});
+*/
         auto lightData = AddResource({.name = "Lights",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(LightUniform)}});
 
@@ -46,7 +50,7 @@ namespace RDG
                                            AttachmentUsage::Depth, VK_FORMAT_D32_SFLOAT}});
 
         auto shadowMap = AddResource({.name = "ShadowMap",.type = ResourceType::Attachment,
-                .textureInfo = TextureInfo{WINDOW_EXTENT,
+                .textureInfo = TextureInfo{{shadowMapWidth, shadowMapWidth},
                                            AttachmentUsage::ShadowMap, VK_FORMAT_D32_SFLOAT}});
 
         auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Attachment,
@@ -80,19 +84,75 @@ namespace RDG
                     }});
         }
 
+        //ShadowMap
+        {
+            struct alignas(16) ShadowMapPC
+            {
+                glm::mat4 modelMat;
+                Handle global;
+            };
+
+            AddPass({.name = "ShadowMap",.type = RenderPassType::Graphic,.fbExtent = {2048,2048},
+                            .input = {globalData},
+                            .output = {shadowMap},
+                            .pipeline = {PipelineType::Mesh, "ShadowVert", "ShadowFrag", sizeof(ShadowMapPC)},
+                            .executeFunc = [=](CommandList& cmd)
+                            {
+                                for (auto& entity:view)
+                                {
+                                    auto renderComp = view.get<Renderable>(entity);
+                                    auto transComp = view.get<Transform>(entity);
+                                    ShadowMapPC pushConstants = {transComp.globalTransform,globalData};
+                                    cmd.PushConstantsForHandles(&pushConstants);
+                                    cmd.DrawMesh(renderComp.mesh);
+                                }
+                            }});
+
+
+        }
+
+
+        //Light
+        {
+            struct alignas(16) CompPC
+            {
+                Handle position;
+                Handle normal;
+                Handle baseColor;
+                Handle mr;
+                Handle shadowMap;
+                Handle lightUniform;
+                Handle globalUniform;
+                Handle renderSettingUniform;
+            };
+
+            AddPass({.name = "Composition",.type = RenderPassType::Graphic,.fbExtent = WINDOW_EXTENT,
+                            .input = {position,normal,baseColor,metallicRoughness,shadowMap,globalData,lightData,renderSettings},
+                            .output = {lighted},
+                            .pipeline = {PipelineType::RenderQuad, "CompVert", "CompFrag", sizeof(CompPC)},
+                            .executeFunc = [=](CommandList& cmd)
+                            {
+                                CompPC pushConstants = {position,normal,baseColor,metallicRoughness,shadowMap,lightData,globalData,renderSettings};
+                                cmd.PushConstantsForHandles(&pushConstants);
+                                cmd.DrawRenderQuad();
+                            }});
+
+
+        }
+
         {
             struct alignas(16) PresentPC
             {
-                Handle baseColor;
+                Handle lighted;
             };
 
             AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
-                    .input = {baseColor},
+                    .input = {lighted},
                     .output = {},
                     .pipeline = {PipelineType::RenderQuad, "PresentVert", "PresentFrag", sizeof(PresentPC)},
                     .executeFunc = [=](CommandList& cmd)
                     {
-                        PresentPC pushConstants = {baseColor};
+                        PresentPC pushConstants = {lighted};
                         cmd.PushConstantsForHandles(&pushConstants);
                         cmd.DrawRenderQuad();
                     }});
@@ -171,6 +231,10 @@ namespace RDG
     void RenderGraph::CreateImageResource(ResourceRef& resource)
     {
         auto &texture = resource.textureInfo->data;
+        if(texture.get()!= nullptr)
+        {
+            return;
+        }
         auto &textureInfo = resource.textureInfo;
         textureInfo->currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         auto usage = GetImageUsage(textureInfo->usage);
@@ -326,9 +390,9 @@ namespace RDG
     void RenderGraph::CreatePresentPass(PassRef& passData)
     {
         Handle attHandle;
-        for (const auto& name:passData.output)
+        for (const auto& handle:passData.output)
         {
-            attHandle = name;
+            attHandle = handle;
         }
 
 
@@ -578,11 +642,12 @@ namespace RDG
     {
         for (auto& pass:passArr)
         {
-            RecreatePass(pass);
+            RecreatePassResource(pass);
         }
+        CreateRenderPass();
     }
 
-    void RenderGraph::RecreatePass(PassRef &pass)
+    void RenderGraph::RecreatePassResource(PassRef &pass)
     {
         //Clear Pass
         auto device = VulkanContext::GetContext().device;
@@ -611,11 +676,6 @@ namespace RDG
                 }
             }
         }
-        //Recreate RenderPass
-        CreateRenderPass();
-
-
-
     }
 
     void RenderGraph::UpdateResourceLayout(const PassRef &passRef)

@@ -41,6 +41,5 @@ Texture::~Texture()
     {
         vkDestroySampler(VulkanContext::GetContext().device,sampler, nullptr);
     }
-    std::cout<<"TexWork\n";
 }
 

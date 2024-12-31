@@ -19,16 +19,18 @@ struct VertOutput
     float3 tangentWS : TEXCOORD4;
 }
 
+
 [[vk::push_constant]] ConstantBuffer<GeoHandles> handles;
 
-[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> globalUniform[];
+[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> Arr_globalUniform[];
 
 [shader("vertex")]
 VertOutput main(VertInput input)
 {
+    GlobalUniform globalU = Arr_globalUniform[handles.global];
     VertOutput output;
     output.posWS = mul(handles.modelMat, input.position).xyz;
-    output.posSV = mul(globalUniform[handles.global].projMat, mul(globalUniform[handles.global].viewMat, float4(output.posWS, 1.0)));
+    output.posSV = mul(globalU.projMat, mul(globalU.viewMat, float4(output.posWS, 1.0)));
     output.uv = input.uv;
 
     output.tangentWS = normalize(mul(handles.modelMat, float4(input.tangent.xyz, 0.0)).xyz);

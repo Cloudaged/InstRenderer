@@ -1,6 +1,6 @@
 module Shadow;
 import Light;
-import GraphicSetting;
+import Types;
 #define PI 3.141592653589793
 #define PI2 6.283185307179586
 #define NUM_RINGS 10
