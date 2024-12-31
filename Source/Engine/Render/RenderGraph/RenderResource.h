@@ -28,6 +28,11 @@ namespace RDG
         std::string fragPath;
     };
 
+    enum class ResourceAccess
+    {
+        ReadOnly,
+        ReadWrite
+    };
 
     enum class ResourceType : uint32_t
     {
@@ -64,9 +69,12 @@ namespace RDG
         MaterialTexture
     };
 
-    struct RenderParam
+    struct AttachmentState
     {
-
+        VkAttachmentLoadOp loadOp;
+        VkAttachmentStoreOp storeOp;
+        VkImageLayout initLayout;
+        VkImageLayout finalLayout;
     };
 
     struct BufferInfo
@@ -108,6 +116,12 @@ namespace RDG
         VkFramebuffer framebufferHandle;
     };
 
+    struct AttachmentDes
+    {
+        TextureInfo& texInfo;
+        AttachmentState state;
+    };
+
     struct PassRef
     {
         PassName name;
@@ -118,6 +132,7 @@ namespace RDG
         PipelineRef pipeline;
         std::function<void(CommandList& cmd)> executeFunc;
         std::vector<PassName> producers;
+        std::vector<AttachmentDes> attDes;
         PassData data;
         bool hasDepth = false;
     };
@@ -130,15 +145,6 @@ namespace RDG
         std::optional<TextureInfo> textureInfo;
         std::optional<BufferInfo> bufferInfo;
         PassName producerPass;
-    };
-
-
-    struct AttachmentState
-    {
-        VkAttachmentLoadOp loadOp;
-        VkAttachmentStoreOp storeOp;
-        VkImageLayout initLayout;
-        VkImageLayout finalLayout;
     };
 
     using ResourceMap = std::unordered_map<Handle,ResourceRef>;

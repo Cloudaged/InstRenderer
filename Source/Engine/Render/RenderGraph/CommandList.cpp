@@ -17,8 +17,6 @@ namespace RDG
 
     bool CommandList::BeginRenderPass(const PassRef& passRef)
     {
-        if(VulkanContext::GetContext().isResize)
-            return false;
 
         curPass = std::make_shared<PassRef>(passRef);
 
@@ -49,14 +47,14 @@ namespace RDG
             {
                 for (int i = 0; i < passRef.output.size(); ++i)
                 {
-                    clearValues[i].color={1.0, 0, 0, 0};
+                    clearValues[i].color={0.0, 0, 0, 0};
                     //clearValues[i].depthStencil = {0,0};
                 }
             } else
             {
                 for (int i = 0; i < passRef.output.size() - 1; ++i)
                 {
-                    clearValues[i].color = {1.0, 0, 0, 0};
+                    clearValues[i].color = {0.0, 0, 0, 0};
                     //clearValues[i].depthStencil = {0,0};
                 }
                 //clearValues[passRef.output.size()-1].color ={0.0f, 0,0,0};

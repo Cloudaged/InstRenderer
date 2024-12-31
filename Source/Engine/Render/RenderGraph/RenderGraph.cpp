@@ -56,9 +56,9 @@ namespace RDG
                                 .textureInfo = TextureInfo{WINDOW_EXTENT,
                                 AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB}});
 
-        auto skyboxDrawn = AddResource({.name = "SkyboxDrawn",.type = ResourceType::Attachment,
+        /*auto skyboxDrawn = AddResource({.name = "SkyboxDrawn",.type = ResourceType::Attachment,
                                          .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB}});
+                                AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB}});*/
 
         //Pass
         //GeoPass
@@ -114,7 +114,6 @@ namespace RDG
 
         }
 
-
         //Light
         {
             struct alignas(16) CompPC
@@ -151,8 +150,8 @@ namespace RDG
             };
 
             AddPass({.name = "SkyboxDraw", .type = RenderPassType::Graphic, .fbExtent = WINDOW_EXTENT,
-                            .input = {lighted},
-                            .output = {skyboxDrawn},
+                            .input = {skyboxTex,lighted,depth},
+                            .output = {lighted,depth},
                             .pipeline = {PipelineType::Skybox, "SkyboxVert", "SkyboxFrag", sizeof(SkyboxPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
@@ -160,7 +159,7 @@ namespace RDG
                                 cmd.PushConstantsForHandles(&pushConstant);
                                 cmd.DrawMesh(*sceneSkybox->mesh);
                             }
-            });
+                    });
         }
 
         {
@@ -170,12 +169,12 @@ namespace RDG
             };
 
             AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
-                    .input = {skyboxDrawn},
+                    .input = {lighted},
                     .output = {},
                     .pipeline = {PipelineType::RenderQuad, "PresentVert", "PresentFrag", sizeof(PresentPC)},
                     .executeFunc = [=](CommandList& cmd)
                     {
-                        PresentPC pushConstants = {skyboxDrawn};
+                        PresentPC pushConstants = {lighted};
                         cmd.PushConstantsForHandles(&pushConstants);
                         cmd.DrawRenderQuad();
                     }});
@@ -198,14 +197,16 @@ namespace RDG
 
     void RenderGraph::Execute()
     {
+        if(VulkanContext::GetContext().isResize)
+        {
+            return;
+        }
         commandList.BeginCommand();
         for (auto& passData : passArr)
         {
+
             InsertBarrier(commandList,passData);
-            if(!commandList.BeginRenderPass(passData))
-            {
-                continue;
-            }
+            commandList.BeginRenderPass(passData);
             commandList.BindPipeline();
             commandList.BindDescriptor();
             passData.executeFunc(commandList);
@@ -318,13 +319,23 @@ namespace RDG
                 std::cout<<"There is no textureInfo\n";
                 continue;
             }
-            auto& att = res.textureInfo;
+            auto& att = res.textureInfo.value();
 
-            attExtent = att->extent.GetVkExtent();
-            VkFormat format = att->format;
+            attExtent = att.extent.GetVkExtent();
+            VkFormat format = att.format;
+
+            bool isRW = false;
+            if(std::find(passData.input.begin(),passData.input.end(),resHandle) != passData.input.end())
+            {
+                isRW = true;
+            } else
+            {
+                isRW = false;
+            }
 
 
-            auto state = GetImageState(att->usage);
+            auto state = GetImageState(att.usage,isRW);
+            passData.attDes.push_back({att,state});
             //Attachment
             VkAttachmentDescription attachmentDes{};
             attachmentDes.format =format;
@@ -337,7 +348,7 @@ namespace RDG
             attachmentDes.finalLayout = state.finalLayout;
 
 
-            if(att->usage == AttachmentUsage::Depth||att->usage == AttachmentUsage::ShadowMap)
+            if(att.usage == AttachmentUsage::Depth||att.usage == AttachmentUsage::ShadowMap)
             {
                 depthRef.attachment = refIndex;
                 depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -351,7 +362,7 @@ namespace RDG
             }
             attDescriptions.push_back(attachmentDes);
 
-            views.push_back(att->data->allocatedImage->imageView);
+            views.push_back(att.data->allocatedImage->imageView);
             refIndex++;
         }
         //RenderPass
@@ -628,22 +639,27 @@ namespace RDG
 
     void RenderGraph::InsertBarrier(const CommandList &cmd, const PassRef &passRef)
     {
-        for (auto& output : passRef.output)
+        for (auto& att : passRef.attDes)
         {
-            auto& res = resourceMap[output];
-            if(res.textureInfo.has_value())
+            auto& textureInfo = att.texInfo;
+            if(textureInfo.currentLayout!=att.state.initLayout)
             {
-                auto& textureInfo = res.textureInfo;
-                auto state = GetImageState(textureInfo->usage);
-                if(textureInfo->currentLayout!=state.initLayout)
-                {
-                    VulkanContext::GetContext().bufferAllocator.TransitionImage(
-                            cmd.cmd, textureInfo->data->allocatedImage->vk_image,
-                            textureInfo->currentLayout,
-                            state.initLayout
-                    );
-                }
+                VulkanContext::GetContext().bufferAllocator.TransitionImage(
+                        cmd.cmd, textureInfo.data->allocatedImage->vk_image,
+                        textureInfo.currentLayout,
+                        att.state.initLayout
+                );
+                textureInfo.currentLayout = att.state.initLayout;
             }
+
+        }
+    }
+
+    void RenderGraph::UpdateResourceLayout(const PassRef &passRef)
+    {
+        for (auto& att : passRef.attDes)
+        {
+            att.texInfo.currentLayout = att.state.finalLayout;
         }
     }
 
@@ -703,42 +719,58 @@ namespace RDG
         }
     }
 
-    void RenderGraph::UpdateResourceLayout(const PassRef &passRef)
-    {
-        for (auto& output : passRef.output)
-        {
-            auto& res = resourceMap[output];
-            if(res.textureInfo.has_value())
-            {
-                auto& textureInfo = res.textureInfo;
-                auto state = GetImageState(textureInfo->usage);
-                textureInfo->currentLayout = state.finalLayout;
-            }
-        }
-    }
 
 
-    AttachmentState GetImageState(AttachmentUsage usage)
+    AttachmentState GetImageState(AttachmentUsage usage,bool isRW)
     {
+
         if(usage==AttachmentUsage::Depth)
         {
-            return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                   VK_ATTACHMENT_STORE_OP_STORE,
-                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+            if(isRW)
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+            } else
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+            }
+
         }else if (usage==AttachmentUsage::ShadowMap)
         {
-            return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                   VK_ATTACHMENT_STORE_OP_STORE,
-                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+            if(isRW)
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+            } else
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
+            }
         }
         else
         {
-            return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                   VK_ATTACHMENT_STORE_OP_STORE,
-                                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+            if(isRW)
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_LOAD,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+            } else
+            {
+                return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                       VK_ATTACHMENT_STORE_OP_STORE,
+                                       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+            }
         }
     }
 

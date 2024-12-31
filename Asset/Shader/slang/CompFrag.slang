@@ -58,7 +58,6 @@ float4 main(FragInput input) : SV_Target
              light.lightSize,
              graphicSetting.shadowSetting);
     }
-
     return float4(finalColor*shadow,1.0);
     // return testValues;
     //return float4(0.0f);

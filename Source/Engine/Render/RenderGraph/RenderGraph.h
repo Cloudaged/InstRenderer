@@ -30,7 +30,7 @@ namespace RDG
     VkImageUsageFlags GetImageUsage(AttachmentUsage usage);
     VkBufferUsageFlagBits GetBufferUsage(ResourceType type);
     VkImageAspectFlagBits GetAspectFlag(AttachmentUsage usage);
-    AttachmentState GetImageState(AttachmentUsage usage);
+    AttachmentState GetImageState(AttachmentUsage usage,bool isRW);
 
     class RenderGraph
     {
