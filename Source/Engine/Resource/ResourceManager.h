@@ -26,7 +26,7 @@ public:
     std::shared_ptr<Texture> AllocTexture(std::shared_ptr<Res::ResTexture> resTexture);
     std::string LoadResource(std::string path);
     void CompileModel(GameInstance* instance,std::shared_ptr<Res::ResModel> model);
-    std::shared_ptr<GameObject> AddSceneNode(GameInstance* instance,Res::ResNode* node,std::shared_ptr<GameObject> parentGO);
+    std::shared_ptr<GameObject> AddSceneNode(GameInstance* instance,std::shared_ptr<Res::ResNode> node,std::shared_ptr<GameObject> parentGO);
 public:
     static std::unique_ptr<ResourceManager> Pinstance;
     ResReg resReg;

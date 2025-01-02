@@ -54,7 +54,7 @@ namespace RDG
 
         auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Attachment,
                                 .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB}});
+                                AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
         /*auto skyboxDrawn = AddResource({.name = "SkyboxDrawn",.type = ResourceType::Attachment,
                                          .textureInfo = TextureInfo{WINDOW_EXTENT,

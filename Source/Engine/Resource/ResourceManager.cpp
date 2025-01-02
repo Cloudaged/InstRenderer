@@ -124,7 +124,7 @@ void ResourceManager::AsynCompile(GameInstance *instance, std::shared_ptr<Res::R
 {
     std::lock_guard<std::mutex> guard(Locker::Get().loadResourceMtx);
 
-    auto modelRootGo = AddSceneNode(instance,model->rootNode.get(), instance->mainScene->sceneRootGameObject);
+    auto modelRootGo = AddSceneNode(instance,model->rootNode, instance->mainScene->sceneRootGameObject);
     instance->mainScene->sceneRootGameObject->child.insert(modelRootGo);
 
     instance->mainScene->minPoint = glm::min(model->minPoint,instance->mainScene->minPoint);
@@ -132,7 +132,7 @@ void ResourceManager::AsynCompile(GameInstance *instance, std::shared_ptr<Res::R
     //instance->renderSystem.materialManager.AllocateDescriptorSets();
 }
 
-std::shared_ptr<GameObject> ResourceManager::AddSceneNode(GameInstance* instance,Res::ResNode *node,std::shared_ptr<GameObject> parentGO)
+std::shared_ptr<GameObject> ResourceManager::AddSceneNode(GameInstance* instance,std::shared_ptr<Res::ResNode> node,std::shared_ptr<GameObject> parentGO)
 {
     //This node
     auto nodeGo =instance->mainScene->CreateObject(node->name,parentGO);
@@ -160,7 +160,7 @@ std::shared_ptr<GameObject> ResourceManager::AddSceneNode(GameInstance* instance
     //Child
     for (auto& child:node->children)
     {
-        auto childGOID = AddSceneNode(instance,node,nodeGo);
+        auto childGOID = AddSceneNode(instance,child,nodeGo);
         nodeGo->child.insert(childGOID);
     }
     return nodeGo;

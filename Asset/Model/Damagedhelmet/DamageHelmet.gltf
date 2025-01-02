@@ -8,7 +8,7 @@
         {
             "name" : "Scene",
             "nodes" : [
-                4
+                1
             ]
         }
     ],
@@ -22,24 +22,6 @@
                 0
             ],
             "name" : "node_damagedHelmet_-6514_0"
-        },
-        {
-            "children" : [
-                1
-            ],
-            "name" : "GLTF_SceneRootNode"
-        },
-        {
-            "children" : [
-                2
-            ],
-            "name" : "root"
-        },
-        {
-            "children" : [
-                3
-            ],
-            "name" : "Sketchfab_model"
         }
     ],
     "materials" : [
@@ -264,7 +246,7 @@
     "buffers" : [
         {
             "byteLength" : 1551664,
-            "uri" : "DamageHelmet2.bin"
+            "uri" : "DamageHelmet.bin"
         }
     ]
 }
