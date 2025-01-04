@@ -90,6 +90,8 @@ namespace RDG
         AttachmentUsage usage;
         VkFormat format;
         std::shared_ptr<Texture> data = nullptr;
+        int mipLevels = 1;
+        int arrayCount = 1;
         VkImageLayout currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     };
 

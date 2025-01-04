@@ -13,6 +13,9 @@ namespace RDG
         int shadowMapWidth = 2048;
         int shadowMapHeight = 2048;
 
+        int cascadedSMWidth = 512;
+        int cascadedSMHeight = 512;
+
         uint32_t winWidth = (uint32_t)VulkanContext::GetContext().windowExtent.width;
         uint32_t winHeight = (uint32_t)VulkanContext::GetContext().windowExtent.height;
         auto sceneSkybox = scene->skybox;
@@ -25,6 +28,11 @@ namespace RDG
         auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::MaterialTexture,
                                                 .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},
                                                                            AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB,sceneSkybox->texture}});
+
+        /*auto cascadedShadowMap = AddResource({"CascadedShadowMap",.type = ResourceType::Attachment,
+                                                        .textureInfo = TextureInfo{{cascadedSMWidth, cascadedSMHeight},
+                                                                                   AttachmentUsage::ShadowMap,VK_FORMAT_D32_SFLOAT, nullptr,0,CASCADED_COUNT}});*/
+
         auto lightData = AddResource({.name = "Lights",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(LightUniform)}});
 
@@ -274,7 +282,9 @@ namespace RDG
         {
             imageType = ImageType::Color;
         }
-        auto img = std::make_shared<AllocatedImage>(imageType,textureInfo->format,usage,textureInfo->extent.GetVkExtent(),1,1);
+        auto img = std::make_shared<AllocatedImage>(imageType,textureInfo->format,usage,
+                                                    textureInfo->extent.GetVkExtent(),
+                                                    textureInfo->mipLevels,textureInfo->arrayCount);
         texture = std::make_shared<Texture>(img);
     }
 
