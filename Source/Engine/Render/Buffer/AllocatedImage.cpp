@@ -42,7 +42,14 @@ AllocatedImage::AllocatedImage(ImageType type,VkFormat format,VkImageUsageFlags 
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
     }else
     {
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        if(layer!=1)
+        {
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+        }
+        else
+        {
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        }
     }
     viewInfo.image = this->vk_image;
     viewInfo.format = format;

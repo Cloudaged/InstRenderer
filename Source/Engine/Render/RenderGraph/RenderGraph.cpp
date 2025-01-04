@@ -324,6 +324,8 @@ namespace RDG
         VkExtent2D attExtent;
 
         int refIndex = 0;
+        bool multiView = false;
+        int layerCount = 1;
         for (auto& resHandle : passData.output)
         {
             auto& res = resourceMap[resHandle];
@@ -344,6 +346,12 @@ namespace RDG
             } else
             {
                 isRW = false;
+            }
+
+            if(att.arrayCount!=1)
+            {
+                multiView = true;
+                layerCount = att.arrayCount;
             }
 
 
@@ -400,6 +408,14 @@ namespace RDG
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+        uint32_t  viewMask = (1<<CASCADED_COUNT)-1;
+        VkRenderPassMultiviewCreateInfo multiviewInfo{};
+        multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+        multiviewInfo.subpassCount = 1;
+        multiviewInfo.pViewMasks = &viewMask;
+        multiviewInfo.correlationMaskCount = 1;
+
+
         VkRenderPassCreateInfo passCreateInfo{};
         passCreateInfo.sType =VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         passCreateInfo.attachmentCount = attDescriptions.size();
@@ -409,6 +425,10 @@ namespace RDG
         passCreateInfo.dependencyCount = 1;
         passCreateInfo.pDependencies = &dependency;
 
+        if(multiView)
+        {
+            passCreateInfo.pNext = &multiviewInfo;
+        }
         if(vkCreateRenderPass(VulkanContext::GetContext().device,&passCreateInfo, nullptr,&passData.data.passHandle)!=VK_SUCCESS)
         {
             std::cout<<"failed to create pass\n";
@@ -421,7 +441,7 @@ namespace RDG
         fbInfo.height = attExtent.height;
         fbInfo.attachmentCount = passData.output.size();
         fbInfo.pAttachments = views.data();
-        fbInfo.layers =1;
+        fbInfo.layers =layerCount;
 
         if(vkCreateFramebuffer(VulkanContext::GetContext().device,&fbInfo, nullptr,&passData.data.framebufferHandle)!=VK_SUCCESS)
         {
@@ -544,6 +564,7 @@ namespace RDG
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = data->allocatedImage->imageView;
         imageInfo.sampler = data->sampler;
+
 
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
