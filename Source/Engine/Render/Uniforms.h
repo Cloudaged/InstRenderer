@@ -2,7 +2,7 @@
 #ifndef INSTRENDERER_UNIFORMS_H
 #define INSTRENDERER_UNIFORMS_H
 #include "glm/glm.hpp"
-
+#define CASCADED_COUNT  4
 struct GlobalUniform
 {
     glm::mat4 view;
@@ -48,6 +48,7 @@ struct RenderSettingUniform
 
 struct CSMUniform
 {
+    int cascadedCount = 4;
 
 };
 
