@@ -7,7 +7,10 @@ void RenderSystem::BeginSystem(std::shared_ptr<Scene> scene)
 {
     this->scene = scene;
     SetupRenderGraph();
-    UpdateLightArray();
+    for (auto& u:uniArr)
+    {
+        u->InitData();
+    }
 }
 
 void RenderSystem::Execute()
@@ -42,6 +45,10 @@ void RenderSystem::SetupUniforms()
 
     this->lightU = INIT_UNIPTR(LightUniform);
     lightU->Setup("Lights",renderGraph);
+    lightU->CustomInit = [=]()
+    {
+        UpdateLightArray();
+    };
     lightU->CustomUpdate = [=]()
     {
         lightU->data.cameraPos= glm::vec4(scene->mainCamera.position,1.0);
@@ -56,6 +63,14 @@ void RenderSystem::SetupUniforms()
         renderSettingU->data = globalRenderSettingData;
     };
     uniArr.push_back(renderSettingU);
+
+    auto csmU = INIT_UNIPTR(CSMUniform);
+    csmU->Setup("CSMData",renderGraph);
+    csmU->CustomUpdate = [=]()
+    {
+
+    };
+    uniArr.push_back(csmU);
 }
 
 

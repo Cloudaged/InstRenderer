@@ -19,6 +19,9 @@ namespace RDG
         auto globalData = AddResource({.name = "GlobalData",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}});
 
+        auto csmData = AddResource({.name = "CSMData",.type = ResourceType::Uniform,
+                                           .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});
+
         auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::MaterialTexture,
                                                 .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},
                                                                            AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB,sceneSkybox->texture}});

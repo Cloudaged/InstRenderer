@@ -13,6 +13,7 @@ public:
         rg = &renderGraph;
     };
     virtual void UpdateData() = 0;
+    virtual void InitData() = 0;
 
 public:
     Handle handle;
@@ -24,10 +25,22 @@ class UniContainer:public UniBase
 {
 public:
     std::function<void()> CustomUpdate;
+    std::function<void()> CustomInit;
     void UpdateData() override;
+    void InitData() override;
     void MemoryCopy();
     T data;
 };
+
+template<typename T>
+void UniContainer<T>::InitData()
+{
+    if(CustomInit)
+    {
+        CustomInit();
+        MemoryCopy();
+    }
+}
 
 template<typename T>
 using UniPtr = std::shared_ptr<UniContainer<T>>;
@@ -40,9 +53,6 @@ void UniContainer<T>::UpdateData()
     {
         CustomUpdate();
         MemoryCopy();
-    } else
-    {
-        std::cout<<"Dont have custom update func\n";
     }
 }
 

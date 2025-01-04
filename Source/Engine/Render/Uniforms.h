@@ -46,5 +46,10 @@ struct RenderSettingUniform
     ShadowSetting shadowDebug{};
 };
 
+struct CSMUniform
+{
+
+};
+
 
 #endif //INSTRENDERER_UNIFORMS_H
