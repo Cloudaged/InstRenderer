@@ -18,6 +18,7 @@ class GameObject
 {
 public:
     GameObject(entt::registry* reg,std::string name,std::string type="GameObject");
+public:
     entt::entity entityID;
     entt::registry* reg;
     std::string name;

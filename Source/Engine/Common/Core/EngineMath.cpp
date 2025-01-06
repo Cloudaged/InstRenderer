@@ -89,9 +89,9 @@ namespace EngineMath
     {
         Circumsphere circumsphere;
 
-        float a2 = pow(glm::length(corners[0]-corners[1]),2);
-        float b2 = pow(glm::length(corners[4]-corners[5]),2);
-        float offset = (length/2)-((a2-b2)/8*length);
+        float a2 = pow(glm::length(corners[3]-corners[1]),2);
+        float b2 = pow(glm::length(corners[7]-corners[5]),2);
+        float offset = (length/2)+(a2-b2)/(8*length);
         glm::vec3 nearCenter = (corners[0]+corners[2])/2.0f;
         glm::vec3 farCenter = (corners[4]+corners[6])/2.0f;
         glm::vec3 centerLineDir = glm::normalize(farCenter-nearCenter);

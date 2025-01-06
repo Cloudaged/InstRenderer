@@ -24,6 +24,7 @@ namespace RDG
 
         auto csmData = AddResource({.name = "CSMData",.type = ResourceType::Uniform,
                                            .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});
+        int a = sizeof(CSMUniform);
 
         auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::MaterialTexture,
                                                 .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},

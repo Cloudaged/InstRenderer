@@ -106,7 +106,7 @@ float PCF_CSM(Sampler2DArray shadowMapArr,int index, float2 screenPos, float cam
 {
     poissonDiskSamples(screenPos.xy);
     // int sampleCount = max(globShadowSetting.pcfSampleCount, MAX_SMAPLE_COUNT);
-    int sampleCount = PCF_SAMPLE_COUNTS;
+    int sampleCount = 32;
     float sum = 0;
     for (int i = 0; i < sampleCount; ++i)
     {
@@ -120,7 +120,8 @@ float PCF_CSM(Sampler2DArray shadowMapArr,int index, float2 screenPos, float cam
         {
             sum += 1;
         }
-    }
+    }        
+
     return sum / sampleCount;
 }
 
@@ -188,4 +189,16 @@ public float CSM(Sampler2DArray shadowMapArr,int index,float4x4 lightMat, float4
     
 
     return shadow;
+}
+
+public float4 ShowCascade(int index)
+{
+    switch (index)
+    {
+    case 0: return float4(1, 0, 0, 1);
+    case 1: return float4(0, 1, 0, 1);
+    case 2: return float4(0, 0, 1, 1);
+    case 3: return float4(1, 1, 0, 1);
+    default: return float4(0, 0, 0, 0);
+    }
 }

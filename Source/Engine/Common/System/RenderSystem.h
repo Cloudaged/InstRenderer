@@ -7,7 +7,15 @@
 #include "../Core/EngineMath.h"
 #include "../../Render/RenderGraph/RenderGraph.h"
 #include "../../Render/UniContainer.h"
-
+#include "../Serialization/RenderSettingSerializer.h"
+#include "fstream"
+#include "../Core/PathDefine.h"
+struct RenderSettings
+{
+    RenderSettingUniform uniform;
+    float defaultLightIntensity;
+    float defaultLightRange;
+};
 
 class RenderSystem
 {
@@ -22,7 +30,9 @@ private:
     void PrepareData();
     void SetupRenderGraph();
     void SetupUniforms();
+    void InitSettings();
 private:
+    RenderSettingSerializer settingSerializer;
     UniPtr<LightUniform> lightU;
     std::vector<std::shared_ptr<UniBase>> uniArr;
     std::shared_ptr<Scene> scene;

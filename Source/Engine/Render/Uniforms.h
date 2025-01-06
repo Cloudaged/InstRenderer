@@ -48,12 +48,12 @@ struct RenderSettingUniform
     ShadowSetting shadowDebug{};
 };
 
-struct alignas(16) CSMUniform
+struct CSMUniform
 {
-    glm::mat4 viewProjMat[CASCADED_COUNT];
-    float cascadeSplits[CASCADED_COUNT];
-    int width;
-    int height;
+     glm::mat4 viewProjMat[CASCADED_COUNT];
+     glm::vec4 cascadeSplits[CASCADED_COUNT];
+     int width;
+     int height;
 };
 
 

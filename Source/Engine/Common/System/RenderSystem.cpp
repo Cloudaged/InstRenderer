@@ -1,11 +1,12 @@
 
 #include "RenderSystem.h"
 #include "../../Render/VulkanContext.h"
-RenderSettingUniform globalRenderSettingData{};
+RenderSettings globalRenderSettingData{};
 
 void RenderSystem::BeginSystem(std::shared_ptr<Scene> scene)
 {
     this->scene = scene;
+    InitSettings();
     SetupRenderGraph();
     for (auto& u:uniArr)
     {
@@ -69,13 +70,14 @@ void RenderSystem::SetupUniforms()
         renderSettingU->Setup("RenderSettings", renderGraph);
         renderSettingU->CustomUpdate = [=]()
         {
-            renderSettingU->data = globalRenderSettingData;
+            renderSettingU->data = globalRenderSettingData.uniform;
         };
         uniArr.push_back(renderSettingU);
     }
 
     //CSM
     {
+
         auto csmU = INIT_UNIPTR(CSMUniform);
         csmU->Setup("CSMData", renderGraph);
         csmU->CustomInit = [=]()
@@ -90,29 +92,37 @@ void RenderSystem::SetupUniforms()
 
             //auto viewCamera = std::make_shared<Camera>(scene->mainCamera);
             auto light = scene->mainLight;
-
-            std::vector<float> scales = {0.1, 0.3, 0.6, 1.0};
-            float camNear = scene->mainCamera.cameraData.nearPlane+10;
+            float factor = 2.0f;
+            float camNear = scene->mainCamera.cameraData.nearPlane;
             float camFar = scene->mainCamera.cameraData.farPlane;
+            float ratio = camFar/camNear;
             float fullLength = camFar - camNear;
-            float offset = 0.0f;
 
+            float scales[CASCADED_COUNT];
+            for (int i = 0; i < CASCADED_COUNT; ++i)
+            {
+                float p = (i+1)/static_cast<float>(CASCADED_COUNT);
+                float log = camNear * std::pow(ratio,p);
+                float uniform = camNear + fullLength*p;
+                float d = 0.95*(log-uniform)+uniform;
+                scales[i] = (d-camNear)/fullLength;
+            }
+
+            float lastPlane = camNear;
             glm::mat4 vMat = scene->mainCamera.vpMat.view;
             glm::mat4 pMat = scene->mainCamera.vpMat.proj;
             for (int i = 0; i < CASCADED_COUNT; ++i)
             {
-                float subFrustumNear = camNear+offset;
-                offset += fullLength*scales[i];
+                float subFrustumNear = lastPlane;
+                float offset = fullLength*scales[i];
                 float subFrustumFar = camNear+offset;
-                csmU->data.cascadeSplits[i] = subFrustumNear;
+                lastPlane = subFrustumFar;
+                csmU->data.cascadeSplits[i] = glm::vec4(subFrustumNear);
 
-                glm::mat4 projMat = glm::perspective(glm::radians(80.0f),
-                                                     1.0f,5.0f,5000.0f);
-
-                glm::vec4 clipNear = pMat*glm::vec4(0,0,5.0f,1.0f);
+                glm::vec4 clipNear = pMat*glm::vec4(0,0,-subFrustumNear,1.0f);
                 float ndcNear = clipNear.z / clipNear.w;
 
-                glm::vec4 clipFar = (pMat*glm::vec4(0,0,5000.0f,1.0f));
+                glm::vec4 clipFar = (pMat*glm::vec4(0,0,-subFrustumFar,1.0f));
                 float ndcFar = clipFar.z / clipFar.w;
 
                 std::vector<glm::vec3> ndcCorners =
@@ -132,11 +142,12 @@ void RenderSystem::SetupUniforms()
                 std::vector<glm::vec3> wsCorner(ndcCorners.size());
                 for (int j = 0; j < ndcCorners.size(); ++j)
                 {
-                    auto t =invMat*glm::vec4(ndcCorners[j],1.0);
+                    //wsCorner[j] =invMat*glm::vec4(ndcCorners[j],1.0);
+                    auto t = invMat*glm::vec4(ndcCorners[j],1.0);
                     wsCorner[j] = glm::vec3(t/t.w);
                 }
 
-                auto [sphereCenter,sphereRadius] = EngineMath::GetFrustumCircumsphere(wsCorner,fullLength);
+                auto [sphereCenter,sphereRadius] = EngineMath::GetFrustumCircumsphere(wsCorner,subFrustumFar-subFrustumNear);
                 auto [subFrustumVMat,subFrustumPMat] = light->GetSubFrustumLightMatrix(&scene->reg,sphereCenter,sphereRadius,scene->minPoint,scene->maxPoint);
                 csmU->data.viewProjMat[i] = subFrustumPMat*subFrustumVMat;
             }
@@ -182,6 +193,17 @@ void RenderSystem::SetupRenderGraph()
     renderGraph.Compile(scene);
     VulkanContext::GetContext().presentManager.recreatePassFunc = std::bind(&RDG::RenderGraph::RecreateAllPass,&renderGraph);
     SetupUniforms();
+}
+
+void RenderSystem::InitSettings()
+{
+    std::ifstream jsonFile(FILE_PATH("Asset/Json/RenderSetting.json"));
+    nlohmann::json j;
+    jsonFile>>j;
+    globalRenderSettingData = settingSerializer.FromJson(j);
+    auto& lightComp= scene->reg.get<LightComponent>(scene->mainLight->entityID);
+    lightComp.Intensity = globalRenderSettingData.defaultLightIntensity;
+    lightComp.range = globalRenderSettingData.defaultLightRange;
 }
 
 
