@@ -8,7 +8,7 @@
 #include "QLineEdit"
 
 #include "QHBoxLayout"
-#include "glm/glm.hpp"
+#include "Common/Core/glmConfig.h"
 #include "DragableLabel.h"
 QT_BEGIN_NAMESPACE
 namespace Ui

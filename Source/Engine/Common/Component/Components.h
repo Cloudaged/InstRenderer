@@ -2,7 +2,7 @@
 #ifndef INSTRENDERER_COMPONENTS_H
 #define INSTRENDERER_COMPONENTS_H
 
-#include "glm/glm.hpp"
+#include "../Core/glmConfig.h"
 #include "string"
 #include "../../Render/Mesh.h"
 #include "../../Render/Material/Material.h"

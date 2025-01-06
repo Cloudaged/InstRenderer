@@ -9,10 +9,13 @@ struct FragInput
     float2 inUV : TEXCOORD0;
 }
 [[vk::push_constant]] ConstantBuffer<CompHandles> ps;
-[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> Arr_globalUnifom[];
+[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> Arr_globalUniform[];
 [[vk::binding(0, 0)]] ConstantBuffer<LightCameraUniform> Arr_lightUniform[];
 [[vk::binding(0, 0)]] ConstantBuffer<RenderSetting> Arr_graphicSetting[];
+[[vk::binding(0, 0)]] ConstantBuffer<CSMUniform> Arr_csmUniform[];
+
 [[vk::binding(2, 0)]] Sampler2D textures[];
+[[vk::binding(2, 0)]] Sampler2DArray textureArr[];
 
 [shader("fragment")]
 float4 main(FragInput input) : SV_Target
@@ -22,10 +25,21 @@ float4 main(FragInput input) : SV_Target
     float4 normal = normalize(textures[ps.normal].Sample(input.inUV));
     float4 baseColor = textures[ps.baseColor].Sample(input.inUV);
     float4 metallicRoughness = textures[ps.mr].Sample(input.inUV);
-
     LightCameraUniform lightUniform = Arr_lightUniform[ps.lightUniform];
-    GlobalUniform globalUnifom = Arr_globalUnifom[ps.globalUniform];
+    GlobalUniform globalUnifom = Arr_globalUniform[ps.globalUniform];
     RenderSetting graphicSetting = Arr_graphicSetting[ps.renderSettingUniform];
+    CSMUniform csmU = Arr_csmUniform[ps.csmUniform];
+
+    float viewDepth = mul(globalUnifom.viewMat, posWS).z;
+    int csmIndex = 0;
+    for (int i = 0; i < CASCADED_COUNT; ++i)
+    {
+        if (viewDepth > csmU.cascadeSplits[i])
+        {
+            csmIndex = i;
+        }
+    }
+    
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
 
@@ -51,7 +65,7 @@ float4 main(FragInput input) : SV_Target
         finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
 
         // finalColor = specularBRDF;
-        shadow = CalculateShadow(textures[ps.shadowMap], 
+        shadow = CSM(textureArr[ps.shadowMap], csmIndex,
             mul(globalUnifom.lightProjMat, globalUnifom.lightViewMat),
              posWS,
              lp.softShadowType,

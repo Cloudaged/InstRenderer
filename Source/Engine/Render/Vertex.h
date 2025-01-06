@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_VERTEX_H
 #define INSTRENDERER_VERTEX_H
-#include "glm/glm.hpp"
+#include "../Common/Core/glmConfig.h"
 #include "vector"
 #include "vulkan/vulkan.h"
 struct Vertex

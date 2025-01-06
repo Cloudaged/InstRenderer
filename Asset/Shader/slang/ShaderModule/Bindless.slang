@@ -27,6 +27,12 @@ public struct ShadowMapHandles
     Handle global;
 }
 
+public struct CascadedShadowHandles
+{
+    public float4x4 modelMat;
+    Handle csmData;
+}
+
 public struct SkyboxHandles
 {
     Handle skyboxTex;
@@ -40,6 +46,7 @@ public struct CompHandles
     Handle baseColor;
     Handle mr;
     Handle shadowMap;
+    Handle csmUniform;
     Handle lightUniform;
     Handle globalUniform;
     Handle renderSettingUniform;

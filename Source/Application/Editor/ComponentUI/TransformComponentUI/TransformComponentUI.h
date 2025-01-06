@@ -7,7 +7,7 @@
 #include "QLabel"
 #include "QLineEdit"
 #include "QLayout"
-#include "glm/glm.hpp"
+#include "Common/Core/glmConfig.h"
 #include "../../Custom/Transform3D.h"
 #include "iostream"
 

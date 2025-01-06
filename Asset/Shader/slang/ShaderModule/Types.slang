@@ -1,7 +1,7 @@
 module Types;
 
 public static const float PI = 3.1415926;
-
+public static const int CASCADED_COUNT = 4;
 
 public struct GlobalUniform
 {
@@ -10,6 +10,14 @@ public struct GlobalUniform
     public float4x4 skyboxProjMat;
     public float4x4 lightViewMat;
     public float4x4 lightProjMat;
+}
+
+public struct CSMUniform
+{
+    public float4x4 vpMat[CASCADED_COUNT];
+    public float cascadeSplits[CASCADED_COUNT];
+    public int width;
+    public int height;
 }
 
 public struct Light

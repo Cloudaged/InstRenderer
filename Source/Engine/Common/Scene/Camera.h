@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_CAMERA_H
 #define INSTRENDERER_CAMERA_H
-#include "glm/glm.hpp"
+#include "../Core/glmConfig.h"
 #include "GameObject.h"
 #include "../Component/Components.h"
 #include <array>

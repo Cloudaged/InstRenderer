@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_ENGINEMATH_H
 #define INSTRENDERER_ENGINEMATH_H
-#include "glm/glm.hpp"
+#include "../Core/glmConfig.h"
 #include "glm/gtc/matrix_transform.hpp"
 #include "../Component/Components.h"
 #include "../Scene/Camera.h"

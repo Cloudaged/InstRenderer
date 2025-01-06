@@ -80,25 +80,40 @@ void RenderSystem::SetupUniforms()
         csmU->Setup("CSMData", renderGraph);
         csmU->CustomInit = [=]()
         {
-            auto viewCamera = std::make_shared<Camera>(scene->mainCamera);
+
+
+        };
+        csmU->CustomUpdate = [=]()
+        {
+            csmU->data.width = CASCADED_WIDTH;
+            csmU->data.height = CASCADED_HEIGHT;
+
+            //auto viewCamera = std::make_shared<Camera>(scene->mainCamera);
             auto light = scene->mainLight;
 
             std::vector<float> scales = {0.1, 0.3, 0.6, 1.0};
-            float camNear = viewCamera->cameraData.nearPlane;
-            float camFar = viewCamera->cameraData.farPlane;
+            float camNear = scene->mainCamera.cameraData.nearPlane+10;
+            float camFar = scene->mainCamera.cameraData.farPlane;
             float fullLength = camFar - camNear;
             float offset = 0.0f;
 
-            glm::mat4 vMat = viewCamera->vpMat.view;
-            glm::mat4 pMat = viewCamera->vpMat.proj;
+            glm::mat4 vMat = scene->mainCamera.vpMat.view;
+            glm::mat4 pMat = scene->mainCamera.vpMat.proj;
             for (int i = 0; i < CASCADED_COUNT; ++i)
             {
                 float subFrustumNear = camNear+offset;
                 offset += fullLength*scales[i];
                 float subFrustumFar = camNear+offset;
+                csmU->data.cascadeSplits[i] = subFrustumNear;
 
-                float ndcNear = (pMat*glm::vec4(0,0,subFrustumNear,1)).z;
-                float ndcFar = (pMat*glm::vec4(0,0,subFrustumFar,1)).z;
+                glm::mat4 projMat = glm::perspective(glm::radians(80.0f),
+                                                     1.0f,5.0f,5000.0f);
+
+                glm::vec4 clipNear = pMat*glm::vec4(0,0,5.0f,1.0f);
+                float ndcNear = clipNear.z / clipNear.w;
+
+                glm::vec4 clipFar = (pMat*glm::vec4(0,0,5000.0f,1.0f));
+                float ndcFar = clipFar.z / clipFar.w;
 
                 std::vector<glm::vec3> ndcCorners =
                         {
@@ -117,18 +132,14 @@ void RenderSystem::SetupUniforms()
                 std::vector<glm::vec3> wsCorner(ndcCorners.size());
                 for (int j = 0; j < ndcCorners.size(); ++j)
                 {
-                    wsCorner[i] = glm::vec3(invMat*glm::vec4(ndcCorners[i],1.0));
+                    auto t =invMat*glm::vec4(ndcCorners[j],1.0);
+                    wsCorner[j] = glm::vec3(t/t.w);
                 }
 
                 auto [sphereCenter,sphereRadius] = EngineMath::GetFrustumCircumsphere(wsCorner,fullLength);
                 auto [subFrustumVMat,subFrustumPMat] = light->GetSubFrustumLightMatrix(&scene->reg,sphereCenter,sphereRadius,scene->minPoint,scene->maxPoint);
-
+                csmU->data.viewProjMat[i] = subFrustumPMat*subFrustumVMat;
             }
-
-        };
-        csmU->CustomUpdate = [=]()
-        {
-
         };
         uniArr.push_back(csmU);
     }

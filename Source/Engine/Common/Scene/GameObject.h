@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_GAMEOBJECT_H
 #define INSTRENDERER_GAMEOBJECT_H
-#include "glm/glm.hpp"
+#include "../Core/glmConfig.h"
 #include "entt.hpp"
 #include "string"
 #include "vector"

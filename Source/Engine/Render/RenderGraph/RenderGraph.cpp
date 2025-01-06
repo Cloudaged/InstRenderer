@@ -29,9 +29,12 @@ namespace RDG
                                                 .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},
                                                                            AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB,sceneSkybox->texture}});
 
-        /*auto cascadedShadowMap = AddResource({"CascadedShadowMap",.type = ResourceType::Attachment,
+       /* auto cascadedShadowMapData = AddResource({"CascadedShadowMapData",.type = ResourceType::Uniform,
+                                                         .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});*/
+
+        auto cascadedShadowMap = AddResource({"CascadedShadowMap",.type = ResourceType::Attachment,
                                                         .textureInfo = TextureInfo{{cascadedSMWidth, cascadedSMHeight},
-                                                                                   AttachmentUsage::ShadowMap,VK_FORMAT_D32_SFLOAT, nullptr,0,CASCADED_COUNT}});*/
+                                                                                   AttachmentUsage::ShadowMap,VK_FORMAT_D32_SFLOAT, nullptr,1,CASCADED_COUNT}});
 
         auto lightData = AddResource({.name = "Lights",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(LightUniform)}});
@@ -59,9 +62,9 @@ namespace RDG
                 .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::Depth, VK_FORMAT_D32_SFLOAT}});
 
-        auto shadowMap = AddResource({.name = "ShadowMap",.type = ResourceType::Attachment,
+        /*auto shadowMap = AddResource({.name = "ShadowMap",.type = ResourceType::Attachment,
                 .textureInfo = TextureInfo{{shadowMapWidth, shadowMapWidth},
-                                           AttachmentUsage::ShadowMap, VK_FORMAT_D32_SFLOAT}});
+                                           AttachmentUsage::ShadowMap, VK_FORMAT_D32_SFLOAT}});*/
 
         auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Attachment,
                                 .textureInfo = TextureInfo{WINDOW_EXTENT,
@@ -98,7 +101,7 @@ namespace RDG
                     }});
         }
 
-        //ShadowMap
+       /* //ShadowMap
         {
             struct alignas(16) ShadowMapPC
             {
@@ -123,6 +126,32 @@ namespace RDG
                             }});
 
 
+        }*/
+
+        {
+            struct alignas(16) csmPC
+            {
+                glm::mat4 modelMat;
+                Handle csmUniform;
+            };
+
+            AddPass({.name = "csmPass",.type = RenderPassType::Graphic,.fbExtent = {cascadedSMWidth,cascadedSMHeight},
+                            .input = {csmData},
+                            .output = {cascadedShadowMap},
+                            .pipeline = {PipelineType::Mesh, "CascadedShadowVert", "CascadedShadowFrag", sizeof(csmPC)},
+                            .executeFunc = [=](CommandList& cmd)
+                            {
+                                for (auto& entity:view)
+                                {
+                                    auto renderComp = view.get<Renderable>(entity);
+                                    auto transComp = view.get<Transform>(entity);
+                                    csmPC pushConstants = {transComp.globalTransform,csmData};
+                                    cmd.PushConstantsForHandles(&pushConstants);
+                                    cmd.DrawMesh(renderComp.mesh);
+                                }
+                            }});
+
+
         }
 
         //Light
@@ -134,18 +163,19 @@ namespace RDG
                 Handle baseColor;
                 Handle mr;
                 Handle shadowMap;
+                Handle csmData;
                 Handle lightUniform;
                 Handle globalUniform;
                 Handle renderSettingUniform;
             };
 
             AddPass({.name = "Composition",.type = RenderPassType::Graphic,.fbExtent = WINDOW_EXTENT,
-                            .input = {position,normal,baseColor,metallicRoughness,shadowMap,globalData,lightData,renderSettings},
+                            .input = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,globalData,lightData,renderSettings},
                             .output = {lighted},
                             .pipeline = {PipelineType::RenderQuad, "CompVert", "CompFrag", sizeof(CompPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
-                                CompPC pushConstants = {position,normal,baseColor,metallicRoughness,shadowMap,lightData,globalData,renderSettings};
+                                CompPC pushConstants = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,lightData,globalData,renderSettings};
                                 cmd.PushConstantsForHandles(&pushConstants);
                                 cmd.DrawRenderQuad();
                             }});
@@ -399,6 +429,7 @@ namespace RDG
         {
             subpass.pDepthStencilAttachment = nullptr;
         }
+        uint32_t  viewMask = (1<<CASCADED_COUNT)-1;
 
         VkSubpassDependency dependency = {};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -408,13 +439,12 @@ namespace RDG
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-        uint32_t  viewMask = (1<<CASCADED_COUNT)-1;
         VkRenderPassMultiviewCreateInfo multiviewInfo{};
         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
         multiviewInfo.subpassCount = 1;
         multiviewInfo.pViewMasks = &viewMask;
         multiviewInfo.correlationMaskCount = 1;
-
+        multiviewInfo.pCorrelationMasks = &viewMask;
 
         VkRenderPassCreateInfo passCreateInfo{};
         passCreateInfo.sType =VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -441,7 +471,7 @@ namespace RDG
         fbInfo.height = attExtent.height;
         fbInfo.attachmentCount = passData.output.size();
         fbInfo.pAttachments = views.data();
-        fbInfo.layers =layerCount;
+        fbInfo.layers =1;
 
         if(vkCreateFramebuffer(VulkanContext::GetContext().device,&fbInfo, nullptr,&passData.data.framebufferHandle)!=VK_SUCCESS)
         {
@@ -681,7 +711,7 @@ namespace RDG
                 VulkanContext::GetContext().bufferAllocator.TransitionImage(
                         cmd.cmd, textureInfo.data->allocatedImage->vk_image,
                         textureInfo.currentLayout,
-                        att.state.initLayout
+                        att.state.initLayout,att.texInfo.mipLevels,att.texInfo.arrayCount
                 );
                 textureInfo.currentLayout = att.state.initLayout;
             }

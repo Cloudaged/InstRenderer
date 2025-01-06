@@ -203,11 +203,12 @@ void VulkanContext::CreateQueueAndDevice()
     device13Features.synchronization2 =VK_TRUE;
     device13Features.pNext = &features2;
 
+
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.queueCreateInfoCount = queueCreateInfos.size();
-    //createInfo.pEnabledFeatures = nullptr;
+    createInfo.pEnabledFeatures = nullptr;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
     createInfo.pNext = &device13Features;

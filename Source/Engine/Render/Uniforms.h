@@ -1,8 +1,10 @@
 
 #ifndef INSTRENDERER_UNIFORMS_H
 #define INSTRENDERER_UNIFORMS_H
-#include "glm/glm.hpp"
+#include "../Common/Core/glmConfig.h"
 #define CASCADED_COUNT  4
+#define CASCADED_WIDTH 512
+#define CASCADED_HEIGHT 512
 struct GlobalUniform
 {
     glm::mat4 view;
@@ -46,10 +48,12 @@ struct RenderSettingUniform
     ShadowSetting shadowDebug{};
 };
 
-struct CSMUniform
+struct alignas(16) CSMUniform
 {
-    int cascadedCount = 4;
-
+    glm::mat4 viewProjMat[CASCADED_COUNT];
+    float cascadeSplits[CASCADED_COUNT];
+    int width;
+    int height;
 };
 
 

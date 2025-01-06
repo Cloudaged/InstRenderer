@@ -102,6 +102,29 @@ float PCF(Sampler2D shadowMap,float2 screenPos, float camDepth,float range,float
     return sum / sampleCount;
 }
 
+float PCF_CSM(Sampler2DArray shadowMapArr,int index, float2 screenPos, float camDepth, float range, float bias)
+{
+    poissonDiskSamples(screenPos.xy);
+    // int sampleCount = max(globShadowSetting.pcfSampleCount, MAX_SMAPLE_COUNT);
+    int sampleCount = PCF_SAMPLE_COUNTS;
+    float sum = 0;
+    for (int i = 0; i < sampleCount; ++i)
+    {
+        float2 samplePos = screenPos + poissonDisk[i] * range;
+        if (samplePos.x < 0.0 || samplePos.x > 1.0 || samplePos.y < 0.0 || samplePos.y > 1.0) {
+            sum += 1;
+            continue;
+        }
+        float lightCamDepth = shadowMapArr.Sample((samplePos,index)).r;
+        if (camDepth - 0.001 < lightCamDepth)
+        {
+            sum += 1;
+        }
+    }
+    return sum / sampleCount;
+}
+
+
 float PCSS(Sampler2D shadowMap, float2 screenPos, float camDepth,float lightSize)
 {
     float avgBlockerDepth = GetAvgBlockerDepth(shadowMap,screenPos, camDepth);
@@ -143,3 +166,26 @@ public float CalculateShadow(Sampler2D shadowMap,float4x4 lightMat,float4 worldP
     return shadow;
 }
 
+public float CSM(Sampler2DArray shadowMapArr,int index,float4x4 lightMat, float4 worldPos, SoftShadowType softSetting, float lightSize, ShadowSetting shadowSetting)
+{
+    PCF_SAMPLE_COUNTS = shadowSetting.pcfSampleCount;
+    BLOCKER_SEARCH_COUNTS = shadowSetting.blockerSearchCount;
+    // NUM_SAMPLES = PCF_SAMPLE_COUNTS;
+    // globShadowSetting = shadowSetting;
+
+    float4 posInLightNDC = mul(lightMat, worldPos);
+    posInLightNDC = posInLightNDC / posInLightNDC.w;
+    float2 screenPos = posInLightNDC.xy * 0.5 + 0.5;
+
+    float viewCamDepthLS = posInLightNDC.z;
+    float shadow = 0.0f;
+
+    if (screenPos.x < 0.0 || screenPos.x > 1.0 || screenPos.y < 0.0 || screenPos.y > 1.0) {
+        return 0.0;
+    }
+
+    shadow = PCF_CSM(shadowMapArr, index,screenPos, viewCamDepthLS, 0.002, 0.001);
+    
+
+    return shadow;
+}

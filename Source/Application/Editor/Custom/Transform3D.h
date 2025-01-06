@@ -7,7 +7,7 @@
 #include "QLineEdit"
 
 #include "QHBoxLayout"
-#include "glm/glm.hpp"
+#include "Common/Core/glmConfig.h"
 #include "DragableLabel.h"
 #include "QRegularExpressionValidator"
 QT_BEGIN_NAMESPACE
