@@ -96,6 +96,7 @@ namespace EngineMath
         glm::vec3 farCenter = (corners[4]+corners[6])/2.0f;
         glm::vec3 centerLineDir = glm::normalize(farCenter-nearCenter);
         circumsphere.center = nearCenter+offset*centerLineDir;
+        circumsphere.center.z *=-1;
         circumsphere.radius = glm::length(circumsphere.center-corners[0]);
 
         return circumsphere;

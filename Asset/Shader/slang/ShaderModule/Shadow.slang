@@ -185,10 +185,15 @@ public float CSM(Sampler2DArray shadowMapArr,int index,float4x4 lightMat, float4
         return 0.0;
     }
 
-    shadow = PCF_CSM(shadowMapArr, index,screenPos, viewCamDepthLS, 0.002, 0.001);
-    
+    float lightCamDepth = shadowMapArr.Sample(float3(screenPos.xy, index)).r;
+    if (viewCamDepthLS - 0.001 <= lightCamDepth)
+    {
+        shadow = 1;
+    }
 
-    return shadow;
+    //shadow = PCF_CSM(shadowMapArr, index,screenPos, viewCamDepthLS, 0.002, 0.001);
+
+    return shadlightCamDepthow;
 }
 
 public float4 ShowCascade(int index)

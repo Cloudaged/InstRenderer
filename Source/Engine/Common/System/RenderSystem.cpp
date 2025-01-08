@@ -117,11 +117,10 @@ void RenderSystem::SetupUniforms()
                 float offset = fullLength*scales[i];
                 float subFrustumFar = camNear+offset;
                 lastPlane = subFrustumFar;
-                csmU->data.cascadeSplits[i] = glm::vec4(subFrustumNear);
+                csmU->data.cascadeSplits[i] = glm::vec4((camNear+scales[i]*fullLength)*-1.0f);
 
                 glm::vec4 clipNear = pMat*glm::vec4(0,0,-subFrustumNear,1.0f);
                 float ndcNear = clipNear.z / clipNear.w;
-
                 glm::vec4 clipFar = (pMat*glm::vec4(0,0,-subFrustumFar,1.0f));
                 float ndcFar = clipFar.z / clipFar.w;
 
@@ -145,6 +144,7 @@ void RenderSystem::SetupUniforms()
                     //wsCorner[j] =invMat*glm::vec4(ndcCorners[j],1.0);
                     auto t = invMat*glm::vec4(ndcCorners[j],1.0);
                     wsCorner[j] = glm::vec3(t/t.w);
+                    wsCorner[j].z *=-1;
                 }
 
                 auto [sphereCenter,sphereRadius] = EngineMath::GetFrustumCircumsphere(wsCorner,subFrustumFar-subFrustumNear);
