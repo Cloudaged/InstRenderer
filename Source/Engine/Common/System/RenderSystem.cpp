@@ -91,7 +91,7 @@ void RenderSystem::SetupUniforms()
             csmU->data.height = CASCADED_HEIGHT;
 
             //auto viewCamera = std::make_shared<Camera>(scene->mainCamera);
-            auto light = scene->mainLight;
+            /*auto light = scene->mainLight;
             float factor = 2.0f;
             float camNear = scene->mainCamera.cameraData.nearPlane;
             float camFar = scene->mainCamera.cameraData.farPlane;
@@ -110,8 +110,8 @@ void RenderSystem::SetupUniforms()
 
             float lastPlane = camNear;
             glm::mat4 vMat = scene->mainCamera.vpMat.view;
-            glm::mat4 pMat = scene->mainCamera.vpMat.proj;
-            for (int i = 0; i < CASCADED_COUNT; ++i)
+            glm::mat4 pMat = scene->mainCamera.vpMat.proj;*/
+            /*for (int i = 0; i < CASCADED_COUNT; ++i)
             {
                 float subFrustumNear = lastPlane;
                 float offset = fullLength*scales[i];
@@ -150,7 +150,108 @@ void RenderSystem::SetupUniforms()
                 auto [sphereCenter,sphereRadius] = EngineMath::GetFrustumCircumsphere(wsCorner,subFrustumFar-subFrustumNear);
                 auto [subFrustumVMat,subFrustumPMat] = light->GetSubFrustumLightMatrix(&scene->reg,sphereCenter,sphereRadius,scene->minPoint,scene->maxPoint);
                 csmU->data.viewProjMat[i] = subFrustumPMat*subFrustumVMat;
+            }*/
+            //float cascadeSplits[CASCADED_COUNT];
+
+            /*auto light = scene->mainLight;
+            float factor = 2.0f;
+            float camNear = scene->mainCamera.cameraData.nearPlane;
+            float camFar = scene->mainCamera.cameraData.farPlane;
+            float ratio = camFar/camNear;
+            float fullLength = camFar - camNear;
+
+            float scales[CASCADED_COUNT];
+            for (int i = 0; i < CASCADED_COUNT; ++i)
+            {
+                float p = (i+1)/static_cast<float>(CASCADED_COUNT);
+                float log = camNear * std::pow(ratio,p);
+                float uniform = camNear + fullLength*p;
+                float d = 0.95*(log-uniform)+uniform;
+                scales[i] = (d-camNear)/fullLength;
+            }*/
+
+            glm::mat4 vMat = scene->mainCamera.vpMat.view;
+            glm::mat4 pMat = scene->mainCamera.vpMat.proj;
+            float cascadeSplits[CASCADED_COUNT];
+            float nearClip = scene->mainCamera.cameraData.nearPlane;
+            float farClip = scene->mainCamera.cameraData.farPlane;;
+            float clipRange = farClip - nearClip;
+
+            float minZ = nearClip;
+            float maxZ = nearClip + clipRange;//farClip
+
+            float range = maxZ - minZ;//farClip-nearClip
+            float ratio = maxZ / minZ;//farClip/nearClip
+
+            // Calculate split depths based on view camera frustum
+            // Based on method presented in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
+            for (uint32_t i = 0; i < CASCADED_COUNT; i++) {
+                float p = (i + 1) / static_cast<float>(CASCADED_COUNT);
+                float log = minZ * std::pow(ratio, p);
+                float uniform = minZ + range * p;
+                float d = 0.95 * (log - uniform) + uniform;
+                cascadeSplits[i] = (d - nearClip) / clipRange;
             }
+
+            // Calculate orthographic projection matrix for each cascade
+            float lastSplitDist = 0.0;
+            for (uint32_t i = 0; i < CASCADED_COUNT; i++) {
+                float splitDist = cascadeSplits[i];
+
+                glm::vec3 frustumCorners[8] = {
+                        glm::vec3(-1.0f,  1.0f, 0.0f),
+                        glm::vec3( 1.0f,  1.0f, 0.0f),
+                        glm::vec3( 1.0f, -1.0f, 0.0f),
+                        glm::vec3(-1.0f, -1.0f, 0.0f),
+                        glm::vec3(-1.0f,  1.0f,  1.0f),
+                        glm::vec3( 1.0f,  1.0f,  1.0f),
+                        glm::vec3( 1.0f, -1.0f,  1.0f),
+                        glm::vec3(-1.0f, -1.0f,  1.0f),
+                };
+
+                // Project frustum corners into world space
+                glm::mat4 invCam = glm::inverse(pMat * vMat);
+                for (uint32_t j = 0; j < 8; j++) {
+                    glm::vec4 invCorner = invCam * glm::vec4(frustumCorners[j], 1.0f);
+                    frustumCorners[j] = invCorner / invCorner.w;
+                }
+
+                for (uint32_t j = 0; j < 4; j++) {
+                    glm::vec3 dist = frustumCorners[j + 4] - frustumCorners[j];//
+                    frustumCorners[j + 4] = frustumCorners[j] + (dist * splitDist);
+                    frustumCorners[j] = frustumCorners[j] + (dist * lastSplitDist);
+                }
+
+                // Get frustum center
+                glm::vec3 frustumCenter = glm::vec3(0.0f);
+                for (uint32_t j = 0; j < 8; j++) {
+                    frustumCenter += frustumCorners[j];
+                }
+                frustumCenter /= 8.0f;
+
+                float radius = 0.0f;
+                for (uint32_t j = 0; j < 8; j++) {
+                    float distance = glm::length(frustumCorners[j] - frustumCenter);
+                    radius = glm::max(radius, distance);
+                }
+                radius = std::ceil(radius * 16.0f) / 16.0f;
+
+                glm::vec3 maxExtents = glm::vec3(radius);
+                glm::vec3 minExtents = -maxExtents;
+                auto mainLight = scene->mainLight;
+                auto trans = scene->reg.get<Transform>(mainLight->entityID);
+                auto rotationMat = EngineMath::GetRotateMatrix(trans.rotation);
+                glm::vec4 target = rotationMat*glm::vec4(0.0,0.0,1.0,0.0);
+                glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - glm::vec3(target) * -minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
+                glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, (maxExtents.z - minExtents.z)*2);
+                lightOrthoMatrix[1][1] *=-1;
+                // Store split distance and matrix in cascade
+                csmU->data.cascadeSplits[i] = glm::vec4((nearClip + splitDist * clipRange) * -1.0f);
+                csmU->data.viewProjMat[i] = lightOrthoMatrix * lightViewMatrix;
+
+                lastSplitDist = cascadeSplits[i];
+            }
+
         };
         uniArr.push_back(csmU);
     }

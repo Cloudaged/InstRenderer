@@ -193,7 +193,7 @@ public float CSM(Sampler2DArray shadowMapArr,int index,float4x4 lightMat, float4
 
     //shadow = PCF_CSM(shadowMapArr, index,screenPos, viewCamDepthLS, 0.002, 0.001);
 
-    return shadlightCamDepthow;
+    return shadow;
 }
 
 public float4 ShowCascade(int index)
