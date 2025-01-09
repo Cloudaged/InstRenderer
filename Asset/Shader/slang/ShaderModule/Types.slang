@@ -18,6 +18,7 @@ public struct CSMUniform
     public float4 cascadeSplits[CASCADED_COUNT];
     public int width;
     public int height;
+    public float radiusBias;
 }
 
 public struct Light

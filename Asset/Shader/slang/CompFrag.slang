@@ -30,18 +30,69 @@ float4 main(FragInput input) : SV_Target
     RenderSetting graphicSetting = Arr_graphicSetting[ps.renderSettingUniform];
     CSMUniform csmU = Arr_csmUniform[ps.csmUniform];
 
+    // int csmIndex = 0;
+    // int blendIndex = 0;
+    // float blendValue = 0;
+    // float t = 0.0;
+    // for (int i = 0; i < CASCADED_COUNT-1; ++i)
+    // {
+    //     float di = distance(posWS.xyz, csmU.cascadeSplits[i].xyz);
+    //     float ri = csmU.cascadeSplits[i].w;
+    //     if (di > ri)
+    //     {
+    //         csmIndex = i+1;
+    //     } else
+    //     {
+    //         blendIndex = min(csmIndex + 1, CASCADED_COUNT - 1);
+    //         float dis = distance(csmU.cascadeSplits[csmIndex].xyz, csmU.cascadeSplits[blendIndex].xyz);
+    //         float di_1 = distance(posWS.xyz, csmU.cascadeSplits[blendIndex].xyz);
+    //         float ri_1 = csmU.cascadeSplits[blendIndex].w;
+    //         t = (ri + ri_1 - dis) / 2;
+    //         blendValue = (di - (ri - t)) / t;
+    //         // if (blendValue<0)
+    //         // {
+    //         //     blendIndex = csmIndex;
+    //         // }
+            
+    //         break;
+    //     }
+    // }
+    // float3 c1 = ShowCascade(csmIndex).xyz;
+    // float3 c2 = ShowCascade(blendIndex).xyz;
+    // float3 fin = lerp(c1, c2, blendValue);
+
+    // return float4(blendValue);
+
     int csmIndex = 0;
-    for (int i = 0; i < CASCADED_COUNT-1; ++i)
-    {                                                                            
-        if (distance(posWS.xyz, csmU.cascadeSplits[i].xyz) > csmU.cascadeSplits[i].w)
+    int blendIndex = 0;
+    float blendValue = 0.0;
+    float t = 0.0;
+
+    for (int i = 0; i < CASCADED_COUNT - 1; ++i)
+    {
+        float di = distance(posWS.xyz, csmU.cascadeSplits[i].xyz);
+        float ri = csmU.cascadeSplits[i].w;
+        if (di > ri+0.1)
         {
-            csmIndex = i+1;
-        } else
-        {
-            break;
+            csmIndex = i + 1;
         }
+        else
+        {
+            if (di > ri - csmU.radiusBias)
+            {
+                blendIndex = min(csmIndex + 1, CASCADED_COUNT - 1);
+                blendValue = (di -(ri-csmU.radiusBias)) / csmU.radiusBias;
+            }
+            break;
+        } 
     }
-    //return float4(ShowCascade(csmIndex).xyz,1.0);
+
+    float3 c1 = ShowCascade(csmIndex).xyz;
+    float3 c2 = ShowCascade(blendIndex).xyz;
+    float3 fin = lerp(c1, c2, blendValue);
+
+    //return float4(fin,1.0);
+
     float4 a = ShowCascade(csmIndex);
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
@@ -68,8 +119,8 @@ float4 main(FragInput input) : SV_Target
         finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
 
         // finalColor = specularBRDF;
-        shadow = CSM(textureArr[ps.shadowMap], csmIndex,
-            csmU.vpMat[csmIndex],
+        shadow = CSM(textureArr[ps.shadowMap], csmIndex,blendIndex,blendValue,
+            csmU.vpMat,
              posWS,
              lp.softShadowType,
              light.lightSize,
@@ -78,7 +129,7 @@ float4 main(FragInput input) : SV_Target
 
     float3 hdrColor = float3(finalColor*shadow);
 
-    return float4(hdrColor,1.0);
+    return float4(hdrColor,csmIndex);
     // return testValues;
     //return float4(0.0f);
     //return float4(shadow);

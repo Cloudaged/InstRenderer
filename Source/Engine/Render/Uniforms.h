@@ -54,6 +54,7 @@ struct CSMUniform
      glm::vec4 cascadeSplits[CASCADED_COUNT];
      int width;
      int height;
+     float radiusBias;
 };
 
 

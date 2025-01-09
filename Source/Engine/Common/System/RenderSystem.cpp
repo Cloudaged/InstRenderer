@@ -246,7 +246,8 @@ void RenderSystem::SetupUniforms()
                 glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - glm::vec3(target) * backDistance, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
                 glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, (backDistance)*2);
                 lightOrthoMatrix[1][1] *=-1;*/
-
+                csmU->data.radiusBias = 30.0f;
+                radius +=csmU->data.radiusBias;
                 auto [subVMat,subPMat] = mainLight->GetSubFrustumLightMatrix(&scene->reg,frustumCenter,radius,scene->minPoint,scene->maxPoint);
                 // Store split distance and matrix in cascade
                 csmU->data.cascadeSplits[i] = glm::vec4(frustumCenter,radius);
