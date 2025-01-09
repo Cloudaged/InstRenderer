@@ -28,7 +28,7 @@ namespace EngineMath
     glm::vec3 SphereToRectCoord(const glm::vec3& angle,const float& r);
     MaxMinPoints TransformAABB(const BoundingPoint& min,const BoundingPoint& max,const glm::mat4 mat);
     MaxMinPoints UpdateFrustumBoundingBox(Camera& camera);
-    Circumsphere GetFrustumCircumsphere(const std::vector<glm::vec3>& corners,float length);
+    Circumsphere GetFrustumCircumsphere(const std::vector<glm::vec3>& corners);
 }
 
 #endif //INSTRENDERER_ENGINEMATH_H

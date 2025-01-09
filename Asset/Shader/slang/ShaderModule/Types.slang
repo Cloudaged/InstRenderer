@@ -15,7 +15,7 @@ public struct GlobalUniform
 public struct CSMUniform
 {
     public float4x4 vpMat[CASCADED_COUNT];
-    public float cascadeSplits[CASCADED_COUNT];
+    public float4 cascadeSplits[CASCADED_COUNT];
     public int width;
     public int height;
 }

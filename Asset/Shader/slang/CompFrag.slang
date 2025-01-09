@@ -30,13 +30,15 @@ float4 main(FragInput input) : SV_Target
     RenderSetting graphicSetting = Arr_graphicSetting[ps.renderSettingUniform];
     CSMUniform csmU = Arr_csmUniform[ps.csmUniform];
 
-    float viewDepth = mul(globalUnifom.viewMat, posWS).z;
     int csmIndex = 0;
     for (int i = 0; i < CASCADED_COUNT-1; ++i)
-    {       //0     //-6
-        if (viewDepth < csmU.cascadeSplits[i])//-5
+    {                                                                            
+        if (distance(posWS.xyz, csmU.cascadeSplits[i].xyz) > csmU.cascadeSplits[i].w)
         {
             csmIndex = i+1;
+        } else
+        {
+            break;
         }
     }
     //return float4(ShowCascade(csmIndex).xyz,1.0);

@@ -198,7 +198,7 @@ void RenderSystem::SetupUniforms()
             for (uint32_t i = 0; i < CASCADED_COUNT; i++) {
                 float splitDist = cascadeSplits[i];
 
-                glm::vec3 frustumCorners[8] = {
+                std::vector<glm::vec3> frustumCorners = {
                         glm::vec3(-1.0f,  1.0f, 0.0f),
                         glm::vec3( 1.0f,  1.0f, 0.0f),
                         glm::vec3( 1.0f, -1.0f, 0.0f),
@@ -223,7 +223,7 @@ void RenderSystem::SetupUniforms()
                 }
 
                 // Get frustum center
-                glm::vec3 frustumCenter = glm::vec3(0.0f);
+                /*glm::vec3 frustumCenter = glm::vec3(0.0f);
                 for (uint32_t j = 0; j < 8; j++) {
                     frustumCenter += frustumCorners[j];
                 }
@@ -234,10 +234,10 @@ void RenderSystem::SetupUniforms()
                     float distance = glm::length(frustumCorners[j] - frustumCenter);
                     radius = glm::max(radius, distance);
                 }
-                radius = std::ceil(radius * 16.0f) / 16.0f;
+                radius = std::ceil(radius * 16.0f) / 16.0f;*/
 
-                glm::vec3 maxExtents = glm::vec3(radius);
-                glm::vec3 minExtents = -maxExtents;
+                auto [frustumCenter,radius] = EngineMath::GetFrustumCircumsphere(frustumCorners);
+
                 auto mainLight = scene->mainLight;
                 /*auto trans = scene->reg.get<Transform>(mainLight->entityID);
                 auto rotationMat = EngineMath::GetRotateMatrix(trans.rotation);
@@ -249,7 +249,7 @@ void RenderSystem::SetupUniforms()
 
                 auto [subVMat,subPMat] = mainLight->GetSubFrustumLightMatrix(&scene->reg,frustumCenter,radius,scene->minPoint,scene->maxPoint);
                 // Store split distance and matrix in cascade
-                csmU->data.cascadeSplits[i] = glm::vec4((nearClip + splitDist * clipRange) * -1.0f);
+                csmU->data.cascadeSplits[i] = glm::vec4(frustumCenter,radius);
                 csmU->data.viewProjMat[i] = subPMat * subVMat;
 
                 lastSplitDist = cascadeSplits[i];

@@ -3,8 +3,8 @@
 #define INSTRENDERER_UNIFORMS_H
 #include "../Common/Core/glmConfig.h"
 #define CASCADED_COUNT  4
-#define CASCADED_WIDTH 2048
-#define CASCADED_HEIGHT 2048
+#define CASCADED_WIDTH 512
+#define CASCADED_HEIGHT 512
 struct GlobalUniform
 {
     glm::mat4 view;
