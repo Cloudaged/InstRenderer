@@ -242,8 +242,9 @@ void RenderSystem::SetupUniforms()
                 auto trans = scene->reg.get<Transform>(mainLight->entityID);
                 auto rotationMat = EngineMath::GetRotateMatrix(trans.rotation);
                 glm::vec4 target = rotationMat*glm::vec4(0.0,0.0,1.0,0.0);
-                glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - glm::vec3(target) * -minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
-                glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, (maxExtents.z - minExtents.z)*2);
+                float backDistance = glm::distance(scene->minPoint,scene->maxPoint);
+                glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - glm::vec3(target) * backDistance, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
+                glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, (backDistance)*2);
                 lightOrthoMatrix[1][1] *=-1;
                 // Store split distance and matrix in cascade
                 csmU->data.cascadeSplits[i] = glm::vec4((nearClip + splitDist * clipRange) * -1.0f);

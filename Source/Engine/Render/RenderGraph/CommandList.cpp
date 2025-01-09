@@ -117,6 +117,10 @@ namespace RDG
 
     void CommandList::DrawMesh(const Mesh& mesh)
     {
+        if(mesh.vertBuffer.vk_buffer==VK_NULL_HANDLE||mesh.indexBuffer.vk_buffer==VK_NULL_HANDLE)
+        {
+            return;
+        }
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(cmd,0,1,&mesh.vertBuffer.vk_buffer, offsets);
 

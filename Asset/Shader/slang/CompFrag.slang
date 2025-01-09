@@ -74,10 +74,9 @@ float4 main(FragInput input) : SV_Target
              graphicSetting.shadowSetting);
     }
 
-    float3 hdrColor = float3(finalColor * shadow);
-    float3 mapped = hdrColor / (hdrColor + float3(1.0));
+    float3 hdrColor = float3(finalColor*shadow);
 
-    return float4(shadow);
+    return float4(hdrColor,1.0);
     // return testValues;
     //return float4(0.0f);
     //return float4(shadow);

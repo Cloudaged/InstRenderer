@@ -115,7 +115,7 @@ float PCF_CSM(Sampler2DArray shadowMapArr,int index, float2 screenPos, float cam
             sum += 1;
             continue;
         }
-        float lightCamDepth = shadowMapArr.Sample((samplePos,index)).r;
+        float lightCamDepth = shadowMapArr.Sample(float3(samplePos, index)).r;
         if (camDepth - 0.001 < lightCamDepth)
         {
             sum += 1;
@@ -185,13 +185,13 @@ public float CSM(Sampler2DArray shadowMapArr,int index,float4x4 lightMat, float4
         return 0.0;
     }
 
-    float lightCamDepth = shadowMapArr.Sample(float3(screenPos.xy, index)).r;
-    if (viewCamDepthLS - 0.001 <= lightCamDepth)
-    {
-        shadow = 1;
-    }
+    // float lightCamDepth = shadowMapArr.Sample(float3(screenPos.xy, index)).r;
+    // if (viewCamDepthLS - 0.001 <= lightCamDepth)
+    // {
+    //     shadow = 1;
+    // }
 
-    //shadow = PCF_CSM(shadowMapArr, index,screenPos, viewCamDepthLS, 0.002, 0.001);
+    shadow = PCF_CSM(shadowMapArr, index,screenPos, viewCamDepthLS, 0.002, 0.001);
 
     return shadow;
 }
