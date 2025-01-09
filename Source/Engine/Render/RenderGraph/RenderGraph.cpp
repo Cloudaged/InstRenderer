@@ -10,11 +10,6 @@ namespace RDG
 
     void RenderGraph::DeclareResource()
     {
-        int shadowMapWidth = 2048;
-        int shadowMapHeight = 2048;
-
-        int cascadedSMWidth = 512;
-        int cascadedSMHeight = 512;
 
         uint32_t winWidth = (uint32_t)VulkanContext::GetContext().windowExtent.width;
         uint32_t winHeight = (uint32_t)VulkanContext::GetContext().windowExtent.height;
@@ -34,7 +29,7 @@ namespace RDG
                                                          .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});*/
 
         auto cascadedShadowMap = AddResource({"CascadedShadowMap",.type = ResourceType::Attachment,
-                                                        .textureInfo = TextureInfo{{cascadedSMWidth, cascadedSMHeight},
+                                                        .textureInfo = TextureInfo{{CASCADED_WIDTH, CASCADED_HEIGHT},
                                                                                    AttachmentUsage::ShadowMap,VK_FORMAT_D32_SFLOAT, nullptr,1,CASCADED_COUNT}});
 
         auto lightData = AddResource({.name = "Lights",.type = ResourceType::Uniform,
@@ -136,7 +131,7 @@ namespace RDG
                 Handle csmUniform;
             };
 
-            AddPass({.name = "csmPass",.type = RenderPassType::Graphic,.fbExtent = {cascadedSMWidth,cascadedSMHeight},
+            AddPass({.name = "csmPass",.type = RenderPassType::Graphic,.fbExtent = {CASCADED_WIDTH,CASCADED_HEIGHT},
                             .input = {csmData},
                             .output = {cascadedShadowMap},
                             .pipeline = {PipelineType::Mesh, "CascadedShadowVert", "CascadedShadowFrag", sizeof(csmPC)},
