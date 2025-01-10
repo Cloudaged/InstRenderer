@@ -3,8 +3,8 @@
 #define INSTRENDERER_UNIFORMS_H
 #include "../Common/Core/glmConfig.h"
 #define CASCADED_COUNT  4
-#define CASCADED_WIDTH 512
-#define CASCADED_HEIGHT 512
+#define CASCADED_WIDTH 1024
+#define CASCADED_HEIGHT 1024
 struct GlobalUniform
 {
     glm::mat4 view;
@@ -41,7 +41,9 @@ struct ShadowSetting
 {
     int pcfSampleCount = 32;
     int blockerSearchCount = 32;
-    int showCascade = 0;
+    int showCascade = -2;
+    int antiShimmering = 1;
+    int enablePCF = 1;
 };
 
 struct RenderSettingUniform
@@ -53,6 +55,7 @@ struct CSMUniform
 {
      glm::mat4 viewProjMat[CASCADED_COUNT];
      glm::vec4 cascadeSplits[CASCADED_COUNT];
+     glm::vec4 unitPerPix[CASCADED_COUNT];
      int width;
      int height;
      float radiusBias;

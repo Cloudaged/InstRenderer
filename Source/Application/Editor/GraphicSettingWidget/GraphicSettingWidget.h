@@ -12,7 +12,7 @@
 #include "Render/Uniforms.h"
 #include "../Custom/ValueEdit.h"
 #include "../Custom/TriggerBox.h"
-
+#include "../Custom/TypeSelector.h"
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -43,7 +43,9 @@ private:
 
     ValueEdit* pcfEdit;
     ValueEdit* bsEdit;
-    TriggerBox* showCascade;
+    TypeSelector* showCascade;
+    TriggerBox* antiShimmer;
+    TriggerBox* enablePCF;
     RenderSettingUniform UpdateAllData();
 signals:
     void GraphicSettingUpdate(RenderSettingUniform data);

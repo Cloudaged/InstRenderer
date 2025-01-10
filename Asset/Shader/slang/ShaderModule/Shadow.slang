@@ -109,8 +109,8 @@ float PCF_CSM(Sampler2DArray shadowMapArr,int index, float2 screenPos, float cam
     float sum = 0;
     for (int i = 0; i < sampleCount; ++i)
     {
-        //float2 samplePos = screenPos + poissonDisk[i] * range;
-        float2 samplePos = screenPos;
+        float2 samplePos = screenPos + poissonDisk[i] * range;
+        //float2 samplePos = screenPos;
 
         if (samplePos.x < 0.0 || samplePos.x > 1.0 || samplePos.y < 0.0 || samplePos.y > 1.0) {
             sum += 1;
@@ -169,37 +169,40 @@ public float CalculateShadow(Sampler2D shadowMap,float4x4 lightMat,float4 worldP
 }
 
 
-public float CSM(Sampler2DArray shadowMapArr,int index,int blendIndex,float blendValue,float4x4 lightMat[CASCADED_COUNT], float4 worldPos, SoftShadowType softSetting, float lightSize, ShadowSetting shadowSetting)
+public float CSM(Sampler2DArray shadowMapArr,int index,int blendIndex,float blendValue,CSMUniform csmU, float4 worldPos, SoftShadowType softSetting, float lightSize, ShadowSetting shadowSetting)
 {
     PCF_SAMPLE_COUNTS = shadowSetting.pcfSampleCount;
     BLOCKER_SEARCH_COUNTS = shadowSetting.blockerSearchCount;
     // NUM_SAMPLES = PCF_SAMPLE_COUNTS;
     // globShadowSetting = shadowSetting;
+    float rangeFactor = 0.005;
 
-    float4 posInLightNDC = mul(lightMat[index], worldPos);
+    float4 posInLightNDC = mul(csmU.vpMat[index], worldPos);
     posInLightNDC = posInLightNDC / posInLightNDC.w;
     float2 screenPos = posInLightNDC.xy * 0.5 + 0.5;
     float viewCamDepthLS = posInLightNDC.z;
-
+    float range = (1.0f/csmU.unitPerPix[index])*rangeFactor;
     poissonDiskSamples(screenPos.xy);
 
-    float4 posInLightNDC1 = mul(lightMat[blendIndex], worldPos);
+    float4 posInLightNDC1 = mul(csmU.vpMat[blendIndex], worldPos);
     posInLightNDC1 = posInLightNDC1 / posInLightNDC1.w;
     float2 screenPos1 = posInLightNDC1.xy * 0.5 + 0.5;
     float viewCamDepthLS1 = posInLightNDC1.z;
+    float range1 = (1.0f / csmU.unitPerPix[blendIndex]) * rangeFactor;
 
     float shadow = 0.0f;
-
-    // float lightCamDepth = shadowMapArr.Sample(float3(screenPos.xy, index)).r;
-    // if (viewCamDepthLS - 0.05 <= lightCamDepth)
-    // {
-    //     shadow = 1;
-    // }
-
-    float result1 = PCF_CSM(shadowMapArr, index, screenPos, viewCamDepthLS, 0.008, 0.01);
-    float result2 = PCF_CSM(shadowMapArr, blendIndex, screenPos1, viewCamDepthLS1, 0.001, 0.01);
-    shadow = lerp(result1, result2, blendValue);
-    return result1;
+    if (shadowSetting.enablePCF == 1)
+    {
+        float result1 = PCF_CSM(shadowMapArr, index, screenPos, viewCamDepthLS, range, 0.03);
+        float result2 = PCF_CSM(shadowMapArr, blendIndex, screenPos1, viewCamDepthLS1, range1, 0.03);
+        shadow = lerp(result1, result2, blendValue);
+    } else
+    {
+        float result1 = PCF_CSM(shadowMapArr, index, screenPos, viewCamDepthLS, 0, 0.03);
+        float result2 = PCF_CSM(shadowMapArr, blendIndex, screenPos1, viewCamDepthLS1, 0, 0.03);
+        shadow = lerp(result1, result2, blendValue);
+    }
+    return shadow;
 }
 
 public float4 ShowCascade(int index)

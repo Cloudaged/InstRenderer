@@ -36,6 +36,7 @@ float4 main(FragInput input) : SV_Target
     float blendValue = 0.0;
     float t = 0.0;
 
+
     for (int i = 0; i < CASCADED_COUNT - 1; ++i)
     {
         float di = distance(posWS.xyz, csmU.cascadeSplits[i].xyz);
@@ -55,9 +56,12 @@ float4 main(FragInput input) : SV_Target
         } 
     }
 
-    if (graphicSetting.shadowSetting.showCascaded == 1)
+    if (graphicSetting.shadowSetting.showCascaded == -1)
     {
-        return baseColor+ShowCascade(csmIndex);
+        return baseColor + ShowCascade(csmIndex);
+    } else if (graphicSetting.shadowSetting.showCascaded!=-2)
+    {
+        return float4(textureArr[ps.shadowMap].Sample(float3(input.inUV, graphicSetting.shadowSetting.showCascaded)).r);
     }
 
     float metallic = metallicRoughness.b;
@@ -86,16 +90,14 @@ float4 main(FragInput input) : SV_Target
 
         // finalColor = specularBRDF;
         shadow = CSM(textureArr[ps.shadowMap], csmIndex,blendIndex,blendValue,
-            csmU.vpMat,
+            csmU,
              posWS,
              lp.softShadowType,
              light.lightSize,
              graphicSetting.shadowSetting);
     }
-
-    float3 hdrColor = float3(finalColor*shadow);
-
-    return float4(hdrColor,csmIndex);
+    float3 hdrColor = finalColor * shadow;
+    return float4(hdrColor, 1.0);
     // return testValues;
     //return float4(0.0f);
     //return float4(shadow);

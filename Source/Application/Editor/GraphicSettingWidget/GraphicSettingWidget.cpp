@@ -31,9 +31,12 @@ GraphicSettingWidget::GraphicSettingWidget(QDockWidget *parent) :
         {
             emit GraphicSettingUpdate(UpdateAllData());
         });
-
-
     }
+
+    connect(showCascade->typer,&QComboBox::currentTextChanged,[&](QString text)
+    {
+        emit GraphicSettingUpdate(UpdateAllData());
+    });
 
     ui->setupUi(this);
 }
@@ -64,10 +67,20 @@ void GraphicSettingWidget::ShadowSettings()
     QVBoxLayout* layout = new QVBoxLayout(w);
     pcfEdit = new ValueEdit("PCF Sample Count",renderSettingData.shadowDebug.pcfSampleCount);
     bsEdit = new ValueEdit("Blocker Search Sample Count",renderSettingData.shadowDebug.blockerSearchCount);
-    showCascade = new TriggerBox("Show Cascade", renderSettingData.shadowDebug.showCascade);
+    showCascade = new TypeSelector("Show Cascade");
+    showCascade->AddNewType("Disable");
+    showCascade->AddNewType("Color");
+    showCascade->AddNewType("0");
+    showCascade->AddNewType("1");
+    showCascade->AddNewType("2");
+    showCascade->AddNewType("3");
+    antiShimmer = new TriggerBox("Anti Shimmering",renderSettingData.shadowDebug.antiShimmering);
+    enablePCF = new TriggerBox("PCF",renderSettingData.shadowDebug.enablePCF);
     layout->addWidget(pcfEdit);
     layout->addWidget(bsEdit);
     layout->addWidget(showCascade);
+    layout->addWidget(antiShimmer);
+    layout->addWidget(enablePCF);
     w->setLayout(layout);
     pages.push_back({w,"Shadow"});
 }
@@ -82,6 +95,18 @@ RenderSettingUniform GraphicSettingWidget::UpdateAllData()
 {
     this->renderSettingData.shadowDebug.pcfSampleCount = pcfEdit->edit->text().toFloat();
     this->renderSettingData.shadowDebug.blockerSearchCount = bsEdit->edit->text().toFloat();
-    this->renderSettingData.shadowDebug.showCascade = showCascade->trigger->isChecked();
+    if(showCascade->typer->currentText()=="Color")
+    {
+        this->renderSettingData.shadowDebug.showCascade = -1;
+    }else if(showCascade->typer->currentText()=="Disable")
+    {
+        this->renderSettingData.shadowDebug.showCascade=-2;
+    }
+    else
+    {
+        this->renderSettingData.shadowDebug.showCascade = showCascade->typer->currentText().toInt();
+    }
+    this->renderSettingData.shadowDebug.antiShimmering = antiShimmer->trigger->isChecked();
+    this->renderSettingData.shadowDebug.enablePCF = enablePCF->trigger->isChecked();
     return this->renderSettingData;
 }

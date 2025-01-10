@@ -16,6 +16,7 @@ public struct CSMUniform
 {
     public float4x4 vpMat[CASCADED_COUNT];
     public float4 cascadeSplits[CASCADED_COUNT];
+    public float unitPerPix[CASCADED_COUNT];
     public int width;
     public int height;
     public float radiusBias;
@@ -46,6 +47,8 @@ public struct ShadowSetting
     public const int pcfSampleCount;
     public const int blockerSearchCount;
     public const int showCascaded;
+    const int antiShimmer;
+    public const int enablePCF;
 }
 
 public struct RenderSetting

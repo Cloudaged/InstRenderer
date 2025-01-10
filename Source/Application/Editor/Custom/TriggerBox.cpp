@@ -11,6 +11,7 @@ TriggerBox::TriggerBox(std::string name,bool data,QWidget *parent) :
     ui->setupUi(this);
     this->tag = new QLabel(QString::fromStdString(name), this);
     this->trigger = new QCheckBox(this);
+    UpdateData(data);
 
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->addWidget(tag);
