@@ -221,7 +221,6 @@ void RenderSystem::SetupUniforms()
                     frustumCorners[j + 4] = frustumCorners[j] + (dist * splitDist);
                     frustumCorners[j] = frustumCorners[j] + (dist * lastSplitDist);
                 }
-
                 // Get frustum center
                 /*glm::vec3 frustumCenter = glm::vec3(0.0f);
                 for (uint32_t j = 0; j < 8; j++) {

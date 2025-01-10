@@ -30,38 +30,6 @@ float4 main(FragInput input) : SV_Target
     RenderSetting graphicSetting = Arr_graphicSetting[ps.renderSettingUniform];
     CSMUniform csmU = Arr_csmUniform[ps.csmUniform];
 
-    // int csmIndex = 0;
-    // int blendIndex = 0;
-    // float blendValue = 0;
-    // float t = 0.0;
-    // for (int i = 0; i < CASCADED_COUNT-1; ++i)
-    // {
-    //     float di = distance(posWS.xyz, csmU.cascadeSplits[i].xyz);
-    //     float ri = csmU.cascadeSplits[i].w;
-    //     if (di > ri)
-    //     {
-    //         csmIndex = i+1;
-    //     } else
-    //     {
-    //         blendIndex = min(csmIndex + 1, CASCADED_COUNT - 1);
-    //         float dis = distance(csmU.cascadeSplits[csmIndex].xyz, csmU.cascadeSplits[blendIndex].xyz);
-    //         float di_1 = distance(posWS.xyz, csmU.cascadeSplits[blendIndex].xyz);
-    //         float ri_1 = csmU.cascadeSplits[blendIndex].w;
-    //         t = (ri + ri_1 - dis) / 2;
-    //         blendValue = (di - (ri - t)) / t;
-    //         // if (blendValue<0)
-    //         // {
-    //         //     blendIndex = csmIndex;
-    //         // }
-            
-    //         break;
-    //     }
-    // }
-    // float3 c1 = ShowCascade(csmIndex).xyz;
-    // float3 c2 = ShowCascade(blendIndex).xyz;
-    // float3 fin = lerp(c1, c2, blendValue);
-
-    // return float4(blendValue);
 
     int csmIndex = 0;
     int blendIndex = 0;
@@ -87,13 +55,11 @@ float4 main(FragInput input) : SV_Target
         } 
     }
 
-    float3 c1 = ShowCascade(csmIndex).xyz;
-    float3 c2 = ShowCascade(blendIndex).xyz;
-    float3 fin = lerp(c1, c2, blendValue);
+    if (graphicSetting.shadowSetting.showCascaded == 1)
+    {
+        return baseColor+ShowCascade(csmIndex);
+    }
 
-    //return float4(fin,1.0);
-
-    float4 a = ShowCascade(csmIndex);
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
 

@@ -25,6 +25,16 @@ GraphicSettingWidget::GraphicSettingWidget(QDockWidget *parent) :
         });
     }
 
+    for(auto* child:this->findChildren<TriggerBox*>())
+    {
+        connect(child->trigger,&QCheckBox::stateChanged,this,[&]()
+        {
+            emit GraphicSettingUpdate(UpdateAllData());
+        });
+
+
+    }
+
     ui->setupUi(this);
 }
 
@@ -54,9 +64,10 @@ void GraphicSettingWidget::ShadowSettings()
     QVBoxLayout* layout = new QVBoxLayout(w);
     pcfEdit = new ValueEdit("PCF Sample Count",renderSettingData.shadowDebug.pcfSampleCount);
     bsEdit = new ValueEdit("Blocker Search Sample Count",renderSettingData.shadowDebug.blockerSearchCount);
-
+    showCascade = new TriggerBox("Show Cascade", renderSettingData.shadowDebug.showCascade);
     layout->addWidget(pcfEdit);
     layout->addWidget(bsEdit);
+    layout->addWidget(showCascade);
     w->setLayout(layout);
     pages.push_back({w,"Shadow"});
 }
@@ -71,6 +82,6 @@ RenderSettingUniform GraphicSettingWidget::UpdateAllData()
 {
     this->renderSettingData.shadowDebug.pcfSampleCount = pcfEdit->edit->text().toFloat();
     this->renderSettingData.shadowDebug.blockerSearchCount = bsEdit->edit->text().toFloat();
-
+    this->renderSettingData.shadowDebug.showCascade = showCascade->trigger->isChecked();
     return this->renderSettingData;
 }

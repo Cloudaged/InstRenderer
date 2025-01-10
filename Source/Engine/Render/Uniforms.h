@@ -41,6 +41,7 @@ struct ShadowSetting
 {
     int pcfSampleCount = 32;
     int blockerSearchCount = 32;
+    int showCascade = 0;
 };
 
 struct RenderSettingUniform
