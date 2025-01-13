@@ -174,6 +174,13 @@ void VulkanContext::CreateQueueAndDevice()
         throw std::runtime_error("Anisotropic filtering is not supported by the physical device.");
     }
 
+    VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeature{};
+    accelFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+
+    VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipelineFeature{};
+    rtPipelineFeature.sType =VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+    rtPipelineFeature.pNext = &accelFeature;
+
     VkPhysicalDeviceMultiviewFeatures multiviewFeatures{};
     multiviewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
     multiviewFeatures.multiview = VK_TRUE;
