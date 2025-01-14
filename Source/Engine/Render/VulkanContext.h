@@ -6,7 +6,7 @@
 #include "RHI/Extensions.h"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_vulkan.h"
-
+#include "volk.h"
 #include <stdexcept>
 #include "iostream"
 #include "RHI/VulkanFuncs.h"
@@ -14,7 +14,6 @@
 #include "set"
 #include "RHI/Swapchain.h"
 #include "vma/vk_mem_alloc.h"
-
 #include "Buffer/AllocatedImage.h"
 #include "PresentManager.h"
 #include "Buffer/Buffer.h"
@@ -58,6 +57,7 @@ private:
     void InitVulkanBackend();
     //Init
     VkResult SetupDebugMessenger();
+    void SetupExtensionFunc();
     void CreateInstance();
     void CreateSurface();
     void PickupPhysicalDevice();

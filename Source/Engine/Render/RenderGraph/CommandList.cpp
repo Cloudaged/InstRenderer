@@ -126,7 +126,7 @@ namespace RDG
 
         vkCmdBindIndexBuffer(cmd,mesh.indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
         //Draw
-        vkCmdDrawIndexed(cmd,static_cast<uint32_t>(mesh.indexSize),1,0,0,0);
+        vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indexCount), 1, 0, 0, 0);
     }
 
     void CommandList::DrawRenderQuad()

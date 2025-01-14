@@ -80,7 +80,7 @@ namespace RDG
                 glm::mat4 model;
             };
 
-            AddPass({.name = "Geometry",.type = RenderPassType::Graphic,.fbExtent = WINDOW_EXTENT,
+            AddPass({.name = "Geometry",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
                     .input = {globalData},
                     .output = {position, normal, baseColor, metallicRoughness, depth},
                     .pipeline = {PipelineType::Mesh, "GeoVert", "GeoFrag", sizeof(GeoPC)},
@@ -131,7 +131,7 @@ namespace RDG
                 Handle csmUniform;
             };
 
-            AddPass({.name = "csmPass",.type = RenderPassType::Graphic,.fbExtent = {CASCADED_WIDTH,CASCADED_HEIGHT},
+            AddPass({.name = "csmPass",.type = RenderPassType::Raster,.fbExtent = {CASCADED_WIDTH, CASCADED_HEIGHT},
                             .input = {csmData},
                             .output = {cascadedShadowMap},
                             .pipeline = {PipelineType::Mesh, "CascadedShadowVert", "CascadedShadowFrag", sizeof(csmPC)},
@@ -165,7 +165,7 @@ namespace RDG
                 Handle renderSettingUniform;
             };
 
-            AddPass({.name = "Composition",.type = RenderPassType::Graphic,.fbExtent = WINDOW_EXTENT,
+            AddPass({.name = "Composition",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
                             .input = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,globalData,lightData,renderSettings},
                             .output = {lighted},
                             .pipeline = {PipelineType::RenderQuad, "CompVert", "CompFrag", sizeof(CompPC)},
@@ -186,7 +186,7 @@ namespace RDG
                 Handle globalData;
             };
 
-            AddPass({.name = "SkyboxDraw", .type = RenderPassType::Graphic, .fbExtent = WINDOW_EXTENT,
+            AddPass({.name = "SkyboxDraw", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
                             .input = {skyboxTex,lighted,depth},
                             .output = {lighted,depth},
                             .pipeline = {PipelineType::Skybox, "SkyboxVert", "SkyboxFrag", sizeof(SkyboxPC)},
@@ -327,7 +327,7 @@ namespace RDG
     {
         for (auto& passData : passArr)
         {
-            if(passData.type==RenderPassType::Graphic)
+            if(passData.type==RenderPassType::Raster)
             {
                 CreateGraphicPass(passData);
             }else if(passData.type==RenderPassType::Present)

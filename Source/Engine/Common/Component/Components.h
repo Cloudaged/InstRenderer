@@ -37,6 +37,11 @@ struct Renderable
     Material material;
 };
 
+struct RayTracingComponent
+{
+
+};
+
 struct ShadowCamera
 {
     float near;

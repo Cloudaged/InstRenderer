@@ -46,14 +46,16 @@ namespace RDG
     {
         Mesh,
         Skybox,
-        RenderQuad
+        RenderQuad,
+        RayTracing
     };
 
     enum class RenderPassType
     {
-        Graphic,
+        Raster,
         Compute,
-        Present
+        Present,
+        RayTracing
     };
 
     enum class AttachmentUsage

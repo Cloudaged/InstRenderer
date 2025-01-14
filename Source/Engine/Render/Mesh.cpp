@@ -7,7 +7,7 @@ Mesh::Mesh(const std::vector<Vertex>& vertData,const std::vector<uint32_t>& inde
 
     uint32_t verticesSize = vertData.size()*sizeof(Vertex);
     uint32_t indicesSize = index.size()*sizeof(int);
-    this->indexSize = index.size();
+    this->indexCount = index.size();
     vertBuffer = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(verticesSize,
                                                                       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
                                                                       | VK_BUFFER_USAGE_TRANSFER_DST_BIT
@@ -24,6 +24,13 @@ Mesh::Mesh(const std::vector<Vertex>& vertData,const std::vector<uint32_t>& inde
     indexBuffer = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(indicesSize,VK_BUFFER_USAGE_INDEX_BUFFER_BIT
                                                          |VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                              VMA_MEMORY_USAGE_GPU_ONLY);
+
+    VkBufferDeviceAddressInfo indexDeviceAddressInfo{};
+    indexDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    indexDeviceAddressInfo.buffer = indexBuffer.vk_buffer;
+
+    indexAddress = vkGetBufferDeviceAddress(VulkanContext::GetContext().device,&indexDeviceAddressInfo);
+
 
     Buffer staging = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(verticesSize+indicesSize,
                                                                               VK_BUFFER_USAGE_TRANSFER_SRC_BIT,

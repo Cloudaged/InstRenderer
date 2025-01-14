@@ -26,13 +26,10 @@ include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/Assimp/include)
 FILE(COPY ${CMAKE_SOURCE_DIR}/ThirdParty/Assimp/bin/libassimp-5.dll DESTINATION ${CMAKE_BINARY_DIR}/Bin)
 
 #stb_image
-include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/stb_image)
+include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/stb_image
+        ${CMAKE_SOURCE_DIR}/ThirdParty/tinygltf
+        ${CMAKE_SOURCE_DIR}/ThirdParty/entt
+        ${CMAKE_SOURCE_DIR}/ThirdParty/json
+        ${CMAKE_SOURCE_DIR}/ThirdParty/volk
+        ${CMAKE_SOURCE_DIR}/ThirdParty/hhh)
 
-#tinygltf
-include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/tinygltf)
-
-#Entt
-include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/entt)
-
-#json
-include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/json)

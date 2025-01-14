@@ -1,6 +1,5 @@
 
 #include "VulkanContext.h"
-
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -620,6 +619,11 @@ void VulkanContext::CreateTestGlobalDescriptorSetLayout()
     allocateInfo.descriptorSetCount = 1;
 
     vkAllocateDescriptorSets(device, &allocateInfo, &bindlessSet);
+
+}
+
+void VulkanContext::SetupExtensionFunc()
+{
 
 }
 
