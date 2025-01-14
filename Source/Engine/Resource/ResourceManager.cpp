@@ -126,6 +126,7 @@ void ResourceManager::AsynCompile(GameInstance *instance, std::shared_ptr<Res::R
 
     auto modelRootGo = AddSceneNode(instance,model->rootNode, instance->mainScene->sceneRootGameObject);
     instance->mainScene->sceneRootGameObject->child.insert(modelRootGo);
+    instance->mainScene->RecreateRTScene();
 
     instance->mainScene->minPoint = glm::min(model->minPoint,instance->mainScene->minPoint);
     instance->mainScene->maxPoint = glm::max(model->maxPoint,instance->mainScene->maxPoint);

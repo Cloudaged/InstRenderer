@@ -161,6 +161,12 @@ void Scene::InitMainCamera()
     mainCamera.AddObserver(this);
 }
 
+void Scene::RecreateRTScene()
+{
+    rtScene = RTBuilder::CreateRTScene(reg.view<Renderable,Transform>());
+
+}
+
 
 
 

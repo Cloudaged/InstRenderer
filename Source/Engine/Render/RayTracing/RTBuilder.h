@@ -1,11 +1,10 @@
 
-#ifndef INSTRENDERER_RAYTRACINGBUILDER_H
-#define INSTRENDERER_RAYTRACINGBUILDER_H
+#ifndef INSTRENDERER_RTBUILDER_H
+#define INSTRENDERER_RTBUILDER_H
 #include "volk.h"
 #include "../Mesh.h"
 #include "../../Common/Component/Components.h"
 #include "entt.hpp"
-#include "../../Common/Scene/Scene.h"
 #include <algorithm>
 
 struct BLAS
@@ -18,7 +17,7 @@ struct BLAS
 
 struct TLAS
 {
-    Buffer asBuffer;
+    Buffer* asBuffer;
     VkAccelerationStructureKHR accelerationStructure;
     VkDeviceAddress address;
 };
@@ -31,14 +30,14 @@ struct RTScene
 };
 
 
-class RayTracingBuilder
+class RTBuilder
 {
 public:
-    RTScene CreateRTScene(std::shared_ptr<Scene> scene);
+    static RTScene CreateRTScene(entt::view<entt::get_t<Renderable,Transform>> view);
 private:
-    std::vector<BLAS> CreateBLAS(entt::view<entt::get_t<Renderable,Transform>> view);
-    TLAS CreateTLAS(VkCommandBuffer cmd);
+    static std::vector<BLAS> CreateBLAS(entt::view<entt::get_t<Renderable,Transform>> view);
+    static TLAS CreateTLAS(const std::vector<BLAS>& allblas);
 };
 
 
-#endif //INSTRENDERER_RAYTRACINGBUILDER_H
+#endif //INSTRENDERER_RTBUILDER_H

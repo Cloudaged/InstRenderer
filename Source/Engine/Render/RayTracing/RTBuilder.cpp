@@ -1,8 +1,18 @@
 
-#include "RayTracingBuilder.h"
+#include "RTBuilder.h"
 #include "../VulkanContext.h"
 
-std::vector<BLAS> RayTracingBuilder::CreateBLAS(entt::view<entt::get_t<Renderable,Transform>> view)
+RTScene RTBuilder::CreateRTScene(entt::view<entt::get_t<Renderable,Transform>> view)
+{
+    RTScene rtScene;
+    if(view.size_hint()<=0)
+        return rtScene;
+    rtScene.allBlas = CreateBLAS(view);
+    rtScene.topAS = CreateTLAS(rtScene.allBlas);
+    return rtScene;
+}
+
+std::vector<BLAS> RTBuilder::CreateBLAS(entt::view<entt::get_t<Renderable,Transform>> view)
 {
     size_t meshCount = view.size_hint();
     std::vector<VkAccelerationStructureGeometryKHR> geometries(meshCount,VkAccelerationStructureGeometryKHR{});
@@ -128,11 +138,106 @@ std::vector<BLAS> RayTracingBuilder::CreateBLAS(entt::view<entt::get_t<Renderabl
     return allBlas;
 }
 
-TLAS RayTracingBuilder::CreateTLAS(VkCommandBuffer cmd)
+TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
 {
-    VkAccelerationStructureGeometryKHR geometry{};
+    auto& device = VulkanContext::GetContext().device;
 
-    return TLAS();
+    const VkTransformMatrixKHR transform =
+            {
+                    1.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 1.0f, 0.0f,
+            };
+
+    size_t blasCount = allblas.size();
+    std::vector<VkAccelerationStructureInstanceKHR> instances(blasCount,VkAccelerationStructureInstanceKHR{});
+    for (int i = 0; i < blasCount; ++i)
+    {
+        auto& blas = allblas[i];
+        auto& instance = instances[i];
+        instance.transform = transform;
+        instance.instanceCustomIndex = i;
+        instance.mask = 0xff;
+        instance.instanceShaderBindingTableRecordOffset = 0;
+        instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
+        instance.accelerationStructureReference = blas.address;
+    }
+
+    Buffer* instancesBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(instances.size() * sizeof(VkAccelerationStructureInstanceKHR),
+                                                                                       VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR,
+                                                                                       VMA_MEMORY_USAGE_CPU_TO_GPU);
+    void* instancesMem = VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*instancesBuffer);
+    memcpy(instances.data(),instancesMem,instances.size() * sizeof(VkAccelerationStructureInstanceKHR));
+
+    VkBufferDeviceAddressInfo instanceAddressInfo{};
+    instanceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    instanceAddressInfo.buffer = instancesBuffer->vk_buffer;
+
+    VkAccelerationStructureGeometryInstancesDataKHR tlasInstancesInfo = {};
+    tlasInstancesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
+    tlasInstancesInfo.data.deviceAddress = vkGetBufferDeviceAddress(device,&instanceAddressInfo);
+
+    VkAccelerationStructureGeometryKHR  tlasGeoInfo = {};
+    tlasGeoInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+    tlasGeoInfo.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
+    tlasGeoInfo.geometry.instances = tlasInstancesInfo;
+
+    VkAccelerationStructureBuildGeometryInfoKHR buildInfo = {};
+    buildInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+    buildInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+    buildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
+    buildInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+    buildInfo.geometryCount = 1;
+    buildInfo.pGeometries = &tlasGeoInfo;
+
+    uint32_t instancesCount = instances.size();
+    VkAccelerationStructureBuildSizesInfoKHR sizeInfo = {VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR};
+    vkGetAccelerationStructureBuildSizesKHR(device,VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR,&buildInfo, &instancesCount, &sizeInfo);
+
+    TLAS tlas;
+    tlas.asBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeInfo.accelerationStructureSize,
+                                                                                  VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                                                                                  VMA_MEMORY_USAGE_GPU_ONLY);
+
+    VkAccelerationStructureCreateInfoKHR createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
+    createInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+    createInfo.size = sizeInfo.accelerationStructureSize;
+    createInfo.buffer = tlas.asBuffer->vk_buffer;
+
+    if(vkCreateAccelerationStructureKHR(device,&createInfo, nullptr,&tlas.accelerationStructure)!=VK_SUCCESS)
+    {
+        std::cout<<"Failed to create alts\n";
+    }
+
+    Buffer* scratchBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeInfo.accelerationStructureSize,
+                                                                                     VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT|VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                                                                     VMA_MEMORY_USAGE_GPU_ONLY);
+    VkBufferDeviceAddressInfo scratchAddress{};
+    scratchAddress.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    scratchAddress.buffer = scratchBuffer->vk_buffer;
+
+    buildInfo.scratchData.deviceAddress = vkGetBufferDeviceAddress(device,&scratchAddress);
+    buildInfo.srcAccelerationStructure = VK_NULL_HANDLE;
+    buildInfo.dstAccelerationStructure = tlas.accelerationStructure;
+
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+    VkAccelerationStructureBuildRangeInfoKHR range = {};
+    range.primitiveCount = instancesCount;
+
+    const VkAccelerationStructureBuildRangeInfoKHR* ranges[1] = { &range };
+
+    vkCmdBuildAccelerationStructuresKHR(cmd, 1, &buildInfo, ranges);
+
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+
+
+    VkAccelerationStructureDeviceAddressInfoKHR addressInfo = {};
+    addressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
+    addressInfo.accelerationStructure = tlas.accelerationStructure;
+    tlas.address = vkGetAccelerationStructureDeviceAddressKHR(device, &addressInfo);
+    return tlas;
 }
+
 
 

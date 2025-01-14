@@ -14,7 +14,7 @@
 #include "glm/gtx/string_cast.hpp"
 #include "SceneObserver.h"
 #include "Skybox.h"
-
+#include "../../Render/RayTracing/RTBuilder.h"
 using BoundingPoint = glm::vec3;
 
 class Scene : public SceneObserver
@@ -29,6 +29,7 @@ public:
     void DeleteObject(int id);
     void Destroy(int i);
     void RenameObject(int id,std::string dstName);
+    void RecreateRTScene();
 public:
     std::shared_ptr<Skybox> skybox;
     std::shared_ptr<GameObject> sceneRootGameObject;
@@ -39,6 +40,7 @@ public:
     std::shared_ptr<Light> mainLight;
     BoundingPoint minPoint;
     BoundingPoint maxPoint;
+    RTScene rtScene;
 private:
     void InitSkyboxData();
     void InitMainCamera();
