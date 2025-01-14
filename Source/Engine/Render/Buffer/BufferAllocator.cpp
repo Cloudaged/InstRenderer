@@ -7,6 +7,7 @@
 
 Buffer* BufferAllocator::CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
 {
+    //TODO : trans to * shard_ptr
     Buffer* buffer = new Buffer;
 
     VkBufferCreateInfo bufferInfo{};

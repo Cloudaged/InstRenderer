@@ -10,7 +10,7 @@
 
 struct BLAS
 {
-    Buffer asBuffer;
+    Buffer* asBuffer;
     VkAccelerationStructureKHR accelerationStructure;
     VkDeviceAddress address;
     uint32_t vertexCount;
@@ -36,7 +36,7 @@ class RayTracingBuilder
 public:
     RTScene CreateRTScene(std::shared_ptr<Scene> scene);
 private:
-    std::vector<BLAS> CreateBLAS(entt::view<entt::get_t<Renderable,Transform>> view,VkCommandBuffer cmd);
+    std::vector<BLAS> CreateBLAS(entt::view<entt::get_t<Renderable,Transform>> view);
     TLAS CreateTLAS(VkCommandBuffer cmd);
 };
 
