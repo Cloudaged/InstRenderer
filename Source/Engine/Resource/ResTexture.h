@@ -2,7 +2,7 @@
 #ifndef INSTRENDERER_RESTEXTURE_H
 #define INSTRENDERER_RESTEXTURE_H
 
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #include "ResBase.h"
 #include "vector"
 enum class TextureType:uint32_t

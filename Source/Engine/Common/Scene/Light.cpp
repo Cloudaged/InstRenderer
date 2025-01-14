@@ -20,7 +20,7 @@ LightVPMat Light::GetLightMatrix(entt::registry *reg,const glm::vec3& minPoint,c
         glm::vec3 position = sceneCenter - glm::vec3(target)*maxDepth;
         glm::mat4 lightMat = glm::lookAt(position,sceneCenter,{0,1,0});
         auto [sceneMaxLS,sceneMinLS] = EngineMath::TransformAABB(minPoint,maxPoint,lightMat);//world space to light space
-        glm::mat4 projMat = glm::ortho(sceneMinLS.x-100,sceneMaxLS.x+100,sceneMinLS.y-100,sceneMaxLS.y+100,1.0f+lightComp.shadowCamera.near,maxDepth+lightComp.shadowCamera.far);
+        glm::mat4 projMat = glm::ortho(sceneMinLS.x-100,sceneMaxLS.x+100,sceneMinLS.y-100,sceneMaxLS.y+100,1.0f+lightComp.shadowCamera.nearPlane,maxDepth+lightComp.shadowCamera.farPlane);
         projMat[1][1] *= -1;
         return {lightMat,projMat};
     }else if(lightComp.type == LightType::Point)

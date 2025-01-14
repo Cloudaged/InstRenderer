@@ -52,9 +52,12 @@ VulkanContext::VulkanContext(SDL_Window* window)
 void VulkanContext::InitVulkanBackend()
 {
     CreateInstance();
+    volkLoadInstance(instance);
+    SetupExtensionFunc();
     CreateSurface();
     PickupPhysicalDevice();
     CreateQueueAndDevice();
+    volkLoadDevice(device);
     CreateVMAAllocator();
     CreateCommandPool();
     CreateSwapchain();
@@ -66,6 +69,9 @@ void VulkanContext::InitVulkanBackend()
 
 void VulkanContext::CreateInstance()
 {
+    volkInitialize();
+
+
     VkApplicationInfo appinfo{};
     appinfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appinfo.pApplicationName = "hello triangle";
@@ -234,11 +240,17 @@ void VulkanContext::CreateQueueAndDevice()
 
 void VulkanContext::CreateVMAAllocator()
 {
+    VmaVulkanFunctions vulkanFunctions = {};
+    vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+    vulkanFunctions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+
     VmaAllocatorCreateInfo allocatorInfo{};
     allocatorInfo.physicalDevice = gpu;
     allocatorInfo.device = device;
     allocatorInfo.instance = instance;
     allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+    allocatorInfo.pVulkanFunctions = &vulkanFunctions;
+
     if(vmaCreateAllocator(&allocatorInfo,&allocator)!=VK_SUCCESS)
     {
         throw std::runtime_error("failed to create allocator!");
@@ -624,6 +636,8 @@ void VulkanContext::CreateTestGlobalDescriptorSetLayout()
 
 void VulkanContext::SetupExtensionFunc()
 {
+    //volkLoadInstance(instance);
+    //volkLoadDevice(device);
 
 }
 

@@ -48,8 +48,8 @@ void LightComponentUI::ChangeData(LightComponent data)
     colorUI->UpdateData({c.x,c.y,c.z});
     intensityUI->UpdateData(data.Intensity);
     rangeUI->UpdateData(data.range);
-    nearUI->UpdateData(data.shadowCamera.near);
-    farUI->UpdateData(data.shadowCamera.far);
+    nearUI->UpdateData(data.shadowCamera.nearPlane);
+    farUI->UpdateData(data.shadowCamera.farPlane);
     attenuationUI->UpdateData(data.attenuation);
     outerCutoffUI->UpdateData(data.lightSize);
     if(data.type==LightType::Directional)

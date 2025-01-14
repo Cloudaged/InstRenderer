@@ -6,7 +6,7 @@ file(GLOB_RECURSE SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 
-add_library(${PROJECT_NAME} SHARED ${HEADER} ${SOURCE})
+add_library(${PROJECT_NAME} SHARED ${HEADER} ${SOURCE} ../../ThirdParty/volk/volk.c)
 target_link_libraries(${PROJECT_NAME}
         Vulkan::Vulkan
         mingw32

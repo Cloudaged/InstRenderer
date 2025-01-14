@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_TEXTUREEXTENT_H
 #define INSTRENDERER_TEXTUREEXTENT_H
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #define WINDOW_EXTENT TextureExtent{-1,-1}
 
 class TextureExtent

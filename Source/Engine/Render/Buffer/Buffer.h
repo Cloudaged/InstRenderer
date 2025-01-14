@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_BUFFER_H
 #define INSTRENDERER_BUFFER_H
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #include "vma/vk_mem_alloc.h"
 class Buffer
 {

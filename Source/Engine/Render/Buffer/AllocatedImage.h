@@ -2,7 +2,7 @@
 #ifndef INSTRENDERER_ALLOCATEDIMAGE_H
 #define INSTRENDERER_ALLOCATEDIMAGE_H
 #include "vma/vk_mem_alloc.h"
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #include "memory"
 #include "../../Resource/ResTexture.h"
 enum class ImageType

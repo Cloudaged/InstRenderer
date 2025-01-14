@@ -2,7 +2,6 @@
 #ifndef INSTRENDERER_VULKANCONTEXT_H
 #define INSTRENDERER_VULKANCONTEXT_H
 #include "memory"
-#include "vulkan/vulkan.h"
 #include "RHI/Extensions.h"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_vulkan.h"

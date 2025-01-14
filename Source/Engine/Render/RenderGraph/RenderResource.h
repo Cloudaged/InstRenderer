@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_RENDERRESOURCE_H
 #define INSTRENDERER_RENDERRESOURCE_H
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #include "string"
 
 #include "../Buffer/AllocatedImage.h"

@@ -37,15 +37,11 @@ struct Renderable
     Material material;
 };
 
-struct RayTracingComponent
-{
-
-};
 
 struct ShadowCamera
 {
-    float near;
-    float far;
+    float nearPlane;
+    float farPlane;
 };
 
 struct LightComponent

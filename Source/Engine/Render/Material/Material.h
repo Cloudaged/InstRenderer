@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_MATERIAL_H
 #define INSTRENDERER_MATERIAL_H
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #include "vector"
 using Handle = uint32_t;
 

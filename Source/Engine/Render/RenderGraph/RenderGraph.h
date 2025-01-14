@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_RENDERGRAPH_H
 #define INSTRENDERER_RENDERGRAPH_H
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #include <string>
 #include <unordered_set>
 #include <unordered_map>

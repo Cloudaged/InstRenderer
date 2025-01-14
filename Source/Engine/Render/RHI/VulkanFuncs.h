@@ -2,7 +2,7 @@
 #ifndef INSTRENDERER_VULKANFUNCS_H
 #define INSTRENDERER_VULKANFUNCS_H
 
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #include "vector"
 #include "Queues.h"
 #include "Swapchain.h"

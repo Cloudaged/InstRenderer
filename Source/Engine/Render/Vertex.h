@@ -3,7 +3,7 @@
 #define INSTRENDERER_VERTEX_H
 #include "../Common/Core/glmConfig.h"
 #include "vector"
-#include "vulkan/vulkan.h"
+#include "volk.h"
 struct Vertex
 {
     glm::vec3 position;

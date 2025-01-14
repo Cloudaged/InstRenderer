@@ -1,7 +1,7 @@
 
 #ifndef INSTRENDERER_RAYTRACINGBUILDER_H
 #define INSTRENDERER_RAYTRACINGBUILDER_H
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #include "../Mesh.h"
 #include "../../Common/Component/Components.h"
 #include "entt.hpp"

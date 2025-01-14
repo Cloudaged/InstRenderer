@@ -2,7 +2,7 @@
 #ifndef INSTRENDERER_MESH_H
 #define INSTRENDERER_MESH_H
 #include "Buffer/Buffer.h"
-#include "vulkan/vulkan.h"
+#include "volk.h"
 #include "vector"
 #include "Vertex.h"
 
