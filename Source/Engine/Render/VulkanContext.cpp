@@ -181,15 +181,18 @@ void VulkanContext::CreateQueueAndDevice()
 
     VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeature{};
     accelFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+    accelFeature.accelerationStructure = VK_TRUE;
+    accelFeature.descriptorBindingAccelerationStructureUpdateAfterBind =VK_TRUE;
 
     VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipelineFeature{};
     rtPipelineFeature.sType =VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+    rtPipelineFeature.rayTracingPipeline = VK_TRUE;
     rtPipelineFeature.pNext = &accelFeature;
 
     VkPhysicalDeviceMultiviewFeatures multiviewFeatures{};
     multiviewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
     multiviewFeatures.multiview = VK_TRUE;
-
+    multiviewFeatures.pNext = &rtPipelineFeature;
 
     VkPhysicalDeviceBufferDeviceAddressFeatures addressFeatures{};
     addressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
@@ -492,13 +495,15 @@ void VulkanContext::Submit()
 
 void VulkanContext::CreateDescriptorPool()
 {
-    std::array<VkDescriptorPoolSize,3> poolSizes{};
+    std::array<VkDescriptorPoolSize,4> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(100);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(200);
     poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     poolSizes[2].descriptorCount = static_cast<uint32_t>(100);
+    poolSizes[3].type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+    poolSizes[3].descriptorCount = static_cast<uint32_t>(200);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -590,16 +595,17 @@ VkResult  VulkanContext::SetupDebugMessenger()
 
 void VulkanContext::CreateTestGlobalDescriptorSetLayout()
 {
-    std::array<VkDescriptorSetLayoutBinding, 3> bindings{};
-    std::array<VkDescriptorBindingFlags, 3> flags{};
-    std::array<VkDescriptorType, 3> types
+    std::array<VkDescriptorSetLayoutBinding, 4> bindings{};
+    std::array<VkDescriptorBindingFlags, 4> flags{};
+    std::array<VkDescriptorType, 4> types
     {
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
             VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR
     };
 
-    for (uint32_t i = 0; i < 3; ++i)
+    for (uint32_t i = 0; i < types.size(); ++i)
     {
         bindings.at(i).binding = i;
         bindings.at(i).descriptorType = types.at(i);
@@ -612,11 +618,11 @@ void VulkanContext::CreateTestGlobalDescriptorSetLayout()
     bindingFlags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
     bindingFlags.pNext = nullptr;
     bindingFlags.pBindingFlags = flags.data();
-    bindingFlags.bindingCount = 3;
+    bindingFlags.bindingCount = types.size();
 
     VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
     layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutCreateInfo.bindingCount = 3;
+    layoutCreateInfo.bindingCount = types.size();
     layoutCreateInfo.pBindings = bindings.data();
     layoutCreateInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
     layoutCreateInfo.pNext = &bindingFlags;

@@ -42,20 +42,31 @@ namespace RDG
     {
         PipelineSettings settings{};
 
-        switch (pipelineRef.type)
+        if(pipelineRef.type==PipelineType::RayTracing)
         {
-            case PipelineType::Mesh:
-                settings = {true, true, true,VK_CULL_MODE_BACK_BIT};break;
-            case PipelineType::RenderQuad:
-                settings = {true, false, false,VK_CULL_MODE_FRONT_BIT};break;
-            case PipelineType::Skybox:
-                settings = {true, false, true,VK_CULL_MODE_FRONT_BIT};break;
-            default:
-                settings = {true, true, true,VK_CULL_MODE_BACK_BIT};break;
+            CreateRayTracingPipeline(pipelineRef,attCount,renderPass);
+            return;
+        }else
+        {
+            switch (pipelineRef.type)
+            {
+                case PipelineType::Mesh:
+                    settings = {true, true, true, VK_CULL_MODE_BACK_BIT};
+                    break;
+                case PipelineType::RenderQuad:
+                    settings = {true, false, false, VK_CULL_MODE_FRONT_BIT};
+                    break;
+                case PipelineType::Skybox:
+                    settings = {true, false, true, VK_CULL_MODE_FRONT_BIT};
+                    break;
+                default:
+                    settings = {true, true, true, VK_CULL_MODE_BACK_BIT};
+                    break;
+            }
         }
 
-        VkShaderModule vertModule =LoadShaderData(GetShaderFullPath(pipelineRef.vertShader));
-        VkShaderModule fragModule = LoadShaderData(GetShaderFullPath(pipelineRef.fragShader));
+        VkShaderModule vertModule =LoadShaderData(GetShaderFullPath(pipelineRef.rsShaders.vert));
+        VkShaderModule fragModule = LoadShaderData(GetShaderFullPath(pipelineRef.rsShaders.frag));
 
         std::vector<VkDynamicState> dynamicStates =
                 {
@@ -232,5 +243,60 @@ namespace RDG
     {
         std::string nameWithExtension = name+".slang.spv";
         return FILE_PATH("Asset/Shader/slangSPV/"+nameWithExtension);
+    }
+
+    void PipelineBuilder::CreateRayTracingPipeline(PipelineRef& pipelineRef,int attCount,VkRenderPass renderPass)
+    {
+        VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+        pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutCreateInfo.setLayoutCount = 1;
+        pipelineLayoutCreateInfo.pSetLayouts = &VulkanContext::GetContext().bindlessLayout;
+
+        if(vkCreatePipelineLayout(VulkanContext::GetContext().device,&pipelineLayoutCreateInfo, nullptr,&pipelineRef.pipelineLayout) != VK_SUCCESS)
+        {
+            throw std::runtime_error("fail to create RT pipeline layout");
+        }
+
+
+        enum RTStageIndices : uint32_t
+        {
+            Gen = 0,
+            Miss = 1,
+            ClosetHit = 2,
+            ShaderGroupCount = 3
+        };
+
+        std::vector<VkShaderModule> modules =
+                {
+                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.gen)),
+                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.miss)),
+                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.chit))
+                };
+
+        std::vector<VkPipelineShaderStageCreateInfo> stages(ShaderGroupCount);
+        VkPipelineShaderStageCreateInfo stage{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
+        //Gen
+        stage.module = modules[Gen];
+        stage.stage = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+        stages[Gen] = stage;
+
+        //Miss
+        stage.module = modules[Miss];
+        stage.stage = VK_SHADER_STAGE_MISS_BIT_KHR;
+        stages[Miss] = stage;
+
+        //cHit
+        stage.module = modules[ClosetHit];
+        stage.stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+        stages[ClosetHit] = stage;
+
+        VkRayTracingShaderGroupCreateInfoKHR group{VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR};
+        group.anyHitShader       = VK_SHADER_UNUSED_KHR;
+        group.closestHitShader   = VK_SHADER_UNUSED_KHR;
+        group.generalShader      = VK_SHADER_UNUSED_KHR;
+        group.intersectionShader = VK_SHADER_UNUSED_KHR;
+
+
+
     }
 }

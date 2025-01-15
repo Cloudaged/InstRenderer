@@ -224,6 +224,12 @@ void RenderSystem::InitSettings()
     lightComp.range = globalRenderSettingData.defaultLightRange;
 }
 
+void RenderSystem::RecreateRTScene()
+{
+    scene->rtScene = RTBuilder::CreateRTScene(scene->reg.view<Renderable,Transform>());
+    renderGraph.WriteAccelerationSTDescriptor(*renderGraph.accelerationStructure);
+}
+
 
 
 

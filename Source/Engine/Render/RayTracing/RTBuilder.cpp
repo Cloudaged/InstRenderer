@@ -71,7 +71,7 @@ std::vector<BLAS> RTBuilder::CreateBLAS(entt::view<entt::get_t<Renderable,Transf
                                                                                     VMA_MEMORY_USAGE_GPU_ONLY);
 
     std::vector<BLAS> allBlas(meshCount);
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
 
     VkMemoryBarrier memoryBarrier = {};
     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -117,7 +117,7 @@ std::vector<BLAS> RTBuilder::CreateBLAS(entt::view<entt::get_t<Renderable,Transf
                              0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
         index++;
     }
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
 
     VulkanContext::GetContext().bufferAllocator.DestroyBuffer(*scratchBuffer);
     index = 0;
@@ -221,7 +221,7 @@ TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
     buildInfo.srcAccelerationStructure = VK_NULL_HANDLE;
     buildInfo.dstAccelerationStructure = tlas.accelerationStructure;
 
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
     VkAccelerationStructureBuildRangeInfoKHR range = {};
     range.primitiveCount = instancesCount;
 
@@ -229,7 +229,7 @@ TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
 
     vkCmdBuildAccelerationStructuresKHR(cmd, 1, &buildInfo, ranges);
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
 
 
     VkAccelerationStructureDeviceAddressInfoKHR addressInfo = {};

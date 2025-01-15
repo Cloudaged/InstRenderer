@@ -29,7 +29,6 @@ public:
     void DeleteObject(int id);
     void Destroy(int i);
     void RenameObject(int id,std::string dstName);
-    void RecreateRTScene();
 public:
     std::shared_ptr<Skybox> skybox;
     std::shared_ptr<GameObject> sceneRootGameObject;

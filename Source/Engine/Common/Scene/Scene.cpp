@@ -10,6 +10,7 @@ mainCamera(&reg,"mainCamera")
     InitSkyboxData();
     InitMainCamera();
     InitMainLight();
+    rtScene = RTBuilder::CreateRTScene(reg.view<Renderable,Transform>());
 }
 
 Scene::~Scene()
@@ -159,12 +160,6 @@ void Scene::InitMainCamera()
 {
     mainCamera.InitCamera(glm::vec3{0,0,0},glm::vec3{0,0,1},{0,1,0});
     mainCamera.AddObserver(this);
-}
-
-void Scene::RecreateRTScene()
-{
-    rtScene = RTBuilder::CreateRTScene(reg.view<Renderable,Transform>());
-
 }
 
 

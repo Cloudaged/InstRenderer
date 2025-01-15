@@ -24,6 +24,7 @@ public:
     void BeginSystem(std::shared_ptr<Scene> scene);
     void Execute();
     void UpdateLightArray();
+    void RecreateRTScene();
 public:
     RDG::RenderGraph renderGraph;
 private:

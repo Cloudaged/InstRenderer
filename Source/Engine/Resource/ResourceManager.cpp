@@ -68,21 +68,21 @@ Material ResourceManager::TransMaterial(RDG::RenderGraph& renderGraph,std::share
         {
             auto texData = AllocTexture(tex);
 
-            auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::MaterialTexture,
+            auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::Texture,
                                                 .textureInfo =RDG::TextureInfo{{tex->width,tex->height},
                                                                           RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
             mat.baseColor = handle;
         } else if(tex->textureType==TextureType::Normal)
         {
             auto texData = AllocTexture(tex);
-            auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::MaterialTexture,
+            auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::Texture,
                                                           .textureInfo =RDG::TextureInfo{{tex->width, tex->height},
                                                                                          RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
             mat.normal = handle;
         }else if(tex->textureType==TextureType::RoughnessMetallic)
         {
             auto texData = AllocTexture(tex);
-            auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::MaterialTexture,
+            auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::Texture,
                                                           .textureInfo =RDG::TextureInfo{{tex->width,tex->height},
                                                                                          RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
             mat.metallicRoughness = handle;
@@ -118,6 +118,7 @@ void ResourceManager::CompileModel(GameInstance *instance,std::shared_ptr<Res::R
         AsynCompile(instance,model);
     });
     t.join();
+
 }
 
 void ResourceManager::AsynCompile(GameInstance *instance, std::shared_ptr<Res::ResModel> model)
@@ -126,10 +127,11 @@ void ResourceManager::AsynCompile(GameInstance *instance, std::shared_ptr<Res::R
 
     auto modelRootGo = AddSceneNode(instance,model->rootNode, instance->mainScene->sceneRootGameObject);
     instance->mainScene->sceneRootGameObject->child.insert(modelRootGo);
-    instance->mainScene->RecreateRTScene();
 
     instance->mainScene->minPoint = glm::min(model->minPoint,instance->mainScene->minPoint);
     instance->mainScene->maxPoint = glm::max(model->maxPoint,instance->mainScene->maxPoint);
+    instance->renderSystem.RecreateRTScene();
+
     //instance->renderSystem.materialManager.AllocateDescriptorSets();
 }
 

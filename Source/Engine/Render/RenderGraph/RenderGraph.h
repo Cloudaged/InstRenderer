@@ -22,7 +22,7 @@ namespace RDG
 #define UBO_BINDING 0
 #define SSBO_BINDING 1
 #define TEXTURE_BINDING 2
-#define CUBEMAP_BINDING 3
+#define ACCELERATION_ST_BINDING 3
 
     bool IsImageType(ResourceType type);
     bool IsBufferType(ResourceType type);
@@ -44,6 +44,7 @@ namespace RDG
         Handle GetResourceHandle(std::string name);
     public:
         ResourceMap resourceMap;
+        std::shared_ptr<ResourceRef> accelerationStructure;
     private:
         void AddPass(const PassRef& pass);
         void DeclareResource();
@@ -51,8 +52,10 @@ namespace RDG
         void CreateGraphicPass(PassRef& passData);
         void CreateComputePass(PassRef& passData);
         void CreatePresentPass(PassRef& passData);
+        void CreateRayTracingPass(PassRef& passData);
         void WriteImageDescriptor(const ResourceRef& resource);
         void WriteBufferDescriptor(const ResourceRef& resource);
+        void WriteAccelerationSTDescriptor(const ResourceRef& resource);
         void WriteDependency();
         void CreateResource();
         void CreateDescriptor();

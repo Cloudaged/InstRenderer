@@ -5,7 +5,6 @@ namespace RDG
 {
     RenderGraph::RenderGraph()
     {
-
     }
 
     void RenderGraph::DeclareResource()
@@ -21,14 +20,14 @@ namespace RDG
                                            .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});
         int a = sizeof(CSMUniform);
 
-        auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::MaterialTexture,
+        auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::Texture,
                                                 .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},
                                                                            AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB,sceneSkybox->texture}});
 
        /* auto cascadedShadowMapData = AddResource({"CascadedShadowMapData",.type = ResourceType::Uniform,
                                                          .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});*/
 
-        auto cascadedShadowMap = AddResource({"CascadedShadowMap",.type = ResourceType::Attachment,
+        auto cascadedShadowMap = AddResource({"CascadedShadowMap",.type = ResourceType::Texture,
                                                         .textureInfo = TextureInfo{{CASCADED_WIDTH, CASCADED_HEIGHT},
                                                                                    AttachmentUsage::ShadowMap,VK_FORMAT_D32_SFLOAT, nullptr,1,CASCADED_COUNT}});
 
@@ -38,23 +37,23 @@ namespace RDG
         auto renderSettings = AddResource({.name = "RenderSettings",.type = ResourceType::Uniform,
                                              .bufferInfo = BufferInfo{.size = sizeof(RenderSettingUniform)}});
 
-       auto position = AddResource({.name = "Position",.type = ResourceType::Attachment,
+       auto position = AddResource({.name = "Position",.type = ResourceType::Texture,
                                            .textureInfo =TextureInfo{WINDOW_EXTENT,
                                                                      AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-       auto normal = AddResource({.name = "Normal",.type = ResourceType::Attachment,
+       auto normal = AddResource({.name = "Normal",.type = ResourceType::Texture,
                 .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        auto baseColor = AddResource({.name = "BaseColor",.type = ResourceType::Attachment,
+        auto baseColor = AddResource({.name = "BaseColor",.type = ResourceType::Texture,
                 .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        auto metallicRoughness = AddResource({.name = "MetallicRoughness",.type = ResourceType::Attachment,
+        auto metallicRoughness = AddResource({.name = "MetallicRoughness",.type = ResourceType::Texture,
                 .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        auto depth = AddResource({.name = "Depth",.type = ResourceType::Attachment,
+        auto depth = AddResource({.name = "Depth",.type = ResourceType::Texture,
                 .textureInfo = TextureInfo{WINDOW_EXTENT,
                                            AttachmentUsage::Depth, VK_FORMAT_D32_SFLOAT}});
 
@@ -62,13 +61,16 @@ namespace RDG
                 .textureInfo = TextureInfo{{shadowMapWidth, shadowMapWidth},
                                            AttachmentUsage::ShadowMap, VK_FORMAT_D32_SFLOAT}});*/
 
-        auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Attachment,
+        auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Texture,
                                 .textureInfo = TextureInfo{WINDOW_EXTENT,
                                 AttachmentUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-        /*auto skyboxDrawn = AddResource({.name = "SkyboxDrawn",.type = ResourceType::Attachment,
-                                         .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB}});*/
+        auto rtIMG  = AddResource({.name = "RTIMG",.type = ResourceType::Texture,
+                                .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                           AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+        auto tlasData = AddResource({.name = "TLAS",.type = ResourceType::Accleration,
+                                            .rtScene = std::make_shared<RTScene>(scene->rtScene)});
 
         //Pass
         //GeoPass
@@ -83,7 +85,7 @@ namespace RDG
             AddPass({.name = "Geometry",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
                     .input = {globalData},
                     .output = {position, normal, baseColor, metallicRoughness, depth},
-                    .pipeline = {PipelineType::Mesh, "GeoVert", "GeoFrag", sizeof(GeoPC)},
+                    .pipeline = {.type=PipelineType::Mesh, .rsShaders={"GeoVert", "GeoFrag"},.handleSize = sizeof(GeoPC)},
                     .executeFunc = [=](CommandList& cmd)
                     {
                         for (auto& entity:view)
@@ -134,7 +136,7 @@ namespace RDG
             AddPass({.name = "csmPass",.type = RenderPassType::Raster,.fbExtent = {CASCADED_WIDTH, CASCADED_HEIGHT},
                             .input = {csmData},
                             .output = {cascadedShadowMap},
-                            .pipeline = {PipelineType::Mesh, "CascadedShadowVert", "CascadedShadowFrag", sizeof(csmPC)},
+                            .pipeline = {.type=PipelineType::Mesh, .rsShaders={"CascadedShadowVert","CascadedShadowFrag"}, .handleSize = sizeof(csmPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
                                 for (auto& entity:view)
@@ -168,7 +170,7 @@ namespace RDG
             AddPass({.name = "Composition",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
                             .input = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,globalData,lightData,renderSettings},
                             .output = {lighted},
-                            .pipeline = {PipelineType::RenderQuad, "CompVert", "CompFrag", sizeof(CompPC)},
+                            .pipeline = {.type = PipelineType::RenderQuad, .rsShaders = {"CompVert", "CompFrag"},.handleSize = sizeof(CompPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
                                 CompPC pushConstants = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,lightData,globalData,renderSettings};
@@ -189,7 +191,7 @@ namespace RDG
             AddPass({.name = "SkyboxDraw", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
                             .input = {skyboxTex,lighted,depth},
                             .output = {lighted,depth},
-                            .pipeline = {PipelineType::Skybox, "SkyboxVert", "SkyboxFrag", sizeof(SkyboxPC)},
+                            .pipeline = {.type = PipelineType::Skybox, .rsShaders = {"SkyboxVert", "SkyboxFrag"},.handleSize = sizeof(SkyboxPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
                                 SkyboxPC pushConstant = {skyboxTex,globalData};
@@ -208,7 +210,7 @@ namespace RDG
             AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
                     .input = {lighted},
                     .output = {},
-                    .pipeline = {PipelineType::RenderQuad, "PresentVert", "PresentFrag", sizeof(PresentPC)},
+                    .pipeline = {.type = PipelineType::RenderQuad, .rsShaders ={"PresentVert", "PresentFrag"},.handleSize = sizeof(PresentPC)},
                     .executeFunc = [=](CommandList& cmd)
                     {
                         PresentPC pushConstants = {lighted};
@@ -336,6 +338,9 @@ namespace RDG
             }else if(passData.type==RenderPassType::Compute)
             {
                 CreateComputePass(passData);
+            }else if(passData.type == RenderPassType::RayTracing)
+            {
+
             }
         }
     }
@@ -566,6 +571,9 @@ namespace RDG
             }else if(IsImageType(resData.type))
             {
                 WriteImageDescriptor(resData);
+            }else if(resData.type==ResourceType::Accleration)
+            {
+                WriteAccelerationSTDescriptor(resData);
             }
         }
     }
@@ -648,6 +656,27 @@ namespace RDG
         vkUpdateDescriptorSets(VulkanContext::GetContext().device, 1, &write, 0, nullptr);
 
     }
+
+    void RenderGraph::WriteAccelerationSTDescriptor(const ResourceRef &resource)
+    {
+        VkWriteDescriptorSetAccelerationStructureKHR write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
+        write.accelerationStructureCount = 1;
+        write.pAccelerationStructures = &resource.rtScene->topAS.accelerationStructure;
+        accelerationStructure = std::make_shared<ResourceRef>(resource);
+
+        VkWriteDescriptorSet writeDescriptor{};
+        writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeDescriptor.dstSet = VulkanContext::GetContext().bindlessSet;
+        writeDescriptor.dstBinding = ACCELERATION_ST_BINDING;
+        writeDescriptor.dstArrayElement = 0;
+        writeDescriptor.descriptorCount = 1;
+        writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+        writeDescriptor.pNext = &write;
+
+        vkUpdateDescriptorSets(VulkanContext::GetContext().device, 1, &writeDescriptor, 0, nullptr);
+    }
+
 
     void RenderGraph::CreateVkPipeline()
     {
@@ -779,6 +808,12 @@ namespace RDG
         }
     }
 
+    void RenderGraph::CreateRayTracingPass(PassRef &passData)
+    {
+
+    }
+
+
 
 
     AttachmentState GetImageState(AttachmentUsage usage,bool isRW)
@@ -815,6 +850,12 @@ namespace RDG
                                        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                                        VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL};
             }
+        }else if(usage==AttachmentUsage::StoreImage)
+        {
+            return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                   VK_ATTACHMENT_STORE_OP_STORE,
+                                   VK_IMAGE_LAYOUT_GENERAL,
+                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
         }
         else
         {
@@ -851,6 +892,8 @@ namespace RDG
                 return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
             case AttachmentUsage::ShadowMap:
                 return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+            case AttachmentUsage::StoreImage:
+                return VK_IMAGE_USAGE_STORAGE_BIT|VK_IMAGE_USAGE_SAMPLED_BIT;
             default:
                 return VK_IMAGE_USAGE_SAMPLED_BIT;
         }
@@ -891,7 +934,7 @@ namespace RDG
 
     bool IsImageType(ResourceType type)
     {
-        if(type==ResourceType::Attachment||type==ResourceType::MaterialTexture)
+        if(type==ResourceType::Texture)
         {
             return true;
         } else

@@ -29,6 +29,20 @@ struct RTScene
 
 };
 
+struct SBT
+{
+    Buffer* sbtBuffer;
+    std::vector<VkRayTracingShaderGroupCreateInfoKHR> groups;
+};
+
+//enum class RTStageIndices : uint32_t
+//{
+//    Gen = 0,
+//    Miss = 1,
+//    CloestHit = 2,
+//    ShaderGroupCount = 3
+//};
+
 
 class RTBuilder
 {

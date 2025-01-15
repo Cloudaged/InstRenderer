@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <functional>
 #include "../TextureExtent.h"
+#include "../RayTracing/RTBuilder.h"
 namespace RDG
 {
     using ResourceName = std::string;
@@ -38,8 +39,8 @@ namespace RDG
     {
         Uniform = 0,
         SSBO = 1,
-        Attachment = 2,
-        MaterialTexture = 3,
+        Texture = 2,
+        Accleration = 3
     };
 
     enum class PipelineType
@@ -47,7 +48,8 @@ namespace RDG
         Mesh,
         Skybox,
         RenderQuad,
-        RayTracing
+        RayTracing,
+        Compute
     };
 
     enum class RenderPassType
@@ -68,7 +70,8 @@ namespace RDG
         Depth,
         Prefiltered,
         ShadowMap,
-        MaterialTexture
+        MaterialTexture,
+        StoreImage
     };
 
     struct AttachmentState
@@ -97,11 +100,31 @@ namespace RDG
         VkImageLayout currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     };
 
+    struct RasterShaders
+    {
+        ShaderName vert;
+        ShaderName frag;
+    };
+
+    struct ComputeShaders
+    {
+        ShaderName comp;
+    };
+
+    struct RayTracingShaders
+    {
+        ShaderName chit;
+        ShaderName gen;
+        ShaderName miss;
+        ShaderName ahit;
+    };
+
     struct PipelineRef
     {
         PipelineType type;
-        ShaderName vertShader;
-        ShaderName fragShader;
+        RasterShaders rsShaders;
+        ComputeShaders cpShaders;
+        RayTracingShaders rtShaders;
         size_t handleSize;
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -148,6 +171,7 @@ namespace RDG
         ResourceType type;
         std::optional<TextureInfo> textureInfo;
         std::optional<BufferInfo> bufferInfo;
+        std::shared_ptr<RTScene> rtScene;
         PassName producerPass;
     };
 
