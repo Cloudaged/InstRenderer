@@ -17,8 +17,9 @@ namespace RDG
 
     bool CommandList::BeginRenderPass(const PassRef& passRef)
     {
-
         curPass = std::make_shared<PassRef>(passRef);
+        if(passRef.type==RenderPassType::RayTracing)
+            return true;
 
         auto presentM = VulkanContext::GetContext().presentManager;
 
@@ -95,6 +96,8 @@ namespace RDG
 
     void CommandList::EndRenderPass()
     {
+        if(curPass->type==RenderPassType::RayTracing)
+            return;
         vkCmdEndRenderPass(cmd);
     }
 
@@ -112,7 +115,14 @@ namespace RDG
 
     void CommandList::BindPipeline()
     {
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, curPass->pipeline.pipeline);
+        VkPipelineBindPoint bindingPoint;
+        switch (curPass->type)
+        {
+            case RenderPassType::Raster: bindingPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;break;
+            case RenderPassType::RayTracing: bindingPoint = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;break;
+            case RenderPassType::Compute: bindingPoint = VK_PIPELINE_BIND_POINT_COMPUTE;break;
+        }
+        vkCmdBindPipeline(cmd, bindingPoint, curPass->pipeline.pipeline);
     }
 
     void CommandList::DrawMesh(const Mesh& mesh)

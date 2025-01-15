@@ -125,6 +125,7 @@ namespace RDG
         RasterShaders rsShaders;
         ComputeShaders cpShaders;
         RayTracingShaders rtShaders;
+        SBT sbt;
         size_t handleSize;
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;

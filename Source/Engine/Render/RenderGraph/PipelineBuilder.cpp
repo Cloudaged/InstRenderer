@@ -252,6 +252,24 @@ namespace RDG
         pipelineLayoutCreateInfo.setLayoutCount = 1;
         pipelineLayoutCreateInfo.pSetLayouts = &VulkanContext::GetContext().bindlessLayout;
 
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.setLayoutCount= 1;
+        pipelineLayoutInfo.pSetLayouts = &VulkanContext::GetContext().bindlessLayout;
+        VkPushConstantRange pushConstantRange{};
+        if(pipelineRef.handleSize!=0)
+        {
+            pushConstantRange.stageFlags = VK_SHADER_STAGE_ALL;
+            pushConstantRange.offset = 0;
+            pushConstantRange.size = pipelineRef.handleSize;
+
+            pipelineLayoutInfo.pushConstantRangeCount = 1;
+            pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+        }else
+        {
+            std::cout<<"This pass don't have handle pushConstants\n";
+        }
+
         if(vkCreatePipelineLayout(VulkanContext::GetContext().device,&pipelineLayoutCreateInfo, nullptr,&pipelineRef.pipelineLayout) != VK_SUCCESS)
         {
             throw std::runtime_error("fail to create RT pipeline layout");
@@ -274,7 +292,7 @@ namespace RDG
                 };
 
         std::vector<VkPipelineShaderStageCreateInfo> stages(ShaderGroupCount);
-        VkPipelineShaderStageCreateInfo stage{VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
+        VkPipelineShaderStageCreateInfo stage{.sType=VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,.pName = "main"};
         //Gen
         stage.module = modules[Gen];
         stage.stage = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
@@ -296,6 +314,80 @@ namespace RDG
         group.generalShader      = VK_SHADER_UNUSED_KHR;
         group.intersectionShader = VK_SHADER_UNUSED_KHR;
 
+        group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+        group.generalShader = Gen;
+        pipelineRef.sbt.groups.push_back(group);
+
+        group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+        group.generalShader = Miss;
+        pipelineRef.sbt.groups.push_back(group);
+
+        group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+        group.generalShader = VK_SHADER_UNUSED_KHR;
+        group.closestHitShader = ClosetHit;
+        pipelineRef.sbt.groups.push_back(group);
+
+
+        VkRayTracingPipelineCreateInfoKHR rayPipelineInfo{VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR};
+        rayPipelineInfo.stageCount = stages.size();
+        rayPipelineInfo.pStages = stages.data();
+        rayPipelineInfo.groupCount =  pipelineRef.sbt.groups.size();
+        rayPipelineInfo.pGroups =  pipelineRef.sbt.groups.data();
+        rayPipelineInfo.maxPipelineRayRecursionDepth = 1;
+        rayPipelineInfo.layout = pipelineRef.pipelineLayout;
+        auto device = VulkanContext::GetContext().device;
+        vkCreateRayTracingPipelinesKHR(device,{},{},1,&rayPipelineInfo, nullptr,&pipelineRef.pipeline);
+
+
+        for(auto& s : stages)
+        {
+            vkDestroyShaderModule(device, s.module, nullptr);
+        }
+
+        VkPhysicalDeviceRayTracingPipelinePropertiesKHR  rtProps{};
+        rtProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
+
+        VkPhysicalDeviceProperties2 deviceProperties2{};
+        deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        deviceProperties2.pNext = &rtProps;
+
+        vkGetPhysicalDeviceProperties2(VulkanContext::GetContext().gpu,&deviceProperties2);
+
+        pipelineRef.sbt.shaderHandleSize = rtProps.shaderGroupHandleSize;
+        uint32_t handleAlignment = rtProps.shaderGroupHandleAlignment;
+        uint32_t sbtAlignment = rtProps.shaderGroupBaseAlignment;
+
+        uint32_t groupCount = pipelineRef.sbt.groups.size();
+        uint32_t sbtSize = groupCount*pipelineRef.sbt.shaderHandleSize;
+
+        pipelineRef.sbt.sbtBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(sbtSize,
+                                                                                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
+                                                                                             | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
+                                                                                             VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+        std::vector<uint8_t> shaderHandleStorage(sbtSize);
+        vkGetRayTracingShaderGroupHandlesKHR(device,pipelineRef.pipeline,0,groupCount,sbtSize,shaderHandleStorage.data());
+
+        void* mappedData =VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*pipelineRef.sbt.sbtBuffer);
+        memcpy(mappedData,shaderHandleStorage.data(),sbtSize);
+
+        VkBufferDeviceAddressInfo deviceAddressInfo{};
+        deviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+        deviceAddressInfo.buffer = pipelineRef.sbt.sbtBuffer->vk_buffer;
+
+        pipelineRef.sbt.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfo);
+
+        pipelineRef.sbt.genRegion.deviceAddress = pipelineRef.sbt.deviceAddress+Gen*pipelineRef.sbt.shaderHandleSize;
+        pipelineRef.sbt.genRegion.stride = pipelineRef.sbt.shaderHandleSize;
+        pipelineRef.sbt.genRegion.size = pipelineRef.sbt.shaderHandleSize;
+
+        pipelineRef.sbt.missRegion.deviceAddress = pipelineRef.sbt.deviceAddress+Miss*pipelineRef.sbt.shaderHandleSize;
+        pipelineRef.sbt.missRegion.stride = pipelineRef.sbt.shaderHandleSize;
+        pipelineRef.sbt.missRegion.size = pipelineRef.sbt.shaderHandleSize;
+
+        pipelineRef.sbt.hitRegion.deviceAddress = pipelineRef.sbt.deviceAddress+ClosetHit*pipelineRef.sbt.shaderHandleSize;
+        pipelineRef.sbt.hitRegion.stride = pipelineRef.sbt.shaderHandleSize;
+        pipelineRef.sbt.hitRegion.size = pipelineRef.sbt.shaderHandleSize;
 
 
     }

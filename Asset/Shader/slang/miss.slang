@@ -1,0 +1,6 @@
+
+[shader("miss")]
+void main()
+{
+
+}

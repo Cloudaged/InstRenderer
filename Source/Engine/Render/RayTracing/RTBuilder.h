@@ -32,7 +32,14 @@ struct RTScene
 struct SBT
 {
     Buffer* sbtBuffer;
+    VkDeviceAddress deviceAddress;
     std::vector<VkRayTracingShaderGroupCreateInfoKHR> groups;
+    VkStridedDeviceAddressRegionKHR genRegion;
+    VkStridedDeviceAddressRegionKHR missRegion;
+    VkStridedDeviceAddressRegionKHR hitRegion;
+    VkStridedDeviceAddressRegionKHR callRegin;
+    uint32_t shaderHandleSize;
+
 };
 
 //enum class RTStageIndices : uint32_t

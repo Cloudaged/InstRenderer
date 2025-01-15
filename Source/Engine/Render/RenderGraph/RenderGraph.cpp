@@ -201,6 +201,26 @@ namespace RDG
                     });
         }
 
+
+        {
+            struct alignas(16) RTPC
+            {
+                Handle lastAtt;
+            };
+
+            AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
+                            .input = {},
+                            .output = {rtIMG},
+                            .pipeline = {.type = PipelineType::RayTracing,
+                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="antHit"},
+                                         .handleSize = sizeof(RTPC)},
+                            .executeFunc = [=](CommandList& cmd)
+                            {
+
+                            }});
+
+        }
+
         {
             struct alignas(16) PresentPC
             {
