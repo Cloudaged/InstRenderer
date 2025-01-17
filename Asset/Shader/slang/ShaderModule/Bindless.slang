@@ -5,7 +5,6 @@ import Types;
 
 //GEN_BUFFER_DEFINE(GlobalUniform)
 
-[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> globalUniform[];
 #define Handle public int
 public struct Material
 {
@@ -50,6 +49,13 @@ public struct CompHandles
     Handle lightUniform;
     Handle globalUniform;
     Handle renderSettingUniform;
+}
+
+public struct RayTracingHandles
+{
+    Handle outputImg;
+    Handle tlas;
+    Handle globalUniform;
 }
 
 public struct PresentHandle

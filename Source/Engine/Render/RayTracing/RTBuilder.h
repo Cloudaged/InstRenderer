@@ -26,7 +26,7 @@ struct RTScene
 {
     TLAS topAS;
     std::vector<BLAS> allBlas;
-
+    bool isEmpty = true;
 };
 
 struct SBT
@@ -56,6 +56,7 @@ class RTBuilder
 public:
     static RTScene CreateRTScene(entt::view<entt::get_t<Renderable,Transform>> view);
 private:
+    static BLAS CreateEmptyBLAS();
     static std::vector<BLAS> CreateBLAS(entt::view<entt::get_t<Renderable,Transform>> view);
     static TLAS CreateTLAS(const std::vector<BLAS>& allblas);
 };

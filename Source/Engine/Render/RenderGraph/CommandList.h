@@ -22,6 +22,7 @@ namespace RDG
         void DrawMesh(const Mesh& mesh);
         void DrawRenderQuad();
         void PushConstantsForHandles(void* data);
+        void RayTracing();
     public:
         VkCommandBuffer cmd;
     private:

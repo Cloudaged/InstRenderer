@@ -108,7 +108,14 @@ namespace RDG
 
     void CommandList::BindDescriptor()
     {
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+        VkPipelineBindPoint bindingPoint;
+        switch (curPass->type)
+        {
+            case RenderPassType::Raster: bindingPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;break;
+            case RenderPassType::RayTracing: bindingPoint = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;break;
+            case RenderPassType::Compute: bindingPoint = VK_PIPELINE_BIND_POINT_COMPUTE;break;
+        }
+        vkCmdBindDescriptorSets(cmd, bindingPoint,
                                 curPass->pipeline.pipelineLayout,
                                 0, 1,&VulkanContext::GetContext().bindlessSet,0, nullptr);
     }
@@ -142,6 +149,15 @@ namespace RDG
     void CommandList::DrawRenderQuad()
     {
         vkCmdDraw(cmd, 3, 1, 0, 0);
+    }
+
+    void CommandList::RayTracing()
+    {
+        auto& sbt = curPass->pipeline.sbt;
+        auto extension = curPass->fbExtent.GetVkExtent();
+        VkStridedDeviceAddressRegionKHR callableRegion = {};
+        vkCmdTraceRaysKHR(cmd, &sbt.genRegion, &sbt.missRegion, &sbt.hitRegion, &callableRegion,
+                          extension.width, extension.height, 1);
     }
 
 

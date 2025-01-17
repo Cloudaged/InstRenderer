@@ -22,7 +22,8 @@ namespace RDG
 #define UBO_BINDING 0
 #define SSBO_BINDING 1
 #define TEXTURE_BINDING 2
-#define ACCELERATION_ST_BINDING 3
+#define STORE_IMAGE_BINDING 3
+#define ACCELERATION_ST_BINDING 4
 
     bool IsImageType(ResourceType type);
     bool IsBufferType(ResourceType type);

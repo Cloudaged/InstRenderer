@@ -226,6 +226,13 @@ void RenderSystem::InitSettings()
 
 void RenderSystem::RecreateRTScene()
 {
+    if(scene->rtScene.topAS.accelerationStructure!=VK_NULL_HANDLE)
+    {
+        std::cout<<"Exit\n";
+    }else
+    {
+        std::cout<<"dontExit\n";
+    }
     scene->rtScene = RTBuilder::CreateRTScene(scene->reg.view<Renderable,Transform>());
     renderGraph.WriteAccelerationSTDescriptor(*renderGraph.accelerationStructure);
 }

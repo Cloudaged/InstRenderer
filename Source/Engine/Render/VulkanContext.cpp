@@ -204,6 +204,7 @@ void VulkanContext::CreateQueueAndDevice()
     indexingFeatures.descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE;
     indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
     indexingFeatures.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
+    indexingFeatures.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
     indexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
     indexingFeatures.runtimeDescriptorArray = VK_TRUE;
     indexingFeatures.pNext = &addressFeatures;
@@ -495,13 +496,15 @@ void VulkanContext::Submit()
 
 void VulkanContext::CreateDescriptorPool()
 {
-    std::array<VkDescriptorPoolSize,4> poolSizes{};
+    std::array<VkDescriptorPoolSize,5> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(100);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(200);
     poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     poolSizes[2].descriptorCount = static_cast<uint32_t>(100);
+    poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    poolSizes[4].descriptorCount = static_cast<uint32_t>(200);
     poolSizes[3].type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
     poolSizes[3].descriptorCount = static_cast<uint32_t>(200);
 
@@ -595,13 +598,14 @@ VkResult  VulkanContext::SetupDebugMessenger()
 
 void VulkanContext::CreateTestGlobalDescriptorSetLayout()
 {
-    std::array<VkDescriptorSetLayoutBinding, 4> bindings{};
-    std::array<VkDescriptorBindingFlags, 4> flags{};
-    std::array<VkDescriptorType, 4> types
+    std::array<VkDescriptorSetLayoutBinding, 5> bindings{};
+    std::array<VkDescriptorBindingFlags, 5> flags{};
+    std::array<VkDescriptorType, 5> types
     {
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
             VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
             VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR
     };
 

@@ -252,10 +252,6 @@ namespace RDG
         pipelineLayoutCreateInfo.setLayoutCount = 1;
         pipelineLayoutCreateInfo.pSetLayouts = &VulkanContext::GetContext().bindlessLayout;
 
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount= 1;
-        pipelineLayoutInfo.pSetLayouts = &VulkanContext::GetContext().bindlessLayout;
         VkPushConstantRange pushConstantRange{};
         if(pipelineRef.handleSize!=0)
         {
@@ -263,8 +259,8 @@ namespace RDG
             pushConstantRange.offset = 0;
             pushConstantRange.size = pipelineRef.handleSize;
 
-            pipelineLayoutInfo.pushConstantRangeCount = 1;
-            pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+            pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+            pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
         }else
         {
             std::cout<<"This pass don't have handle pushConstants\n";
@@ -355,39 +351,67 @@ namespace RDG
 
         pipelineRef.sbt.shaderHandleSize = rtProps.shaderGroupHandleSize;
         uint32_t handleAlignment = rtProps.shaderGroupHandleAlignment;
-        uint32_t sbtAlignment = rtProps.shaderGroupBaseAlignment;
+        uint32_t baseAligment = rtProps.shaderGroupBaseAlignment;
 
-        uint32_t groupCount = pipelineRef.sbt.groups.size();
-        uint32_t sbtSize = groupCount*pipelineRef.sbt.shaderHandleSize;
+        auto AlignUp = [](uint32_t value, uint32_t alignment) {
+            return (value + alignment - 1) & ~(alignment - 1);
+        };
 
+        uint32_t handleSizeAligned = AlignUp(pipelineRef.sbt.shaderHandleSize,handleAlignment);
+
+        pipelineRef.sbt.genRegion.stride = AlignUp(handleSizeAligned,baseAligment);
+        pipelineRef.sbt.genRegion.size =  pipelineRef.sbt.genRegion.stride;
+
+        pipelineRef.sbt.missRegion.stride = handleSizeAligned;
+        pipelineRef.sbt.missRegion.size = AlignUp(handleSizeAligned,baseAligment);
+
+        pipelineRef.sbt.hitRegion.stride = handleSizeAligned;
+        pipelineRef.sbt.hitRegion.size = AlignUp(handleSizeAligned,baseAligment);
+
+        //CreateBuffer
+        uint32_t sbtSize =pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size+pipelineRef.sbt.hitRegion.size ;
         pipelineRef.sbt.sbtBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(sbtSize,
                                                                                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
                                                                                              | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
                                                                                              VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-        std::vector<uint8_t> shaderHandleStorage(sbtSize);
-        vkGetRayTracingShaderGroupHandlesKHR(device,pipelineRef.pipeline,0,groupCount,sbtSize,shaderHandleStorage.data());
-
-        void* mappedData =VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*pipelineRef.sbt.sbtBuffer);
-        memcpy(mappedData,shaderHandleStorage.data(),sbtSize);
-
         VkBufferDeviceAddressInfo deviceAddressInfo{};
         deviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
         deviceAddressInfo.buffer = pipelineRef.sbt.sbtBuffer->vk_buffer;
 
+        //TransHandle To buffer
+        uint32_t handleCount = 3;
+        uint32_t dataSize =pipelineRef.sbt.shaderHandleSize*handleCount;
+        std::vector<uint8_t> handles(dataSize);
+        if(vkGetRayTracingShaderGroupHandlesKHR(device,pipelineRef.pipeline,0,handleCount,dataSize,handles.data())!=VK_SUCCESS)
+        {
+            std::cout<<"Failed to Get group Handles\n";
+        };
+
+
+        auto getHandle = [&] (int i) { return handles.data() + i * pipelineRef.sbt.shaderHandleSize; };
+
+        uint8_t* mappedData =(uint8_t*)VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*pipelineRef.sbt.sbtBuffer);
+        uint32_t handleIndex = 0;
+
+        uint8_t* pData = (uint8_t*)mappedData;
+        memcpy(pData, getHandle(handleIndex++), pipelineRef.sbt.shaderHandleSize);
+
+        pData = mappedData+pipelineRef.sbt.genRegion.size;
+        memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
+
+        pData = mappedData+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size;
+        memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
+
+
+        //Set address
         pipelineRef.sbt.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfo);
 
-        pipelineRef.sbt.genRegion.deviceAddress = pipelineRef.sbt.deviceAddress+Gen*pipelineRef.sbt.shaderHandleSize;
-        pipelineRef.sbt.genRegion.stride = pipelineRef.sbt.shaderHandleSize;
-        pipelineRef.sbt.genRegion.size = pipelineRef.sbt.shaderHandleSize;
+        pipelineRef.sbt.genRegion.deviceAddress = pipelineRef.sbt.deviceAddress;
+        pipelineRef.sbt.missRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size;
+        pipelineRef.sbt.hitRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size;
 
-        pipelineRef.sbt.missRegion.deviceAddress = pipelineRef.sbt.deviceAddress+Miss*pipelineRef.sbt.shaderHandleSize;
-        pipelineRef.sbt.missRegion.stride = pipelineRef.sbt.shaderHandleSize;
-        pipelineRef.sbt.missRegion.size = pipelineRef.sbt.shaderHandleSize;
 
-        pipelineRef.sbt.hitRegion.deviceAddress = pipelineRef.sbt.deviceAddress+ClosetHit*pipelineRef.sbt.shaderHandleSize;
-        pipelineRef.sbt.hitRegion.stride = pipelineRef.sbt.shaderHandleSize;
-        pipelineRef.sbt.hitRegion.size = pipelineRef.sbt.shaderHandleSize;
+
 
 
     }

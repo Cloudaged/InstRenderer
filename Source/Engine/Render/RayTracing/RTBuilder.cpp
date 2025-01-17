@@ -6,8 +6,12 @@ RTScene RTBuilder::CreateRTScene(entt::view<entt::get_t<Renderable,Transform>> v
 {
     RTScene rtScene;
     if(view.size_hint()<=0)
-        return rtScene;
-    rtScene.allBlas = CreateBLAS(view);
+    {
+        rtScene.allBlas.push_back(CreateEmptyBLAS());
+    } else
+    {
+        rtScene.allBlas = CreateBLAS(view);
+    }
     rtScene.topAS = CreateTLAS(rtScene.allBlas);
     return rtScene;
 }
@@ -138,6 +142,55 @@ std::vector<BLAS> RTBuilder::CreateBLAS(entt::view<entt::get_t<Renderable,Transf
     return allBlas;
 }
 
+BLAS RTBuilder::CreateEmptyBLAS()
+{
+    BLAS emptyBlas;
+
+    auto device = VulkanContext::GetContext().device;
+    VkAccelerationStructureGeometryKHR emptyGeometry = {};
+    emptyGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+    emptyGeometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
+    emptyGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
+
+    emptyGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
+    emptyGeometry.geometry.triangles.vertexData.deviceAddress = 0;
+    emptyGeometry.geometry.triangles.vertexStride = 0;
+    emptyGeometry.geometry.triangles.maxVertex = 0;
+    emptyGeometry.geometry.triangles.indexData.deviceAddress = 0;
+    emptyGeometry.geometry.triangles.indexType = VK_INDEX_TYPE_NONE_KHR;
+
+    VkAccelerationStructureBuildGeometryInfoKHR buildInfo = {};
+    buildInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+    buildInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+    buildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
+    buildInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+    buildInfo.geometryCount = 1;
+    buildInfo.pGeometries = &emptyGeometry;
+    uint32_t zeroPrimitiveCount = 0;
+    VkAccelerationStructureBuildSizesInfoKHR sizeInfo = {VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR};
+    vkGetAccelerationStructureBuildSizesKHR(device,
+                                            VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR,
+                                            &buildInfo,
+                                            &zeroPrimitiveCount,
+                                            &sizeInfo);
+
+    emptyBlas.asBuffer =  VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeInfo.accelerationStructureSize,
+                                                                                        VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR|
+                                                                                        VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,VMA_MEMORY_USAGE_GPU_ONLY);
+
+    VkAccelerationStructureCreateInfoKHR createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
+    createInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+    createInfo.size = sizeInfo.accelerationStructureSize;
+    createInfo.buffer = emptyBlas.asBuffer->vk_buffer;
+
+    if (vkCreateAccelerationStructureKHR(device, &createInfo, nullptr, &emptyBlas.accelerationStructure) != VK_SUCCESS) {
+        std::cout << "Failed to create empty BLAS\n";
+    }
+
+    return emptyBlas;
+}
+
 TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
 {
     auto& device = VulkanContext::GetContext().device;
@@ -238,6 +291,7 @@ TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
     tlas.address = vkGetAccelerationStructureDeviceAddressKHR(device, &addressInfo);
     return tlas;
 }
+
 
 
 

@@ -67,7 +67,7 @@ namespace RDG
 
         auto rtIMG  = AddResource({.name = "RTIMG",.type = ResourceType::Texture,
                                 .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                           AttachmentUsage::Color,VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                           AttachmentUsage::StoreImage,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
         auto tlasData = AddResource({.name = "TLAS",.type = ResourceType::Accleration,
                                             .rtScene = std::make_shared<RTScene>(scene->rtScene)});
@@ -205,18 +205,22 @@ namespace RDG
         {
             struct alignas(16) RTPC
             {
-                Handle lastAtt;
+                Handle outputImg;
+                Handle tlas;
+                Handle globalData;
             };
 
             AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
-                            .input = {},
+                            .input = {rtIMG,tlasData,globalData},
                             .output = {rtIMG},
                             .pipeline = {.type = PipelineType::RayTracing,
                                          .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="antHit"},
                                          .handleSize = sizeof(RTPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
-
+                                RTPC rtpc = {rtIMG,tlasData,globalData};
+                                cmd.PushConstantsForHandles(&rtpc);
+                                cmd.RayTracing();
                             }});
 
         }
@@ -615,17 +619,25 @@ namespace RDG
             std::cout<<"Write an unallocated res\n";
         }
         VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = data->allocatedImage->imageView;
         imageInfo.sampler = data->sampler;
 
 
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        if(resource.textureInfo->usage==AttachmentUsage::StoreImage)
+        {
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-        write.dstBinding = TEXTURE_BINDING;
+            write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            write.dstBinding = STORE_IMAGE_BINDING;
+        }else
+        {
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+            write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            write.dstBinding = TEXTURE_BINDING;
+        }
         write.dstSet = VulkanContext::GetContext().bindlessSet;
         write.descriptorCount = 1;
         write.dstArrayElement = resource.handle;
@@ -875,7 +887,7 @@ namespace RDG
             return AttachmentState{VK_ATTACHMENT_LOAD_OP_CLEAR,
                                    VK_ATTACHMENT_STORE_OP_STORE,
                                    VK_IMAGE_LAYOUT_GENERAL,
-                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+                                   VK_IMAGE_LAYOUT_GENERAL};
         }
         else
         {
