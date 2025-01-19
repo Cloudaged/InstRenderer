@@ -21,11 +21,16 @@ void main()
     float2 inUV = float2(pixelCoord) / float2(DispatchRaysDimensions().xy);
     float2 d = inUV * 2.0 - 1.0;
 
+    // RayDesc ray;
+    // ray.Origin = mul(viewInv, float4(0, 0, 0, 1)).xyz;
+    // float4 target = mul(projInv, float4(d.x, d.y, 1, 1));
+    // float3 dir = mul(viewInv, float4(target.xyz, 1)).xyz;
+    // ray.Direction = normalize(dir);
+    // ray.TMin = 0.001;
+    // ray.TMax = 10000.0;
     RayDesc ray;
-    ray.Origin = mul(viewInv, float4(0, 0, 0, 1)).xyz;
-    float4 target = mul(projInv, float4(d.x, d.y, 1, 1));
-    float3 dir = mul(viewInv, float4(target.xyz, 1)).xyz;
-    ray.Direction = normalize(dir);
+    ray.Origin = float3(inUV.x, 1.0f - inUV.y, -1.0f);
+    ray.Direction = float3(0.0f, 0.0f, 1.0f);
     ray.TMin = 0.001;
     ray.TMax = 10000.0;
 
