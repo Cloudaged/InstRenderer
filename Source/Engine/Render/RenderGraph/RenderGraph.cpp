@@ -208,17 +208,18 @@ namespace RDG
                 Handle outputImg;
                 Handle tlas;
                 Handle globalData;
+                Handle lightData;
             };
 
             AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
-                            .input = {rtIMG,tlasData,globalData},
+                            .input = {rtIMG,tlasData,globalData,lightData},
                             .output = {rtIMG},
                             .pipeline = {.type = PipelineType::RayTracing,
                                          .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="antHit"},
                                          .handleSize = sizeof(RTPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
-                                RTPC rtpc = {rtIMG,tlasData,globalData};
+                                RTPC rtpc = {rtIMG,tlasData,globalData,lightData};
                                 cmd.PushConstantsForHandles(&rtpc);
                                 cmd.RayTracing();
                             }});

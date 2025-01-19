@@ -10,6 +10,7 @@ const std::vector<const char*> validationLayers =
         };
 const std::vector<const char*> deviceExtensions =
         {
+                VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
                 VK_KHR_SWAPCHAIN_EXTENSION_NAME,
                 "VK_KHR_buffer_device_address",
                 "VK_KHR_synchronization2",

@@ -7,7 +7,7 @@ RTScene RTBuilder::CreateRTScene(entt::view<entt::get_t<Renderable,Transform>> v
     RTScene rtScene;
     if(view.size_hint()<=0)
     {
-        rtScene.allBlas.push_back(CreateEmptyBLAS());
+        //rtScene.allBlas.push_back(CreateEmptyBLAS());
     } else
     {
         rtScene.allBlas = CreateBLAS(view);
@@ -39,6 +39,8 @@ std::vector<BLAS> RTBuilder::CreateBLAS(entt::view<entt::get_t<Renderable,Transf
         geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
         geometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
         geometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
+
+        range.primitiveCount = mesh.indexCount/3;
 
         geometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
         geometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
@@ -163,7 +165,7 @@ BLAS RTBuilder::CreateEmptyBLAS()
     buildInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
     buildInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
     buildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
-    buildInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+    buildInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR|VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR ;
     buildInfo.geometryCount = 1;
     buildInfo.pGeometries = &emptyGeometry;
     uint32_t zeroPrimitiveCount = 0;
@@ -204,23 +206,39 @@ TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
 
     size_t blasCount = allblas.size();
     std::vector<VkAccelerationStructureInstanceKHR> instances(blasCount,VkAccelerationStructureInstanceKHR{});
-    for (int i = 0; i < blasCount; ++i)
+    VkAccelerationStructureInstanceKHR emptyInstance{};
+
+    if(blasCount==0)
     {
-        auto& blas = allblas[i];
-        auto& instance = instances[i];
-        instance.transform = transform;
-        instance.instanceCustomIndex = i;
-        instance.mask = 0xff;
-        instance.instanceShaderBindingTableRecordOffset = 0;
-        instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
-        instance.accelerationStructureReference = blas.address;
+        blasCount++;
+        emptyInstance.transform = transform;
+        emptyInstance.instanceCustomIndex = 0;
+        emptyInstance.mask = 0xff;
+        emptyInstance.instanceShaderBindingTableRecordOffset = 0;
+        emptyInstance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
+        emptyInstance.accelerationStructureReference = 0;
+        instances.push_back(emptyInstance);
+    }else
+    {
+        for (int i = 0; i < blasCount; ++i)
+        {
+            auto& blas = allblas[i];
+            auto& instance = instances[i];
+            instance.transform = transform;
+            instance.instanceCustomIndex = i;
+            instance.mask = 0xff;
+            instance.instanceShaderBindingTableRecordOffset = 0;
+            instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
+            instance.accelerationStructureReference = blas.address;
+        }
     }
 
     Buffer* instancesBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(instances.size() * sizeof(VkAccelerationStructureInstanceKHR),
                                                                                        VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR,
                                                                                        VMA_MEMORY_USAGE_CPU_TO_GPU);
     void* instancesMem = VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*instancesBuffer);
-    memcpy(instances.data(),instancesMem,instances.size() * sizeof(VkAccelerationStructureInstanceKHR));
+    memcpy(instancesMem,instances.data(),instances.size() * sizeof(VkAccelerationStructureInstanceKHR));
+    //memcpy(instances.data(),instancesMem,instances.size() * sizeof(VkAccelerationStructureInstanceKHR));
 
     VkBufferDeviceAddressInfo instanceAddressInfo{};
     instanceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
@@ -264,7 +282,7 @@ TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
     }
 
     Buffer* scratchBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeInfo.accelerationStructureSize,
-                                                                                     VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT|VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                                                                     VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                                                                                      VMA_MEMORY_USAGE_GPU_ONLY);
     VkBufferDeviceAddressInfo scratchAddress{};
     scratchAddress.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
@@ -274,15 +292,15 @@ TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
     buildInfo.srcAccelerationStructure = VK_NULL_HANDLE;
     buildInfo.dstAccelerationStructure = tlas.accelerationStructure;
 
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands();
     VkAccelerationStructureBuildRangeInfoKHR range = {};
     range.primitiveCount = instancesCount;
 
-    const VkAccelerationStructureBuildRangeInfoKHR* ranges[1] = { &range };
+    const VkAccelerationStructureBuildRangeInfoKHR* ranges[1] = {&range} ;
 
     vkCmdBuildAccelerationStructuresKHR(cmd, 1, &buildInfo, ranges);
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd);
 
 
     VkAccelerationStructureDeviceAddressInfoKHR addressInfo = {};

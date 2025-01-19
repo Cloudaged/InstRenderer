@@ -219,7 +219,6 @@ void VulkanContext::CreateQueueAndDevice()
     device13Features.synchronization2 =VK_TRUE;
     device13Features.pNext = &features2;
 
-
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createInfo.pQueueCreateInfos = queueCreateInfos.data();

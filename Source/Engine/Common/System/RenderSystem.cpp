@@ -234,6 +234,7 @@ void RenderSystem::RecreateRTScene()
         std::cout<<"dontExit\n";
     }
     scene->rtScene = RTBuilder::CreateRTScene(scene->reg.view<Renderable,Transform>());
+    renderGraph.accelerationStructure->rtScene = std::make_shared<RTScene>(scene->rtScene);
     renderGraph.WriteAccelerationSTDescriptor(*renderGraph.accelerationStructure);
 }
 
