@@ -368,17 +368,7 @@ namespace RDG
         pipelineRef.sbt.hitRegion.stride = handleSizeAligned;
         pipelineRef.sbt.hitRegion.size = AlignUp(handleSizeAligned,baseAligment);
 
-        //CreateBuffer
-        uint32_t sbtSize =pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size+pipelineRef.sbt.hitRegion.size ;
-        pipelineRef.sbt.sbtBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(sbtSize,
-                                                                                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
-                                                                                             | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
-                                                                                             VMA_MEMORY_USAGE_CPU_TO_GPU);
-        VkBufferDeviceAddressInfo deviceAddressInfo{};
-        deviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-        deviceAddressInfo.buffer = pipelineRef.sbt.sbtBuffer->vk_buffer;
-
-        //TransHandle To buffer
+        //Get Handle
         uint32_t handleCount = 3;
         uint32_t dataSize =pipelineRef.sbt.shaderHandleSize*handleCount;
         std::vector<uint8_t> handles(dataSize);
@@ -386,6 +376,24 @@ namespace RDG
         {
             std::cout<<"Failed to Get group Handles\n";
         };
+
+
+        //CreateBuffer
+        uint32_t sbtSize =pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size+pipelineRef.sbt.hitRegion.size ;
+        pipelineRef.sbt.sbtBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(sbtSize,
+                                                                                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
+                                                                                             | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
+                                                                                             VMA_MEMORY_USAGE_CPU_TO_GPU);
+        //Get sbt for each group
+        VkBufferDeviceAddressInfo deviceAddressInfo{};
+        deviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+        deviceAddressInfo.buffer = pipelineRef.sbt.sbtBuffer->vk_buffer;
+
+        pipelineRef.sbt.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfo);
+
+        pipelineRef.sbt.genRegion.deviceAddress = pipelineRef.sbt.deviceAddress;
+        pipelineRef.sbt.missRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size;
+        pipelineRef.sbt.hitRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size;
 
 
         auto getHandle = [&] (int i) { return handles.data() + i * pipelineRef.sbt.shaderHandleSize; };
@@ -401,16 +409,6 @@ namespace RDG
 
         pData = mappedData+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size;
         memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
-
-
-        //Set address
-        pipelineRef.sbt.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfo);
-
-        pipelineRef.sbt.genRegion.deviceAddress = pipelineRef.sbt.deviceAddress;
-        pipelineRef.sbt.missRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size;
-        pipelineRef.sbt.hitRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size;
-
-
 
 
 
