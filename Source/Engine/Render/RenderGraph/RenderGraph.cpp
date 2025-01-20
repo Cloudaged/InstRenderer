@@ -215,7 +215,7 @@ namespace RDG
                             .input = {rtIMG,tlasData,globalData,lightData},
                             .output = {rtIMG},
                             .pipeline = {.type = PipelineType::RayTracing,
-                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="antHit"},
+                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
                                          .handleSize = sizeof(RTPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {

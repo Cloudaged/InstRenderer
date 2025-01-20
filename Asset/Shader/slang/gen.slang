@@ -11,7 +11,7 @@ import ShaderModule.RayTracing;
 void main()
 {
     GlobalUniform globalU = globalUniform_Arr[handles.globalUniform];
-    RaytracingAccelerationStructure tlas = tlasUniform_Arr[handles.tlas];
+    RaytracingAccelerationStructure tlas2 = tlasUniform_Arr[handles.tlas];
     RWTexture2D<float4> outputImg = outputImg_Arr[handles.outputImg];
     LightCameraUniform lightCamU = lightCameraUniform_Arr[handles.lightUniform];
     float4x4 viewInv = transpose(globalU.viewMat);
@@ -30,16 +30,16 @@ void main()
     // ray.TMin = 0.001;
     // ray.TMax = 10000.0;
     RayDesc ray;
-    ray.Origin = float3(inUV.x, 1.0f-inUV.y, -1.0f);
-    ray.Direction = float3(0.0f, 0.0f,  1.0f);
+    ray.Origin = float3(d.x, 1.0f - d.y, 1.0f);
+    ray.Direction = float3(0.0f, 0.0f,-1.0f);
     ray.TMin = 0.0;
     ray.TMax = 10000.0;
 
     uint rayFlag = RAY_FLAG_FORCE_OPAQUE;
     MyPayload payload;
-    payload.hitValue = float3(0, 1.0, 0);
+    //payload.hitValue = float3(0, 1.0, 0);
 
-    TraceRay(tlas, rayFlag, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(tlas2, rayFlag, 0XFF, 0, 0, 0, ray, payload);
 
     outputImg[pixelCoord] = float4(payload.hitValue,1.0);
 }

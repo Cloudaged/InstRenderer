@@ -31,7 +31,9 @@ struct RTScene
 
 struct SBT
 {
-    Buffer* sbtBuffer;
+    Buffer* genBuffer;
+    Buffer* missBuffer;
+    Buffer* hitBuffer;
     VkDeviceAddress deviceAddress;
     std::vector<VkRayTracingShaderGroupCreateInfoKHR> groups;
     VkStridedDeviceAddressRegionKHR genRegion;

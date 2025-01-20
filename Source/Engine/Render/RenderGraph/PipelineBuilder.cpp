@@ -361,57 +361,70 @@ namespace RDG
 
         uint32_t handleSizeAligned = AlignUp(pipelineRef.sbt.shaderHandleSize,handleAlignment);
 
-        pipelineRef.sbt.genRegion.stride = AlignUp(handleSizeAligned,baseAligment);
-        pipelineRef.sbt.genRegion.size =  pipelineRef.sbt.genRegion.stride;
+        pipelineRef.sbt.genRegion.stride = handleSizeAligned;
+        pipelineRef.sbt.genRegion.size =  handleSizeAligned;
 
         pipelineRef.sbt.missRegion.stride = handleSizeAligned;
-        pipelineRef.sbt.missRegion.size = AlignUp(handleSizeAligned,baseAligment);
+        pipelineRef.sbt.missRegion.size = handleSizeAligned;
 
         pipelineRef.sbt.hitRegion.stride = handleSizeAligned;
-        pipelineRef.sbt.hitRegion.size = AlignUp(handleSizeAligned,baseAligment);
-
-
+        pipelineRef.sbt.hitRegion.size = handleSizeAligned;
 
         //Get Handle
         uint32_t handleCount = 3;
-        uint32_t dataSize =pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size+pipelineRef.sbt.hitRegion.size;
-        std::vector<uint8_t> handles(dataSize);
-        if(vkGetRayTracingShaderGroupHandlesKHR(device,pipelineRef.pipeline,0,handleCount,dataSize,handles.data())!=VK_SUCCESS)
+        uint32_t handleSize =pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size+pipelineRef.sbt.hitRegion.size;
+        std::vector<uint8_t> handles(handleSize);
+        if(vkGetRayTracingShaderGroupHandlesKHR(device,pipelineRef.pipeline,0,handleCount,handleSize,handles.data())!=VK_SUCCESS)
         {
             std::cout<<"Failed to Get group Handles\n";
         };
 
 
         //CreateBuffer
-        uint32_t sbtSize =pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size+pipelineRef.sbt.hitRegion.size ;
-        pipelineRef.sbt.sbtBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(sbtSize,
+        pipelineRef.sbt.genBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(pipelineRef.sbt.shaderHandleSize,
                                                                                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
                                                                                              | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
                                                                                              VMA_MEMORY_USAGE_CPU_TO_GPU);
-        //Get sbt for each group
-        VkBufferDeviceAddressInfo deviceAddressInfo{};
-        deviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-        deviceAddressInfo.buffer = pipelineRef.sbt.sbtBuffer->vk_buffer;
+        VkBufferDeviceAddressInfo deviceAddressInfoG{};
+        deviceAddressInfoG.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+        deviceAddressInfoG.buffer = pipelineRef.sbt.genBuffer->vk_buffer;
+        pipelineRef.sbt.genRegion.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfoG);
 
-        pipelineRef.sbt.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfo);
 
-        pipelineRef.sbt.genRegion.deviceAddress = pipelineRef.sbt.deviceAddress;
-        pipelineRef.sbt.hitRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size;
-        pipelineRef.sbt.missRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.hitRegion.size;
+        pipelineRef.sbt.missBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(pipelineRef.sbt.shaderHandleSize,
+                                                                                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
+                                                                                             | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
+                                                                                             VMA_MEMORY_USAGE_CPU_TO_GPU);
+        VkBufferDeviceAddressInfo deviceAddressInfoM{};
+        deviceAddressInfoM.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+        deviceAddressInfoM.buffer = pipelineRef.sbt.missBuffer->vk_buffer;
+        pipelineRef.sbt.missRegion.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfoM);
 
+
+        pipelineRef.sbt.hitBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(pipelineRef.sbt.shaderHandleSize,
+                                                                                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
+                                                                                             | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
+                                                                                             VMA_MEMORY_USAGE_CPU_TO_GPU);
+        VkBufferDeviceAddressInfo deviceAddressInfoH{};
+        deviceAddressInfoH.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+        deviceAddressInfoH.buffer = pipelineRef.sbt.hitBuffer->vk_buffer;
+        pipelineRef.sbt.hitRegion.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfoH);
 
         auto getHandle = [&] (int i) { return handles.data() + i * pipelineRef.sbt.shaderHandleSize; };
 
-        uint8_t* mappedData =(uint8_t*)VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*pipelineRef.sbt.sbtBuffer);
+        uint8_t* genMappedData =(uint8_t*)VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*pipelineRef.sbt.genBuffer);
+        uint8_t* hitMappedData =(uint8_t*)VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*pipelineRef.sbt.hitBuffer);
+        uint8_t* missMappedData =(uint8_t*)VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*pipelineRef.sbt.missBuffer);
+
         uint32_t handleIndex = 0;
 
-        uint8_t* pData = (uint8_t*)mappedData;
+        uint8_t* pData = (uint8_t*)genMappedData;
         memcpy(pData, getHandle(handleIndex++), pipelineRef.sbt.shaderHandleSize);
 
-        pData = mappedData+pipelineRef.sbt.genRegion.size;
+        pData = hitMappedData;
         memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
 
-        pData = mappedData+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.hitRegion.size;
+        pData = missMappedData;
         memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
 
 
