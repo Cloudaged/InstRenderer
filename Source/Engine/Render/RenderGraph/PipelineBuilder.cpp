@@ -275,16 +275,16 @@ namespace RDG
         enum RTStageIndices : uint32_t
         {
             Gen = 0,
-            Miss = 1,
-            ClosetHit = 2,
+            Miss = 2,
+            ClosetHit = 1,
             ShaderGroupCount = 3
         };
 
         std::vector<VkShaderModule> modules =
                 {
                     LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.gen)),
-                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.miss)),
-                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.chit))
+                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.chit)),
+                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.miss))
                 };
 
         std::vector<VkPipelineShaderStageCreateInfo> stages(ShaderGroupCount);
@@ -314,14 +314,16 @@ namespace RDG
         group.generalShader = Gen;
         pipelineRef.sbt.groups.push_back(group);
 
-        group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-        group.generalShader = Miss;
-        pipelineRef.sbt.groups.push_back(group);
-
         group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
         group.generalShader = VK_SHADER_UNUSED_KHR;
         group.closestHitShader = ClosetHit;
         pipelineRef.sbt.groups.push_back(group);
+
+        group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+        group.closestHitShader = VK_SHADER_UNUSED_KHR;
+        group.generalShader = Miss;
+        pipelineRef.sbt.groups.push_back(group);
+
 
 
         VkRayTracingPipelineCreateInfoKHR rayPipelineInfo{VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR};
@@ -368,9 +370,11 @@ namespace RDG
         pipelineRef.sbt.hitRegion.stride = handleSizeAligned;
         pipelineRef.sbt.hitRegion.size = AlignUp(handleSizeAligned,baseAligment);
 
+
+
         //Get Handle
         uint32_t handleCount = 3;
-        uint32_t dataSize =pipelineRef.sbt.shaderHandleSize*handleCount;
+        uint32_t dataSize =pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size+pipelineRef.sbt.hitRegion.size;
         std::vector<uint8_t> handles(dataSize);
         if(vkGetRayTracingShaderGroupHandlesKHR(device,pipelineRef.pipeline,0,handleCount,dataSize,handles.data())!=VK_SUCCESS)
         {
@@ -392,8 +396,8 @@ namespace RDG
         pipelineRef.sbt.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfo);
 
         pipelineRef.sbt.genRegion.deviceAddress = pipelineRef.sbt.deviceAddress;
-        pipelineRef.sbt.missRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size;
-        pipelineRef.sbt.hitRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size;
+        pipelineRef.sbt.hitRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size;
+        pipelineRef.sbt.missRegion.deviceAddress = pipelineRef.sbt.deviceAddress+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.hitRegion.size;
 
 
         auto getHandle = [&] (int i) { return handles.data() + i * pipelineRef.sbt.shaderHandleSize; };
@@ -407,7 +411,7 @@ namespace RDG
         pData = mappedData+pipelineRef.sbt.genRegion.size;
         memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
 
-        pData = mappedData+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size;
+        pData = mappedData+pipelineRef.sbt.genRegion.size+pipelineRef.sbt.hitRegion.size;
         memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
 
 

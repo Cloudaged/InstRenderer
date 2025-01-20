@@ -17,8 +17,9 @@ void main()
     float4x4 viewInv = transpose(globalU.viewMat);
     float4x4 projInv = transpose(globalU.projMat);
 
-    uint2 pixelCoord = DispatchRaysIndex().xy;
-    float2 inUV = float2(pixelCoord) / float2(DispatchRaysDimensions().xy);
+    uint2 pixelCoord = DispatchRaysIndex().xy ;
+    float2 pixelCenter = float2(pixelCoord) + float2(0.5,0.5);
+    float2 inUV = float2(pixelCenter) / float2(DispatchRaysDimensions().xy);
     float2 d = inUV * 2.0 - 1.0;
 
     // RayDesc ray;
@@ -29,9 +30,9 @@ void main()
     // ray.TMin = 0.001;
     // ray.TMax = 10000.0;
     RayDesc ray;
-    ray.Origin = float3(inUV.x, 1.0f - inUV.y, -1.0f);
-    ray.Direction = float3(0.0f, 0.0f, 1.0f);
-    ray.TMin = 0.001;
+    ray.Origin = float3(inUV.x, 1.0f-inUV.y, -1.0f);
+    ray.Direction = float3(0.0f, 0.0f,  1.0f);
+    ray.TMin = 0.0;
     ray.TMax = 10000.0;
 
     uint rayFlag = RAY_FLAG_FORCE_OPAQUE;
