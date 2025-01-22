@@ -172,6 +172,23 @@ void RenderSystem::SetupUniforms()
         };
         uniArr.push_back(csmU);
     }
+
+    //RTImage
+    {
+        auto rtU = INIT_UNIPTR(RTUniform);
+        rtU->Setup("RTUniform", renderGraph);
+        rtU->CustomInit = [=]()
+        {
+            rtU->data.invView = glm::inverse(scene->mainCamera.vpMat.view);
+            rtU->data.invProj = glm::inverse(scene->mainCamera.vpMat.proj);
+        };
+        rtU->CustomUpdate = [=]()
+        {
+            rtU->data.invView = glm::inverse(scene->mainCamera.vpMat.view);
+            rtU->data.invProj = glm::inverse(scene->mainCamera.vpMat.proj);
+        };
+        uniArr.push_back(rtU);
+    }
 }
 
 
@@ -228,10 +245,10 @@ void RenderSystem::RecreateRTScene()
 {
     if(scene->rtScene.topAS.accelerationStructure!=VK_NULL_HANDLE)
     {
-        std::cout<<"Exit\n";
+        std::cout<<"Exist\n";
     }else
     {
-        std::cout<<"dontExit\n";
+        std::cout<<"dontExist\n";
     }
     scene->rtScene = RTBuilder::CreateRTScene(scene->reg.view<Renderable,Transform>());
     renderGraph.accelerationStructure->rtScene = std::make_shared<RTScene>(scene->rtScene);

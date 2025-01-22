@@ -76,6 +76,8 @@ namespace RDG
         auto tlasData = AddResource({.name = "TLAS",.type = ResourceType::Accleration,
                                             .rtScene = std::make_shared<RTScene>(scene->rtScene)});
 
+        auto rtUniform = AddResource({.name = "RTUniform",.type = ResourceType::Uniform,
+                                              .bufferInfo = BufferInfo{.size = sizeof(RTUniform)}});
         //Pass
         //GeoPass
         {
@@ -211,17 +213,18 @@ namespace RDG
             {
                 Handle outputImg;
                 Handle tlas;
+                Handle rtUniform;
             };
 
             AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
-                            .input = {rtIMG,tlasData},
+                            .input = {rtIMG,tlasData,rtUniform},
                             .output = {rtIMG},
                             .pipeline = {.type = PipelineType::RayTracing,
                                          .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
                                          .handleSize = sizeof(RTPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
-                                RTPC rtpc = {rtIMG,tlasData};
+                                RTPC rtpc = {rtIMG,tlasData,rtUniform};
                                 cmd.PushConstantsForHandles(&rtpc);
                                 cmd.RayTracing();
                                 cmd.TransImage(resourceMap[rtIMG].textureInfo.value(),resourceMap[rtSampleImg].textureInfo.value(),
@@ -707,7 +710,7 @@ namespace RDG
         writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         writeDescriptor.dstSet = VulkanContext::GetContext().bindlessSet;
         writeDescriptor.dstBinding = ACCELERATION_ST_BINDING;
-        writeDescriptor.dstArrayElement = 0;
+        writeDescriptor.dstArrayElement = resource.handle;
         writeDescriptor.descriptorCount = 1;
         writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
         writeDescriptor.pNext = &write;

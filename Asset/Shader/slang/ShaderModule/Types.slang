@@ -42,6 +42,12 @@ public struct LightCameraUniform
     public Light light[16];
 }
 
+public struct RTUniform
+{
+    public float4x4 invView;
+    public float4x4 invProj;
+}
+
 public struct ShadowSetting
 {
     public const int pcfSampleCount;

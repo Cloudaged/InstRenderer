@@ -61,5 +61,11 @@ struct CSMUniform
      float radiusBias;
 };
 
+struct RTUniform
+{
+    glm::mat4 invView;
+    glm::mat4 invProj;
+};
+
 
 #endif //INSTRENDERER_UNIFORMS_H
