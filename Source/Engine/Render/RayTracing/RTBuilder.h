@@ -12,7 +12,6 @@ struct BLAS
     Buffer* asBuffer;
     VkAccelerationStructureKHR accelerationStructure;
     VkDeviceAddress address;
-    uint32_t vertexCount;
 };
 
 struct TLAS

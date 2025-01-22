@@ -1,7 +1,7 @@
 import ShaderModule.RayTracing;
 
 [shader("closesthit")]
-void main(inout MyPayload payload, in BuiltInTriangleIntersectionAttributes attr)
+void main(inout MyPayload payload)
 {
-    payload.hitValue = float3(1.0, 0.0, 0.0);
+    payload = MyPayload(float3(1, 0, 0));
 }

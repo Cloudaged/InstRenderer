@@ -55,13 +55,12 @@ public struct RayTracingHandles
 {
     Handle outputImg;
     Handle tlas;
-    Handle globalUniform;
-    Handle lightUniform;
 }
 
 public struct PresentHandle
 {
     Handle lighted;
+    Handle rtImg;
 }
 
 

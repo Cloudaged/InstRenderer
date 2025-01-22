@@ -162,3 +162,50 @@ namespace RDG
 
 
 } // RDG
+void RDG::CommandList::TransImage(TextureInfo& src,TextureInfo& dst,VkImageLayout srcFinalLayout,VkImageLayout dstFinalLayout)
+{
+    auto& srcTex = src.data;
+    auto& dstTex = dst.data;
+
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,srcTex->allocatedImage->vk_image,
+                                                                src.currentLayout,
+                                                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,dstTex->allocatedImage->vk_image,
+                                                                dst.currentLayout,
+                                                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+
+    VkImageCopy copyRegion = {};
+    copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copyRegion.srcSubresource.mipLevel = 0;
+    copyRegion.srcSubresource.baseArrayLayer = 0;
+    copyRegion.srcSubresource.layerCount = 1;
+
+    copyRegion.srcOffset = { 0, 0, 0 };
+
+    copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copyRegion.dstSubresource.mipLevel = 0;
+    copyRegion.dstSubresource.baseArrayLayer = 0;
+    copyRegion.dstSubresource.layerCount = 1;
+
+    copyRegion.dstOffset = { 0, 0, 0 };
+
+    copyRegion.extent = { dst.extent.GetVkExtent().width,dst.extent.GetVkExtent().height, 1 };
+
+    vkCmdCopyImage(cmd,
+                   srcTex->allocatedImage->vk_image,VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                   dstTex->allocatedImage->vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                   1,&copyRegion
+                   );
+
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,srcTex->allocatedImage->vk_image,
+                                                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                                                srcFinalLayout);
+    src.currentLayout = srcFinalLayout;
+
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,dstTex->allocatedImage->vk_image,
+                                                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                                                dstFinalLayout);
+    dst.currentLayout = dstFinalLayout;
+}

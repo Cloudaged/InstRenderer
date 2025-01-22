@@ -69,6 +69,10 @@ namespace RDG
                                 .textureInfo = TextureInfo{WINDOW_EXTENT,
                                                            AttachmentUsage::StoreImage,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
+        auto rtSampleImg  = AddResource({.name = "rtSampleImg",.type = ResourceType::Texture,
+                                          .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                     AttachmentUsage::TransferDst,VK_FORMAT_R16G16B16A16_SFLOAT}});
+
         auto tlasData = AddResource({.name = "TLAS",.type = ResourceType::Accleration,
                                             .rtScene = std::make_shared<RTScene>(scene->rtScene)});
 
@@ -207,21 +211,21 @@ namespace RDG
             {
                 Handle outputImg;
                 Handle tlas;
-                Handle globalData;
-                Handle lightData;
             };
 
             AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
-                            .input = {rtIMG,tlasData,globalData,lightData},
+                            .input = {rtIMG,tlasData},
                             .output = {rtIMG},
                             .pipeline = {.type = PipelineType::RayTracing,
                                          .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
                                          .handleSize = sizeof(RTPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
-                                RTPC rtpc = {rtIMG,tlasData,globalData,lightData};
+                                RTPC rtpc = {rtIMG,tlasData};
                                 cmd.PushConstantsForHandles(&rtpc);
                                 cmd.RayTracing();
+                                cmd.TransImage(resourceMap[rtIMG].textureInfo.value(),resourceMap[rtSampleImg].textureInfo.value(),
+                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
                             }});
 
         }
@@ -230,15 +234,16 @@ namespace RDG
             struct alignas(16) PresentPC
             {
                 Handle lastAtt;
+                Handle rtSampleImg;
             };
 
             AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
-                    .input = {lighted},
+                    .input = {lighted,rtSampleImg},
                     .output = {},
                     .pipeline = {.type = PipelineType::RenderQuad, .rsShaders ={"PresentVert", "PresentFrag"},.handleSize = sizeof(PresentPC)},
                     .executeFunc = [=](CommandList& cmd)
                     {
-                        PresentPC pushConstants = {lighted};
+                        PresentPC pushConstants = {lighted,rtSampleImg};
                         cmd.PushConstantsForHandles(&pushConstants);
                         cmd.DrawRenderQuad();
                     }});
@@ -822,9 +827,27 @@ namespace RDG
             vkDestroyFramebuffer(device,pass.data.framebufferHandle, nullptr);
         }
         //Clear and recreate resource
-        for (auto& output:pass.output)
+//        for (auto& output:pass.output)
+//        {
+//            auto& resource = resourceMap[output];
+//            if(IsImageType(resource.type)&&resource.textureInfo.has_value())
+//            {
+//                if(resource.textureInfo->extent == WINDOW_EXTENT &&
+//                   resource.textureInfo->usage != AttachmentUsage::Present)
+//                {
+//                    //Clear
+//                    auto& data = resource.textureInfo->data;
+//                    data.reset();
+//                    //Recreate
+//                    CreateImageResource(resource);
+//                    WriteImageDescriptor(resource);
+//                }
+//            }
+//        }
+
+        for (auto& pair:resourceMap)
         {
-            auto& resource = resourceMap[output];
+            auto& resource = pair.second;
             if(IsImageType(resource.type)&&resource.textureInfo.has_value())
             {
                 if(resource.textureInfo->extent == WINDOW_EXTENT &&
@@ -914,19 +937,19 @@ namespace RDG
         switch (usage)
         {
             case AttachmentUsage::Color:
-                return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT;
+                return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT;
             case AttachmentUsage::TransferSrc:
-                return VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+                return VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_SAMPLED_BIT;
             case AttachmentUsage::TransferDst:
-                return VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+                return VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT;
             case AttachmentUsage::Present:
                 return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
             case AttachmentUsage::Depth:
                 return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
             case AttachmentUsage::ShadowMap:
-                return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+                return VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT|VK_IMAGE_USAGE_SAMPLED_BIT;
             case AttachmentUsage::StoreImage:
-                return VK_IMAGE_USAGE_STORAGE_BIT|VK_IMAGE_USAGE_SAMPLED_BIT;
+                return VK_IMAGE_USAGE_STORAGE_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
             default:
                 return VK_IMAGE_USAGE_SAMPLED_BIT;
         }
