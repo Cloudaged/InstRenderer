@@ -78,6 +78,9 @@ namespace RDG
 
         auto rtUniform = AddResource({.name = "RTUniform",.type = ResourceType::Uniform,
                                               .bufferInfo = BufferInfo{.size = sizeof(RTUniform)}});
+
+        auto materialArray = AddResource({"MaterialArray",.type=ResourceType::SSBO,
+                                          .bufferInfo = {BufferInfo{.size = 300*sizeof(Material)}}});
         //Pass
         //GeoPass
         {

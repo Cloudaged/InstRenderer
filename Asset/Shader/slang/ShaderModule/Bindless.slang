@@ -56,6 +56,7 @@ public struct RayTracingHandles
     Handle outputImg;
     Handle tlas;
     Handle rtUniform;
+    Handle materials;
 }
 
 public struct PresentHandle

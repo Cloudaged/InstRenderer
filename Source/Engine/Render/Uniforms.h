@@ -2,6 +2,8 @@
 #ifndef INSTRENDERER_UNIFORMS_H
 #define INSTRENDERER_UNIFORMS_H
 #include "../Common/Core/glmConfig.h"
+#include "../Render/Material/Material.h"
+
 #define CASCADED_COUNT  4
 #define CASCADED_WIDTH 1024
 #define CASCADED_HEIGHT 1024
@@ -59,6 +61,11 @@ struct CSMUniform
      int width;
      int height;
      float radiusBias;
+};
+
+struct MaterialArr
+{
+    Material* mat;
 };
 
 struct RTUniform

@@ -189,6 +189,21 @@ void RenderSystem::SetupUniforms()
         };
         uniArr.push_back(rtU);
     }
+
+    {
+        materialArr = INIT_UNIPTR(MaterialArr);
+        materialArr->Setup("MaterialArray", renderGraph);
+        materialArr->CustomInit = [=]()
+        {
+
+        };
+        materialArr->CustomUpdate = [=]()
+        {
+
+        };
+        uniArr.push_back(materialArr);
+
+    }
 }
 
 
@@ -250,6 +265,7 @@ void RenderSystem::RecreateRTScene()
     {
         std::cout<<"dontExist\n";
     }
+    materialArr->data.mat = scene->matArr.data();
     scene->rtScene = RTBuilder::CreateRTScene(scene->reg.view<Renderable,Transform>());
     renderGraph.accelerationStructure->rtScene = std::make_shared<RTScene>(scene->rtScene);
     renderGraph.WriteAccelerationSTDescriptor(*renderGraph.accelerationStructure);

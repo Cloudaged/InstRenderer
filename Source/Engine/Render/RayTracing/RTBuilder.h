@@ -12,6 +12,7 @@ struct BLAS
     Buffer* asBuffer;
     VkAccelerationStructureKHR accelerationStructure;
     VkDeviceAddress address;
+    Handle materialHandle;
 };
 
 struct TLAS

@@ -88,6 +88,7 @@ std::vector<BLAS> RTBuilder::CreateBLAS(entt::view<entt::get_t<Renderable,Transf
     {
         auto& renderable = view.get<Renderable>(entity);
         auto& mesh = renderable.mesh;
+        allBlas[index].materialHandle = renderable.materialID;
         allBlas[index].asBuffer =  VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeInfos[index].accelerationStructureSize,
                                                                                             VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR|
                                                                                             VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,VMA_MEMORY_USAGE_GPU_ONLY);
@@ -334,7 +335,7 @@ TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
             auto& blas = allblas[i];
             auto& instance = instances[i];
             instance.transform = transform;
-            instance.instanceCustomIndex = i;
+            instance.instanceCustomIndex = blas.materialHandle;
             instance.mask = 0xFF;
             instance.instanceShaderBindingTableRecordOffset = 0;
             instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;

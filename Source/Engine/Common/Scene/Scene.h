@@ -15,6 +15,7 @@
 #include "SceneObserver.h"
 #include "Skybox.h"
 #include "../../Render/RayTracing/RTBuilder.h"
+#include "../Core/HandleAllocator.h"
 using BoundingPoint = glm::vec3;
 
 class Scene : public SceneObserver
@@ -35,6 +36,8 @@ public:
     entt::registry reg;
     std::vector<std::shared_ptr<GameObject>> objects;
     std::vector<std::shared_ptr<Light>> lights;
+    HandleAllocator materialAllocator;
+    std::array<Material,300> matArr;
     Camera mainCamera;
     std::shared_ptr<Light> mainLight;
     BoundingPoint minPoint;

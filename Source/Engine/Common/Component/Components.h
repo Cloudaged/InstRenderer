@@ -35,6 +35,7 @@ struct Renderable
 {
     Mesh mesh;
     Material material;
+    Handle materialID;
 };
 
 

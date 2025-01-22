@@ -5,7 +5,7 @@
 #include "volk.h"
 #include "vector"
 #include "Vertex.h"
-
+using Handle = uint32_t;
 class Mesh
 {
 public:

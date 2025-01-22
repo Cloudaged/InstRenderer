@@ -61,3 +61,9 @@ public struct RenderSetting
 {
     public ShadowSetting shadowSetting;
 }
+
+
+public struct MaterialArr
+{
+    Material materials[300];
+}
