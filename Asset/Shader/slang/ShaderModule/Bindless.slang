@@ -6,12 +6,6 @@ import Types;
 //GEN_BUFFER_DEFINE(GlobalUniform)
 
 #define Handle public int
-public struct Material
-{
-   Handle baseColor;
-   Handle normal;
-   Handle metallicRoughness;
-}
 
 public struct GeoHandles
 {

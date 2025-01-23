@@ -1,7 +1,15 @@
 module Types;
-
 public static const float PI = 3.1415926;
 public static const int CASCADED_COUNT = 4;
+
+#define Handle public int
+public struct Material
+{
+    Handle baseColor;
+    Handle normal;
+    Handle metallicRoughness;
+}
+
 
 public struct GlobalUniform
 {
@@ -65,5 +73,5 @@ public struct RenderSetting
 
 public struct MaterialArr
 {
-    Material materials[300];
+   public Material materials[300];
 }

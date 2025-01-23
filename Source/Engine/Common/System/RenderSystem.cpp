@@ -240,7 +240,8 @@ void RenderSystem::UpdateLightArray()
 
 void RenderSystem::SetupRenderGraph()
 {
-    renderGraph.Compile(scene);
+    renderGraph.DeclareResource(scene);
+    renderGraph.Compile();
     VulkanContext::GetContext().presentManager.recreatePassFunc = std::bind(&RDG::RenderGraph::RecreateAllPass,&renderGraph);
     SetupUniforms();
 }
@@ -265,7 +266,7 @@ void RenderSystem::RecreateRTScene()
     {
         std::cout<<"dontExist\n";
     }
-    materialArr->data.mat = scene->matArr.data();
+    memcpy(materialArr->data.mat,scene->matArr.data(),sizeof(Material)*300);
     scene->rtScene = RTBuilder::CreateRTScene(scene->reg.view<Renderable,Transform>());
     renderGraph.accelerationStructure->rtScene = std::make_shared<RTScene>(scene->rtScene);
     renderGraph.WriteAccelerationSTDescriptor(*renderGraph.accelerationStructure);

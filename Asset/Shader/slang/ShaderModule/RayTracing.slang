@@ -9,3 +9,8 @@ public struct MyPayload
 {
     public float3 hitValue;    
 }
+
+public float2 GetUV(RayQuery rayQuery)
+{
+    
+}

@@ -7,6 +7,7 @@
 #define CASCADED_COUNT  4
 #define CASCADED_WIDTH 1024
 #define CASCADED_HEIGHT 1024
+#define SSAO_ROTATION_SIZE 4
 struct GlobalUniform
 {
     glm::mat4 view;
@@ -65,7 +66,12 @@ struct CSMUniform
 
 struct MaterialArr
 {
-    Material* mat;
+    Material mat[300];
+};
+
+struct SSAOKernels
+{
+    glm::vec4 kernels[32];
 };
 
 struct RTUniform

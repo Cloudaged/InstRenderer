@@ -7,8 +7,10 @@ namespace RDG
     {
     }
 
-    void RenderGraph::DeclareResource()
+    void RenderGraph::DeclareResource(std::shared_ptr<Scene> scene)
     {
+        this->scene = scene;
+        view = scene->reg.view<Renderable, Transform>();
 
         uint32_t winWidth = (uint32_t)VulkanContext::GetContext().windowExtent.width;
         uint32_t winHeight = (uint32_t)VulkanContext::GetContext().windowExtent.height;
@@ -18,11 +20,16 @@ namespace RDG
 
         auto csmData = AddResource({.name = "CSMData",.type = ResourceType::Uniform,
                                            .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});
-        int a = sizeof(CSMUniform);
 
         auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::Texture,
                                                 .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},
                                                                            AttachmentUsage::Color,VK_FORMAT_R8G8B8A8_SRGB,sceneSkybox->texture}});
+
+        auto ssaoKernel = AddResource({"SSAOKernel",.type = ResourceType::Uniform,
+                                                .bufferInfo = BufferInfo{.size = sizeof(SSAOKernels)}});
+//        auto ssaoRotation = AddResource({"SSAORotation",.type = ResourceType::Texture,
+//                                                    .textureInfo = TextureInfo{{SSAO_ROTATION_SIZE,SSAO_ROTATION_SIZE},
+//                                                                               AttachmentUsage::Color,VK_FORMAT_R16G16_UNORM,}})
 
        /* auto cascadedShadowMapData = AddResource({"CascadedShadowMapData",.type = ResourceType::Uniform,
                                                          .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});*/
@@ -135,6 +142,7 @@ namespace RDG
 
         }*/
 
+
         {
             struct alignas(16) csmPC
             {
@@ -211,30 +219,33 @@ namespace RDG
         }
 
 
-        {
-            struct alignas(16) RTPC
-            {
-                Handle outputImg;
-                Handle tlas;
-                Handle rtUniform;
-            };
+//        {
+//            struct alignas(16) RTPC
+//            {
+//                Handle outputImg;
+//                Handle tlas;
+//                Handle rtUniform;
+//                Handle materialArray;
+//            };
+//
+//            AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
+//                            .input = {rtIMG,tlasData,rtUniform,materialArray},
+//                            .output = {rtIMG},
+//                            .pipeline = {.type = PipelineType::RayTracing,
+//                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
+//                                         .handleSize = sizeof(RTPC)},
+//                            .executeFunc = [=](CommandList& cmd)
+//                            {
+//                                RTPC rtpc = {rtIMG,tlasData,rtUniform,materialArray};
+//                                cmd.PushConstantsForHandles(&rtpc);
+//                                cmd.RayTracing();
+//                                cmd.TransImage(resourceMap[rtIMG].textureInfo.value(),resourceMap[rtSampleImg].textureInfo.value(),
+//                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+//                            }});
+//
+//        }
 
-            AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
-                            .input = {rtIMG,tlasData,rtUniform},
-                            .output = {rtIMG},
-                            .pipeline = {.type = PipelineType::RayTracing,
-                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
-                                         .handleSize = sizeof(RTPC)},
-                            .executeFunc = [=](CommandList& cmd)
-                            {
-                                RTPC rtpc = {rtIMG,tlasData,rtUniform};
-                                cmd.PushConstantsForHandles(&rtpc);
-                                cmd.RayTracing();
-                                cmd.TransImage(resourceMap[rtIMG].textureInfo.value(),resourceMap[rtSampleImg].textureInfo.value(),
-                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                            }});
 
-        }
 
         {
             struct alignas(16) PresentPC
@@ -258,11 +269,8 @@ namespace RDG
     }
 
 
-    void RenderGraph::Compile(std::shared_ptr<Scene> scene)
+    void RenderGraph::Compile()
     {
-        this->scene = scene;
-        view = scene->reg.view<Renderable, Transform>();
-        DeclareResource();
         CreateResource();
         WriteDependency();
         CreateRenderPass();

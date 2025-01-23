@@ -38,7 +38,8 @@ namespace RDG
         friend RenderSystem;
     public:
         RenderGraph();
-        void Compile(std::shared_ptr<Scene> scene);
+        void DeclareResource(std::shared_ptr<Scene> scene);
+        void Compile();
         void Execute();
         Handle AddResource(ResourceRef&& resource);
         Handle AddOuterResource(ResourceRef&& resource);
@@ -48,7 +49,6 @@ namespace RDG
         std::shared_ptr<ResourceRef> accelerationStructure;
     private:
         void AddPass(const PassRef& pass);
-        void DeclareResource();
         void CreateRenderPass();
         void CreateGraphicPass(PassRef& passData);
         void CreateComputePass(PassRef& passData);

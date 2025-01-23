@@ -9,6 +9,7 @@ import ShaderModule.RayTracing;
 [shader("raygeneration")]
 void main()
 {
+    
     RTUniform rtU = rtUniform_Arr[handles.rtUniform];
     RaytracingAccelerationStructure tlas2 = tlasUniform_Arr[handles.tlas];
     RWTexture2D<float4> outputImg = outputImg_Arr[handles.outputImg];
