@@ -6,19 +6,16 @@ RenderSettings globalRenderSettingData{};
 void RenderSystem::BeginSystem(std::shared_ptr<Scene> scene)
 {
     this->scene = scene;
+    this->view = scene->reg.view<Renderable,Transform>();
     InitSettings();
     SetupRenderGraph();
-    for (auto& u:uniArr)
-    {
-        u->InitData();
-    }
 }
 
 void RenderSystem::Execute()
 {
     PrepareData();
     VulkanContext::GetContext().DrawPrepare();
-    renderGraph.Execute();
+    rg.Execute();
     VulkanContext::GetContext().Submit();
 }
 
@@ -31,7 +28,12 @@ void RenderSystem::SetupUniforms()
     //Global
     {
         auto globalU = INIT_UNIPTR(GlobalUniform);
-        globalU->Setup("GlobalData", renderGraph);
+        globalU->Setup("GlobalData", rg);
+        globalU->CustomInit = [=]()
+        {
+            globalU->data.nearPlane = scene->mainCamera.cameraData.nearPlane;
+            globalU->data.farPlane = scene->mainCamera.cameraData.farPlane;
+        };
         globalU->CustomUpdate = [=]()
         {
             globalU->data.skyboxProj = glm::perspective(glm::radians(80.0f),
@@ -51,7 +53,7 @@ void RenderSystem::SetupUniforms()
     //Light
     {
         this->lightU = INIT_UNIPTR(LightUniform);
-        lightU->Setup("Lights", renderGraph);
+        lightU->Setup("Lights", rg);
         lightU->CustomInit = [=]()
         {
             UpdateLightArray();
@@ -67,7 +69,7 @@ void RenderSystem::SetupUniforms()
     //RenderSetting
     {
         auto renderSettingU = INIT_UNIPTR(RenderSettingUniform);
-        renderSettingU->Setup("RenderSettings", renderGraph);
+        renderSettingU->Setup("RenderSettings", rg);
         renderSettingU->CustomUpdate = [=]()
         {
             renderSettingU->data = globalRenderSettingData.uniform;
@@ -79,7 +81,7 @@ void RenderSystem::SetupUniforms()
     {
 
         auto csmU = INIT_UNIPTR(CSMUniform);
-        csmU->Setup("CSMData", renderGraph);
+        csmU->Setup("CSMData", rg);
         csmU->CustomInit = [=]()
         {
 
@@ -176,7 +178,7 @@ void RenderSystem::SetupUniforms()
     //RTImage
     {
         auto rtU = INIT_UNIPTR(RTUniform);
-        rtU->Setup("RTUniform", renderGraph);
+        rtU->Setup("RTUniform", rg);
         rtU->CustomInit = [=]()
         {
             rtU->data.invView = glm::inverse(scene->mainCamera.vpMat.view);
@@ -192,7 +194,7 @@ void RenderSystem::SetupUniforms()
 
     {
         materialArr = INIT_UNIPTR(MaterialArr);
-        materialArr->Setup("MaterialArray", renderGraph);
+        materialArr->Setup("MaterialArray", rg);
         materialArr->CustomInit = [=]()
         {
 
@@ -202,7 +204,65 @@ void RenderSystem::SetupUniforms()
 
         };
         uniArr.push_back(materialArr);
+    }
 
+    {
+        auto kernels = INIT_UNIPTR(SSAOKernels);
+        kernels->Setup("SSAOKernel", rg);
+        kernels->CustomInit = [=]()
+        {
+            std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+            std::default_random_engine generator;
+            auto Lerp = [](float a, float b, float f)
+            { return a + f * (b - a); };
+            for (int i = 0; i < 32; ++i)
+            {
+                glm::vec4 sample(randomFloats(generator) * 2.0 - 1.0,
+                                 randomFloats(generator) * 2.0 - 1.0,
+                                 randomFloats(generator),
+                                 0
+                );
+                sample = glm::normalize(sample);
+                sample *= randomFloats(generator);
+
+                float scale = float(i) / 32.0;
+
+                scale = Lerp(0.1f, 1.0f, scale * scale);
+
+                sample *= scale;
+
+                kernels->data.kernels[i] = sample;
+            }
+        };
+        kernels->CustomUpdate = [=]()
+        {
+
+        };
+        uniArr.push_back(kernels);
+
+    }
+
+    {
+        auto handle = rg.GetResourceHandle("SSAORotation");
+        auto& rotationRes = rg.resourceMap[handle];
+
+
+        std::uniform_real_distribution<float> randomFloats(0.0, 1.0);
+        std::default_random_engine generator;
+        std::vector<glm::vec2> ssaoNoise;
+        for (int i = 0; i < 16; ++i)
+        {
+            glm::vec2 noise(
+                    randomFloats(generator)*2.0-1.0,
+                    randomFloats(generator)*2.0-1.0
+            );
+            ssaoNoise.push_back(noise);
+        }
+        auto allocIMG = std::make_shared<AllocatedImage>(ImageType::Color,VK_FORMAT_R16G16_UNORM,
+                                VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,
+                                VkExtent2D{SSAO_ROTATION_SIZE,SSAO_ROTATION_SIZE},1,1);
+        allocIMG->LoadData(ssaoNoise.data(),ssaoNoise.size()*sizeof(glm::vec2));
+        rotationRes.textureInfo->data = std::make_shared<Texture>(allocIMG,TextureType::DontCare);
     }
 }
 
@@ -240,10 +300,14 @@ void RenderSystem::UpdateLightArray()
 
 void RenderSystem::SetupRenderGraph()
 {
-    renderGraph.DeclareResource(scene);
-    renderGraph.Compile();
-    VulkanContext::GetContext().presentManager.recreatePassFunc = std::bind(&RDG::RenderGraph::RecreateAllPass,&renderGraph);
+    DeclareResource();
     SetupUniforms();
+    for (auto& u:uniArr)
+    {
+        u->InitData();
+    }
+    rg.Compile();
+    VulkanContext::GetContext().presentManager.recreatePassFunc = std::bind(&RDG::RenderGraph::RecreateAllPass,&rg);
 }
 
 void RenderSystem::InitSettings()
@@ -268,8 +332,274 @@ void RenderSystem::RecreateRTScene()
     }
     memcpy(materialArr->data.mat,scene->matArr.data(),sizeof(Material)*300);
     scene->rtScene = RTBuilder::CreateRTScene(scene->reg.view<Renderable,Transform>());
-    renderGraph.accelerationStructure->rtScene = std::make_shared<RTScene>(scene->rtScene);
-    renderGraph.WriteAccelerationSTDescriptor(*renderGraph.accelerationStructure);
+    rg.accelerationStructure->rtScene = std::make_shared<RTScene>(scene->rtScene);
+    rg.WriteAccelerationSTDescriptor(*rg.accelerationStructure);
+}
+
+void RenderSystem::DeclareResource()
+{
+    using namespace RDG;
+    uint32_t winWidth = (uint32_t)VulkanContext::GetContext().windowExtent.width;
+    uint32_t winHeight = (uint32_t)VulkanContext::GetContext().windowExtent.height;
+    auto sceneSkybox = scene->skybox;
+    auto globalData = rg.AddResource({.name = "GlobalData",.type = ResourceType::Uniform,
+                                          .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}});
+
+    auto csmData = rg.AddResource({.name = "CSMData",.type = ResourceType::Uniform,
+                                       .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});
+
+    auto skyboxTex = rg.AddResource({"SkyboxTexture",.type = ResourceType::Texture,
+                                         .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},
+                                                                    TextureUsage::ColorAttachment, VK_FORMAT_R8G8B8A8_SRGB, sceneSkybox->texture}});
+
+
+
+    auto ssaoKernel = rg.AddResource({"SSAOKernel",.type = ResourceType::Uniform,
+                                          .bufferInfo = BufferInfo{.size = sizeof(SSAOKernels)}});
+    auto ssaoRotation = rg.AddResource({"SSAORotation",.type = ResourceType::Texture,
+                                                .textureInfo = TextureInfo{{SSAO_ROTATION_SIZE,SSAO_ROTATION_SIZE},
+                                                                           TextureUsage::ColorAttachment, VK_FORMAT_R16G16_UNORM}});
+
+     auto cascadedShadowMapData = rg.AddResource({"CascadedShadowMapData",.type = ResourceType::Uniform,
+                                                      .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});
+
+    auto cascadedShadowMap = rg.AddResource({"CascadedShadowMap",.type = ResourceType::Texture,
+                                                 .textureInfo = TextureInfo{{CASCADED_WIDTH, CASCADED_HEIGHT},
+                                                                            TextureUsage::ShadowMap, VK_FORMAT_D32_SFLOAT, nullptr, 1, CASCADED_COUNT}});
+
+    auto lightData = rg.AddResource({.name = "Lights",.type = ResourceType::Uniform,
+                                         .bufferInfo = BufferInfo{.size = sizeof(LightUniform)}});
+
+    auto renderSettings = rg.AddResource({.name = "RenderSettings",.type = ResourceType::Uniform,
+                                              .bufferInfo = BufferInfo{.size = sizeof(RenderSettingUniform)}});
+
+    auto position = rg.AddResource({.name = "Position",.type = ResourceType::Texture,
+                                        .textureInfo =TextureInfo{WINDOW_EXTENT,
+                                                                  TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto viewPosition = rg.AddResource({"ViewPosition",.type = ResourceType::Texture,
+                                               .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                          TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto viewNormal = rg.AddResource({"ViewNormal",.type = ResourceType::Texture,
+                                                .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                           TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto normal = rg.AddResource({.name = "Normal",.type = ResourceType::Texture,
+                                      .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                 TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto baseColor = rg.AddResource({.name = "BaseColor",.type = ResourceType::Texture,
+                                         .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                    TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto metallicRoughness = rg.AddResource({.name = "MetallicRoughness",.type = ResourceType::Texture,
+                                                 .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                            TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto depth = rg.AddResource({.name = "Depth",.type = ResourceType::Texture,
+                                     .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                TextureUsage::Depth, VK_FORMAT_D32_SFLOAT}});
+
+    auto ssaoOutput = rg.AddResource({.name = "SSAOOutput",.type = ResourceType::Texture,
+                                          .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                     TextureUsage::ColorAttachment, VK_FORMAT_R8_UNORM}});
+
+    auto ssaoBlurSIMG = rg.AddResource({.name = "SSAOBlur",.type = ResourceType::StorageImage,
+                                            .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                       TextureUsage::Storage, VK_FORMAT_R8_UNORM}});
+
+    auto lighted = rg.AddResource({.name = "Lighted",.type = ResourceType::Texture,
+                                       .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                  TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto rtIMG  = rg.AddResource({.name = "RTIMG",.type = ResourceType::StorageImage,
+                                      .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                 TextureUsage::Storage, VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto rtSampleImg  = rg.AddResource({.name = "rtSampleImg",.type = ResourceType::Texture,
+                                            .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                       TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto tlasData = rg.AddResource({.name = "TLAS",.type = ResourceType::Accleration,
+                                        .rtScene = std::make_shared<RTScene>(scene->rtScene)});
+
+    auto rtUniform = rg.AddResource({.name = "RTUniform",.type = ResourceType::Uniform,
+                                         .bufferInfo = BufferInfo{.size = sizeof(RTUniform)}});
+
+    auto materialArray = rg.AddResource({"MaterialArray",.type=ResourceType::SSBO,
+                                             .bufferInfo = {BufferInfo{.size = 300*sizeof(Material)}}});
+    //Pass
+    //GeoPass
+    {
+        struct alignas(16) GeoPC
+        {
+            Handle global;
+            Material mat;
+            glm::mat4 model;
+        };
+
+        rg.AddPass({.name = "Geometry",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
+                        .input = {globalData},
+                        .output = {position, normal, baseColor, metallicRoughness,viewPosition,viewNormal, depth},
+                        .pipeline = {.type=PipelineType::Mesh, .rsShaders={"GeoVert", "GeoFrag"},.handleSize = sizeof(GeoPC)},
+                        .executeFunc = [=](CommandList& cmd)
+                        {
+                            for (auto& entity:view)
+                            {
+                                auto renderComp = view.get<Renderable>(entity);
+                                auto transComp = view.get<Transform>(entity);
+                                GeoPC pushConstants = {globalData,renderComp.material,transComp.globalTransform};
+                                cmd.PushConstantsForHandles(&pushConstants);
+                                cmd.DrawMesh(renderComp.mesh);
+                            }
+                        }});
+    }
+
+    {
+        struct alignas(16) csmPC
+        {
+            glm::mat4 modelMat;
+            Handle csmUniform;
+        };
+
+        rg.AddPass({.name = "csmPass",.type = RenderPassType::Raster,.fbExtent = {CASCADED_WIDTH, CASCADED_HEIGHT},
+                        .input = {csmData},
+                        .output = {cascadedShadowMap},
+                        .pipeline = {.type=PipelineType::Mesh, .rsShaders={"CascadedShadowVert","CascadedShadowFrag"}, .handleSize = sizeof(csmPC)},
+                        .executeFunc = [=](CommandList& cmd)
+                        {
+                            for (auto& entity:view)
+                            {
+                                auto renderComp = view.get<Renderable>(entity);
+                                auto transComp = view.get<Transform>(entity);
+                                csmPC pushConstants = {transComp.globalTransform,csmData};
+                                cmd.PushConstantsForHandles(&pushConstants);
+                                cmd.DrawMesh(renderComp.mesh);
+                            }
+                        }});
+
+
+    }
+
+    {
+        struct alignas(16) SSAOPC
+        {
+            Handle position;
+            Handle normal;
+            Handle ssaoKernel;
+            Handle ssaoRotation;
+            Handle globalData;
+        };
+        rg.AddPass({.name = "SSAO",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
+                           .input = {viewPosition,viewNormal,ssaoKernel,ssaoRotation,globalData},
+                           .output = {ssaoOutput},
+                           .pipeline = {.type = PipelineType::RenderQuad, .rsShaders = {"SSAOVert", "SSAOFrag"},.handleSize = sizeof(SSAOPC)},
+                           .executeFunc = [=](CommandList& cmd)
+                           {
+                               SSAOPC pushConstants = {viewPosition,viewNormal,ssaoKernel,ssaoRotation,globalData};
+                               cmd.PushConstantsForHandles(&pushConstants);
+                               cmd.DrawRenderQuad();
+                           }});
+
+    }
+
+    //Light
+    {
+        struct alignas(16) CompPC
+        {
+            Handle position;
+            Handle normal;
+            Handle baseColor;
+            Handle mr;
+            Handle shadowMap;
+            Handle csmData;
+            Handle lightUniform;
+            Handle globalUniform;
+            Handle renderSettingUniform;
+        };
+
+        rg.AddPass({.name = "Composition",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
+                        .input = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,globalData,lightData,renderSettings},
+                        .output = {lighted},
+                        .pipeline = {.type = PipelineType::RenderQuad, .rsShaders = {"CompVert", "CompFrag"},.handleSize = sizeof(CompPC)},
+                        .executeFunc = [=](CommandList& cmd)
+                        {
+                            CompPC pushConstants = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,lightData,globalData,renderSettings};
+                            cmd.PushConstantsForHandles(&pushConstants);
+                            cmd.DrawRenderQuad();
+                        }});
+
+
+    }
+
+    {
+        struct alignas(16) SkyboxPC
+        {
+            Handle skyboxTex;
+            Handle globalData;
+        };
+
+        rg.AddPass({.name = "SkyboxDraw", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
+                        .input = {skyboxTex,lighted,depth},
+                        .output = {lighted,depth},
+                        .pipeline = {.type = PipelineType::Skybox, .rsShaders = {"SkyboxVert", "SkyboxFrag"},.handleSize = sizeof(SkyboxPC)},
+                        .executeFunc = [=](CommandList& cmd)
+                        {
+                            SkyboxPC pushConstant = {skyboxTex,globalData};
+                            cmd.PushConstantsForHandles(&pushConstant);
+                            cmd.DrawMesh(*sceneSkybox->mesh);
+                        }
+                });
+    }
+
+
+//        {
+//            struct alignas(16) RTPC
+//            {
+//                Handle outputImg;
+//                Handle tlas;
+//                Handle rtUniform;
+//                Handle materialArray;
+//            };
+//
+//            rg.AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
+//                            .input = {rtIMG,tlasData,rtUniform,materialArray},
+//                            .output = {rtIMG},
+//                            .pipeline = {.type = PipelineType::RayTracing,
+//                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
+//                                         .handleSize = sizeof(RTPC)},
+//                            .executeFunc = [=](CommandList& cmd)
+//                            {
+//                                RTPC rtpc = {rtIMG,tlasData,rtUniform,materialArray};
+//                                cmd.PushConstantsForHandles(&rtpc);
+//                                cmd.RayTracing();
+//                                cmd.TransImage(resourceMap[rtIMG].textureInfo.value(),resourceMap[rtSampleImg].textureInfo.value(),
+//                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+//                            }});
+//
+//        }
+
+
+
+    {
+        struct alignas(16) PresentPC
+        {
+            Handle lastAtt;
+            Handle rtSampleImg;
+        };
+
+        rg.AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
+                        .input = {lighted,rtSampleImg},
+                        .output = {},
+                        .pipeline = {.type = PipelineType::RenderQuad, .rsShaders ={"PresentVert", "PresentFrag"},.handleSize = sizeof(PresentPC)},
+                        .executeFunc = [=](CommandList& cmd)
+                        {
+                            PresentPC pushConstants = {lighted,rtSampleImg};
+                            cmd.PushConstantsForHandles(&pushConstants);
+                            cmd.DrawRenderQuad();
+                        }});
+    }
 }
 
 

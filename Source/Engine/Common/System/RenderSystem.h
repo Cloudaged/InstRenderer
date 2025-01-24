@@ -3,9 +3,12 @@
 #define INSTRENDERER_RENDERSYSTEM_H
 #include "../Scene/Scene.h"
 #include "iostream"
+#include "random"
 #include "../../Render/Uniforms.h"
 #include "../Core/EngineMath.h"
 #include "../../Render/RenderGraph/RenderGraph.h"
+#include "../../Render/RenderGraph/RenderResource.h"
+
 #include "../../Render/UniContainer.h"
 #include "../Serialization/RenderSettingSerializer.h"
 #include "fstream"
@@ -26,8 +29,9 @@ public:
     void UpdateLightArray();
     void RecreateRTScene();
 public:
-    RDG::RenderGraph renderGraph;
+    RDG::RenderGraph rg;
 private:
+    void DeclareResource();
     void PrepareData();
     void SetupRenderGraph();
     void SetupUniforms();
@@ -38,6 +42,7 @@ private:
     UniPtr<LightUniform> lightU;
     std::vector<std::shared_ptr<UniBase>> uniArr;
     std::shared_ptr<Scene> scene;
+    entt::view<entt::get_t<Renderable,Transform>> view;
     //GlobalDescriptorData globalData{};
 };
 

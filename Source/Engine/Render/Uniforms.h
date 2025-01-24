@@ -15,6 +15,8 @@ struct GlobalUniform
     glm::mat4 skyboxProj;
     glm::mat4 lightViewMat;
     glm::mat4 lightProjMat;
+    float nearPlane;
+    float farPlane;
 };
 
 

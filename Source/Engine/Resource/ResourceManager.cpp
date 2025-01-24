@@ -70,21 +70,21 @@ Material ResourceManager::TransMaterial(RDG::RenderGraph& renderGraph,std::share
 
             auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::Texture,
                                                 .textureInfo =RDG::TextureInfo{{tex->width,tex->height},
-                                                                          RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
+                                                                               TextureUsage::MaterialTexture, VK_FORMAT_R8G8B8A8_SRGB, texData}});
             mat.baseColor = handle;
         } else if(tex->textureType==TextureType::Normal)
         {
             auto texData = AllocTexture(tex);
             auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::Texture,
                                                           .textureInfo =RDG::TextureInfo{{tex->width, tex->height},
-                                                                                         RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
+                                                                                         TextureUsage::MaterialTexture, VK_FORMAT_R8G8B8A8_SRGB, texData}});
             mat.normal = handle;
         }else if(tex->textureType==TextureType::RoughnessMetallic)
         {
             auto texData = AllocTexture(tex);
             auto handle = renderGraph.AddOuterResource({.name = tex->name,.type = RDG::ResourceType::Texture,
                                                           .textureInfo =RDG::TextureInfo{{tex->width,tex->height},
-                                                                                         RDG::AttachmentUsage::Color, VK_FORMAT_R8G8B8A8_SRGB,texData}});
+                                                                                         TextureUsage::MaterialTexture, VK_FORMAT_R8G8B8A8_SRGB, texData}});
             mat.metallicRoughness = handle;
         }
     }
@@ -156,7 +156,7 @@ std::shared_ptr<GameObject> ResourceManager::AddSceneNode(GameInstance* instance
         transComp = {pos,rotation,scale};
 
         auto meshData= ResourceManager::Get().TransMesh(mesh);
-        auto materialData = ResourceManager::Get().TransMaterial(instance->renderSystem.renderGraph,mesh->material);
+        auto materialData = ResourceManager::Get().TransMaterial(instance->renderSystem.rg, mesh->material);
         auto handle = instance->mainScene->materialAllocator.Allocate();
         instance->mainScene->matArr.at(handle) = materialData;
         instance->mainScene->reg.emplace<Renderable>(meshGo->entityID,meshData,materialData,handle);

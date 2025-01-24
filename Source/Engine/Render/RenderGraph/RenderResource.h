@@ -14,6 +14,8 @@
 #include <functional>
 #include "../TextureExtent.h"
 #include "../RayTracing/RTBuilder.h"
+#include "../../Common/Core/Flags.h"
+#include "TextureUsage.h"
 namespace RDG
 {
     using ResourceName = std::string;
@@ -40,7 +42,8 @@ namespace RDG
         Uniform = 0,
         SSBO = 1,
         Texture = 2,
-        Accleration = 3
+        StorageImage = 3,
+        Accleration = 4
     };
 
     enum class PipelineType
@@ -60,19 +63,18 @@ namespace RDG
         RayTracing
     };
 
-    enum class AttachmentUsage
-    {
-        Unknown,
-        Color,
-        TransferSrc,
-        TransferDst,
-        Present,
-        Depth,
-        Prefiltered,
-        ShadowMap,
-        MaterialTexture,
-        StoreImage
-    };
+//    enum class TextureUsage :uint32_t
+//    {
+//        Unknown= 1<<0,
+//        Color= 1<<1,
+//        TransferSrc=1<<2,
+//        TransferDst = 1<<3,
+//        Present= 1<<4,
+//        Depth= 1<<5,
+//        Prefiltered= 1<<6,
+//        ShadowMap= 1<<7,
+//        MaterialTexture= 1<<8,
+//    };
 
     struct AttachmentState
     {
@@ -92,7 +94,7 @@ namespace RDG
     struct TextureInfo
     {
         TextureExtent extent;
-        AttachmentUsage usage;
+        UsageFlags usage;
         VkFormat format;
         std::shared_ptr<Texture> data = nullptr;
         int mipLevels = 1;

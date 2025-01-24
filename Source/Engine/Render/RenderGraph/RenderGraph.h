@@ -27,11 +27,11 @@ namespace RDG
 
     bool IsImageType(ResourceType type);
     bool IsBufferType(ResourceType type);
-    bool IsDepthType(AttachmentUsage usage);
-    VkImageUsageFlags GetImageUsage(AttachmentUsage usage);
+    bool IsDepthType(UsageFlags usage);
+    VkImageUsageFlags GetImageUsage(UsageFlags usage);
     VkBufferUsageFlagBits GetBufferUsage(ResourceType type);
-    VkImageAspectFlagBits GetAspectFlag(AttachmentUsage usage);
-    AttachmentState GetImageState(AttachmentUsage usage,bool isRW);
+    VkImageAspectFlagBits GetAspectFlag(UsageFlags usage);
+    AttachmentState GetImageState(UsageFlags usage, bool isRW);
 
     class RenderGraph
     {

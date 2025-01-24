@@ -17,6 +17,8 @@ struct VertOutput
     float3 normalWS : TEXCOORD2;
     float3 bitangentWS : TEXCOORD3;
     float3 tangentWS : TEXCOORD4;
+    float3 posVS : TEXCOORD5;
+    float3 normalVS : TEXCOORD6;
 }
 
 
@@ -36,6 +38,8 @@ VertOutput main(VertInput input)
     output.tangentWS = normalize(mul(handles.modelMat, float4(input.tangent.xyz, 0.0)).xyz);
     output.bitangentWS = normalize(mul(handles.modelMat, float4(input.bitangent.xyz, 0.0)).xyz);
     output.normalWS = normalize(mul(handles.modelMat, float4(input.normal.xyz,0.0)).xyz);
+
+    output.posVS = mul(globalU.viewMat, float4(output.posWS, 1.0)).xyz;
     // float3 T = normalize(input.tangent.xyz);
     // float3 B = normalize(input.bitangent.xyz);
     // float3 N = normalize(input.normal.xyz);

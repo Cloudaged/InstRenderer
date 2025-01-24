@@ -18,6 +18,8 @@ public struct GlobalUniform
     public float4x4 skyboxProjMat;
     public float4x4 lightViewMat;
     public float4x4 lightProjMat;
+    public float nearPlane;
+    public float farPlane;
 }
 
 public struct CSMUniform
@@ -48,6 +50,11 @@ public struct LightCameraUniform
     public float4 cameraToward;
     public int lightCount;
     public Light light[16];
+}
+
+public struct SSAOKernel
+{
+   public float4 kernels[32];
 }
 
 public struct RTUniform

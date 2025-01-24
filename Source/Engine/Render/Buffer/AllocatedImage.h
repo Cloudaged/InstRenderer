@@ -18,6 +18,7 @@ public:
     AllocatedImage(ImageType type,VkFormat format,VkImageUsageFlags usageFlags,VkExtent2D extent,int mipLevel,int layer);
     ~AllocatedImage();
     void LoadData(std::shared_ptr<Res::ResTexture> resTexture);
+    void LoadData(void* data,size_t size);
     VkImage vk_image;
     VkImageView imageView;
     VmaAllocation allocation;

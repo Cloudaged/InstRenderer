@@ -26,6 +26,15 @@ public struct CascadedShadowHandles
     Handle csmData;
 }
 
+public struct SSAOHandles
+{
+    Handle position;
+    Handle normal;
+    Handle kernels;
+    Handle rotation;
+    Handle global;
+}
+
 public struct SkyboxHandles
 {
     Handle skyboxTex;

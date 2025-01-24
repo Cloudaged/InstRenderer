@@ -105,6 +105,37 @@ void AllocatedImage::LoadData(std::shared_ptr<Res::ResTexture> resTexture)
     }
 }
 
+void AllocatedImage::LoadData(void *data, size_t size)
+{
+    Buffer* staging = VulkanContext::GetContext().bufferAllocator.CreateBuffer(size,VK_BUFFER_USAGE_TRANSFER_SRC_BIT,VMA_MEMORY_USAGE_CPU_ONLY);
+
+    void* stagingData = VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*staging);
+    memcpy(stagingData,data,size);
+
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
+    VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd, this->vk_image,VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mipLevels,layer);
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount =1;
+    region.imageOffset ={0,0,0};
+    region.imageExtent = {imageExtent.width,imageExtent.height,1};
+
+
+    vkCmdCopyBufferToImage(cmd, (*staging).vk_buffer, vk_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd,true);
+
+    if(mipLevels!=1)
+    {
+        GenerateMipmap();
+    }
+}
+
 void AllocatedImage::GenerateMipmap()
 {
     VkFormatProperties formatProperties;
@@ -192,3 +223,4 @@ AllocatedImage::~AllocatedImage()
         vkDestroyImage(device,vk_image, nullptr);
     }
 }
+

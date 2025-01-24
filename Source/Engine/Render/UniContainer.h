@@ -38,7 +38,7 @@ void UniContainer<T>::InitData()
     if(CustomInit)
     {
         CustomInit();
-        MemoryCopy();
+        //MemoryCopy();
     }
 }
 
