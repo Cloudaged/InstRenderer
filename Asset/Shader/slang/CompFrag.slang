@@ -29,7 +29,7 @@ float4 main(FragInput input) : SV_Target
     GlobalUniform globalUnifom = Arr_globalUniform[ps.globalUniform];
     RenderSetting graphicSetting = Arr_graphicSetting[ps.renderSettingUniform];
     CSMUniform csmU = Arr_csmUniform[ps.csmUniform];
-
+    float ssao = textures[ps.ssao].Sample(input.inUV).r;
 
     int csmIndex = 0;
     int blendIndex = 0;
@@ -56,13 +56,13 @@ float4 main(FragInput input) : SV_Target
         } 
     }
 
-    if (graphicSetting.shadowSetting.showCascaded == -1)
-    {
-        return baseColor + ShowCascade(csmIndex);
-    } else if (graphicSetting.shadowSetting.showCascaded!=-2)
-    {
-        return float4(textureArr[ps.shadowMap].Sample(float3(input.inUV, graphicSetting.shadowSetting.showCascaded)).r);
-    }
+    // if (graphicSetting.shadowSetting.showCascaded == -1)
+    // {
+    //     return baseColor + ShowCascade(csmIndex);
+    // } else if (graphicSetting.shadowSetting.showCascaded!=-2)
+    // {
+    //     return float4(textureArr[ps.shadowMap].Sample(float3(input.inUV, graphicSetting.shadowSetting.showCascaded)).r);
+    // }
 
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
@@ -96,7 +96,16 @@ float4 main(FragInput input) : SV_Target
              light.lightSize,
              graphicSetting.shadowSetting);
     }
-    float3 hdrColor = finalColor * shadow;
+
+    float3 hdrColor;
+
+    if (graphicSetting.shadowSetting.showCascaded == -1)
+    {
+        hdrColor = baseColor.xyz * ssao;
+    } else
+    {
+        hdrColor = baseColor.xyz;
+    }
     return float4(hdrColor, 1.0);
     // return testValues;
     //return float4(0.0f);

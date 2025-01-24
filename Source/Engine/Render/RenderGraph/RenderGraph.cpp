@@ -1004,7 +1004,7 @@ namespace RDG
 
     bool IsImageType(ResourceType type)
     {
-        if(type==ResourceType::Texture)
+        if(type==ResourceType::Texture||type==ResourceType::StorageImage)
         {
             return true;
         } else

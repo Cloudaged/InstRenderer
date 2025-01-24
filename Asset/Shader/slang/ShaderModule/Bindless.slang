@@ -52,6 +52,7 @@ public struct CompHandles
     Handle lightUniform;
     Handle globalUniform;
     Handle renderSettingUniform;
+    Handle ssao;
 }
 
 public struct RayTracingHandles
@@ -66,6 +67,14 @@ public struct PresentHandle
 {
     Handle lighted;
     Handle rtImg;
+}
+
+public struct SSAOBlurHandle
+{
+    Handle ssaoBlur;
+    Handle ssao;
+    public int xBlurRange;
+    public int yBlurRange;
 }
 
 

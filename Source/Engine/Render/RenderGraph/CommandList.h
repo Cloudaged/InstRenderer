@@ -23,6 +23,7 @@ namespace RDG
         void DrawRenderQuad();
         void PushConstantsForHandles(void* data);
         void RayTracing();
+        void Dispatch();
         void TransImage(TextureInfo& src,TextureInfo& dst,VkImageLayout srcFinalLayout,VkImageLayout dstFinalLayout);
     public:
         VkCommandBuffer cmd;

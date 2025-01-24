@@ -44,9 +44,14 @@ namespace RDG
 
         if(pipelineRef.type==PipelineType::RayTracing)
         {
-            CreateRayTracingPipeline(pipelineRef,attCount,renderPass);
+            CreateRayTracingPipeline(pipelineRef);
             return;
-        }else
+        }else if(pipelineRef.type==PipelineType::Compute)
+        {
+            CreateComputePipeline(pipelineRef);
+            return;
+        }
+        else
         {
             switch (pipelineRef.type)
             {
@@ -245,7 +250,7 @@ namespace RDG
         return FILE_PATH("Asset/Shader/slangSPV/"+nameWithExtension);
     }
 
-    void PipelineBuilder::CreateRayTracingPipeline(PipelineRef& pipelineRef,int attCount,VkRenderPass renderPass)
+    void PipelineBuilder::CreateRayTracingPipeline(PipelineRef& pipelineRef)
     {
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
         pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -428,6 +433,52 @@ namespace RDG
         memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
 
 
+
+    }
+
+    void PipelineBuilder::CreateComputePipeline(PipelineRef &pipelineRef)
+    {
+        VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+        pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutCreateInfo.setLayoutCount = 1;
+        pipelineLayoutCreateInfo.pSetLayouts = &VulkanContext::GetContext().bindlessLayout;
+
+        VkPushConstantRange pushConstantRange{};
+        if(pipelineRef.handleSize!=0)
+        {
+            pushConstantRange.stageFlags = VK_SHADER_STAGE_ALL;
+            pushConstantRange.offset = 0;
+            pushConstantRange.size = pipelineRef.handleSize;
+
+            pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+            pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
+        }else
+        {
+            std::cout<<"This pass don't have handle pushConstants\n";
+        }
+
+        if(vkCreatePipelineLayout(VulkanContext::GetContext().device,&pipelineLayoutCreateInfo, nullptr,&pipelineRef.pipelineLayout) != VK_SUCCESS)
+        {
+            throw std::runtime_error("fail to create RT pipeline layout");
+        }
+
+        VkShaderModule computeShaderModule = LoadShaderData(GetShaderFullPath(pipelineRef.cpShaders.comp));
+
+        VkPipelineShaderStageCreateInfo computeShaderStageInfo{};
+        computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        computeShaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+        computeShaderStageInfo.module = computeShaderModule;
+        computeShaderStageInfo.pName = "main";
+
+        VkComputePipelineCreateInfo pipelineInfo{};
+        pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+        pipelineInfo.layout = pipelineRef.pipelineLayout;
+        pipelineInfo.stage = computeShaderStageInfo;
+
+
+        if (vkCreateComputePipelines(VulkanContext::GetContext().device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipelineRef.pipeline) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create compute pipeline!");
+        }
 
     }
 }

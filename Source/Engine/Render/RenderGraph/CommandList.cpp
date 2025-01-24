@@ -19,8 +19,12 @@ namespace RDG
     {
         curPass = std::make_shared<PassRef>(passRef);
         if(passRef.type==RenderPassType::RayTracing)
+        {
             return true;
-
+        }else if(passRef.type==RenderPassType::Compute)
+        {
+            return true;
+        }
         auto presentM = VulkanContext::GetContext().presentManager;
 
         VkExtent2D extent = passRef.fbExtent.GetVkExtent();
@@ -97,7 +101,12 @@ namespace RDG
     void CommandList::EndRenderPass()
     {
         if(curPass->type==RenderPassType::RayTracing)
+        {
             return;
+        }else if(curPass->type==RenderPassType::Compute)
+        {
+            return;
+        }
         vkCmdEndRenderPass(cmd);
     }
 
@@ -208,4 +217,10 @@ void RDG::CommandList::TransImage(TextureInfo& src,TextureInfo& dst,VkImageLayou
                                                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                                                 dstFinalLayout);
     dst.currentLayout = dstFinalLayout;
+}
+
+void RDG::CommandList::Dispatch()
+{
+    vkCmdDispatch(cmd, ceil(curPass->fbExtent.GetVkExtent().width/16)+10,
+                  ceil(curPass->fbExtent.GetVkExtent().height/16)+10,1);
 }

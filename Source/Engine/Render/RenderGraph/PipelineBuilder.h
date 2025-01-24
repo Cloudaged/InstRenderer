@@ -23,7 +23,8 @@ namespace RDG
         static VkShaderModule LoadShaderData(std::string path);
         static void CreatePipeline(PipelineRef& pipelineRef,int attCount,VkRenderPass renderPass);
     private:
-        static void CreateRayTracingPipeline(PipelineRef& pipelineRef,int attCount,VkRenderPass renderPass);
+        static void CreateRayTracingPipeline(PipelineRef& pipelineRef);
+        static void CreateComputePipeline(PipelineRef& pipelineRef);
         static std::vector<char> ReadFile(const std::string &fileName);
         static std::string GetShaderFullPath(std::string name);
     };

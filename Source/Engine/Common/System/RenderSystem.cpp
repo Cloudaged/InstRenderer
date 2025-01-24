@@ -403,11 +403,13 @@ void RenderSystem::DeclareResource()
 
     auto ssaoOutput = rg.AddResource({.name = "SSAOOutput",.type = ResourceType::Texture,
                                           .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                                     TextureUsage::ColorAttachment, VK_FORMAT_R8_UNORM}});
+                                                                     TextureUsage::ColorAttachment|TextureUsage::TransferDst,
+                                                                     VK_FORMAT_R8_UNORM}});
 
-    auto ssaoBlurSIMG = rg.AddResource({.name = "SSAOBlur",.type = ResourceType::StorageImage,
+    auto ssaoBlurIMG = rg.AddResource({.name = "SSAOBlur",.type = ResourceType::StorageImage,
                                             .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                                       TextureUsage::Storage, VK_FORMAT_R8_UNORM}});
+                                                                       TextureUsage::Storage|TextureUsage::TransferSrc,
+                                                                       VK_FORMAT_R8_UNORM}});
 
     auto lighted = rg.AddResource({.name = "Lighted",.type = ResourceType::Texture,
                                        .textureInfo = TextureInfo{WINDOW_EXTENT,
@@ -419,7 +421,7 @@ void RenderSystem::DeclareResource()
 
     auto rtSampleImg  = rg.AddResource({.name = "rtSampleImg",.type = ResourceType::Texture,
                                             .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                                       TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                                       TextureUsage::ColorAttachment|TextureUsage::TransferDst, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
     auto tlasData = rg.AddResource({.name = "TLAS",.type = ResourceType::Accleration,
                                         .rtScene = std::make_shared<RTScene>(scene->rtScene)});
@@ -501,7 +503,32 @@ void RenderSystem::DeclareResource()
                                cmd.PushConstantsForHandles(&pushConstants);
                                cmd.DrawRenderQuad();
                            }});
+    }
 
+    {
+        struct alignas(16) SSAOBlurPC
+        {
+            Handle ssaoBlurIMG;
+            Handle ssaoOutput;
+            int xBlurRange;
+            int yBlurRange;
+        };
+        rg.AddPass({.name = "SSAOBlur",.type = RenderPassType::Compute,.fbExtent = WINDOW_EXTENT,
+                           .input = {ssaoBlurIMG,ssaoOutput},
+                           .output = {ssaoBlurIMG},
+                           .pipeline = {.type = PipelineType::Compute, .cpShaders = {"SSAOBlur"},.handleSize = sizeof(SSAOBlurPC)},
+                           .executeFunc = [=](CommandList& cmd)
+                           {
+                               SSAOBlurPC pushConstants = {ssaoBlurIMG,ssaoOutput,5,0};
+                               cmd.PushConstantsForHandles(&pushConstants);
+                               cmd.Dispatch();
+                               pushConstants = {ssaoBlurIMG,ssaoOutput,0,5};
+                               cmd.PushConstantsForHandles(&pushConstants);
+                               cmd.Dispatch();
+                               cmd.TransImage(rg.resourceMap[ssaoBlurIMG].textureInfo.value(),rg.resourceMap[ssaoOutput].textureInfo.value(),
+                                              VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+//
+                           }});
     }
 
     //Light
@@ -517,15 +544,16 @@ void RenderSystem::DeclareResource()
             Handle lightUniform;
             Handle globalUniform;
             Handle renderSettingUniform;
+            Handle ssao;
         };
 
         rg.AddPass({.name = "Composition",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
-                        .input = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,globalData,lightData,renderSettings},
+                        .input = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,globalData,lightData,renderSettings,ssaoOutput},
                         .output = {lighted},
                         .pipeline = {.type = PipelineType::RenderQuad, .rsShaders = {"CompVert", "CompFrag"},.handleSize = sizeof(CompPC)},
                         .executeFunc = [=](CommandList& cmd)
                         {
-                            CompPC pushConstants = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,lightData,globalData,renderSettings};
+                            CompPC pushConstants = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,lightData,globalData,renderSettings,ssaoOutput};
                             cmd.PushConstantsForHandles(&pushConstants);
                             cmd.DrawRenderQuad();
                         }});
