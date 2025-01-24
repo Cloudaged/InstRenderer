@@ -30,7 +30,6 @@ float4 main(FragInput input) : SV_Target
     RenderSetting graphicSetting = Arr_graphicSetting[ps.renderSettingUniform];
     CSMUniform csmU = Arr_csmUniform[ps.csmUniform];
     float ssao = textures[ps.ssao].Sample(input.inUV).r;
-
     int csmIndex = 0;
     int blendIndex = 0;
     float blendValue = 0.0;
@@ -97,16 +96,8 @@ float4 main(FragInput input) : SV_Target
              graphicSetting.shadowSetting);
     }
 
-    float3 hdrColor;
-
-    if (graphicSetting.shadowSetting.showCascaded == -1)
-    {
-        hdrColor = baseColor.xyz * ssao;
-    } else
-    {
-        hdrColor = baseColor.xyz;
-    }
-    return float4(hdrColor, 1.0);
+    float3 hdrColor = finalColor * shadow * ssao;
+    return float4(hdrColor);
     // return testValues;
     //return float4(0.0f);
     //return float4(shadow);

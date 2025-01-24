@@ -56,6 +56,7 @@ float4 main(FragmentInput input):SV_Target
             occ += (sampleDepth >= samplePos.z + 0.025 ? 1.0f : 0.0f) * rangeCheck;
         }
     }
-    occ = 1.0 - (occ / 32.0f);
-    return float4(occ);
+    occ = (occ / 32.0f);
+    float result = 1.0 - occ;
+    return float4(result);
 }
