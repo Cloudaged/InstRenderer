@@ -3,11 +3,42 @@ public static const float PI = 3.1415926;
 public static const int CASCADED_COUNT = 4;
 
 #define Handle public int
+
+public struct Vertex
+{
+    public float3 position;
+    public float3 normal;
+   public float2 uv;
+   public float4 tangent;
+   public float3 bitangent;
+}
+
+public struct VerticesArr
+{
+   public Vertex v[];
+}
+
+public struct IndicesArr
+{
+   public uint i[];
+}
+
+public struct GeometryNode
+{
+   public uint64_t vertices;
+   public uint64_t indices;
+   Handle baseColor;
+   Handle normal;
+   Handle metallicRoughness;
+   int pad0;
+}
+
 public struct Material
 {
     Handle baseColor;
     Handle normal;
     Handle metallicRoughness;
+    Handle pad0;
 }
 
 
@@ -78,7 +109,4 @@ public struct RenderSetting
 }
 
 
-public struct MaterialArr
-{
-   public Material materials[300];
-}
+

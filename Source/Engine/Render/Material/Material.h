@@ -10,6 +10,7 @@ struct alignas(16) Material
     Handle baseColor;
     Handle normal;
     Handle metallicRoughness;
+    Handle pad0 = 0;
 };
 
 

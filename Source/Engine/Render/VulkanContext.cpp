@@ -217,6 +217,7 @@ void VulkanContext::CreateQueueAndDevice()
     VkPhysicalDeviceFeatures2 features2{};
     features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     features2.features.samplerAnisotropy=VK_TRUE;
+    features2.features.shaderInt64 = VK_TRUE;
     features2.pNext = &indexingFeatures;
 
     VkPhysicalDeviceVulkan13Features device13Features{};

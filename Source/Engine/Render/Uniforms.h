@@ -66,10 +66,18 @@ struct CSMUniform
      float radiusBias;
 };
 
-struct MaterialArr
+struct GeometryNode
 {
-    Material mat[300];
+    VkDeviceAddress vertBufferAddress;
+    VkDeviceAddress indexBufferAddress;
+    Material material;
 };
+
+struct GeometryNodeArr
+{
+    alignas(16) GeometryNode nodes[300];
+};
+
 
 struct SSAOKernels
 {

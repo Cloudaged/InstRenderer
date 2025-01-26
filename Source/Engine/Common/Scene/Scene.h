@@ -37,7 +37,7 @@ public:
     std::vector<std::shared_ptr<GameObject>> objects;
     std::vector<std::shared_ptr<Light>> lights;
     HandleAllocator materialAllocator;
-    std::array<Material,300> matArr;
+    std::array<GeometryNode,300> nodeArr;
     Camera mainCamera;
     std::shared_ptr<Light> mainLight;
     BoundingPoint minPoint;

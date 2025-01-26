@@ -37,7 +37,7 @@ private:
     void SetupUniforms();
     void InitSettings();
 private:
-    std::shared_ptr<UniContainer<MaterialArr>> materialArr;
+    std::shared_ptr<UniContainer<GeometryNodeArr>> materialArr;
     RenderSettingSerializer settingSerializer;
     UniPtr<LightUniform> lightU;
     std::vector<std::shared_ptr<UniBase>> uniArr;

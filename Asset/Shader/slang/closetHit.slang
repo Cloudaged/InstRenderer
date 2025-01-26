@@ -1,16 +1,18 @@
 import ShaderModule.RayTracing;
 import ShaderModule.Types;
 import ShaderModule.Bindless;
-[[vk::binding(1, 0)]] StructuredBuffer<Material> materialA_Arr[];
+[[vk::binding(1, 0)]] StructuredBuffer<GeometryNode> node_Arr[];
 [[vk::push_constant]] ConstantBuffer<RayTracingHandles> handles;
-
 RayQuery rayQuery;
+
 
 [shader("closesthit")]
 void main(inout MyPayload payload)
 {
-    StructuredBuffer<Material> matBuffer = materialA_Arr[handles.materials];
-    Material mat = matBuffer.Load(InstanceID());
-    
-    payload = MyPayload(float3(mat.baseColor, 0, 0));
+    StructuredBuffer<GeometryNode> nodeBuffer = node_Arr[handles.materials];
+    GeometryNode node = nodeBuffer.Load(InstanceID());
+    VerticesArr *varr = (VerticesArr *)node.vertices;
+    float a= varr.v[0].position.x;
+    payload.hitValue = float3(node.baseColor, InstanceID(),a);
+    //payload.hitValue = float3(1, 0, 0);
 }

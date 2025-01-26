@@ -97,7 +97,7 @@ float4 main(FragInput input) : SV_Target
     }
 
     float3 hdrColor = finalColor * shadow * ssao;
-    return float4(hdrColor);
+    return float4(hdrColor,1.0);
     // return testValues;
     //return float4(0.0f);
     //return float4(shadow);

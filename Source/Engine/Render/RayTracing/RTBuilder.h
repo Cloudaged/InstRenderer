@@ -6,13 +6,14 @@
 #include "../../Common/Component/Components.h"
 #include "entt.hpp"
 #include <algorithm>
-
+#include "../Uniforms.h"
 struct BLAS
 {
     Buffer* asBuffer;
     VkAccelerationStructureKHR accelerationStructure;
     VkDeviceAddress address;
-    Handle materialHandle;
+    //GeometryNode geometryNode;
+    Handle nodeHandle;
 };
 
 struct TLAS

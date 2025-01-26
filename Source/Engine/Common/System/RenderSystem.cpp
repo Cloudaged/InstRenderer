@@ -193,8 +193,8 @@ void RenderSystem::SetupUniforms()
     }
 
     {
-        materialArr = INIT_UNIPTR(MaterialArr);
-        materialArr->Setup("MaterialArray", rg);
+        materialArr = INIT_UNIPTR(GeometryNodeArr);
+        materialArr->Setup("GeometryNodeArray", rg);
         materialArr->CustomInit = [=]()
         {
 
@@ -330,7 +330,7 @@ void RenderSystem::RecreateRTScene()
     {
         std::cout<<"dontExist\n";
     }
-    memcpy(materialArr->data.mat,scene->matArr.data(),sizeof(Material)*300);
+    memcpy(materialArr->data.nodes,scene->nodeArr.data(),sizeof(GeometryNode)*300);
     scene->rtScene = RTBuilder::CreateRTScene(scene->reg.view<Renderable,Transform>());
     rg.accelerationStructure->rtScene = std::make_shared<RTScene>(scene->rtScene);
     rg.WriteAccelerationSTDescriptor(*rg.accelerationStructure);
@@ -417,7 +417,7 @@ void RenderSystem::DeclareResource()
 
     auto rtIMG  = rg.AddResource({.name = "RTIMG",.type = ResourceType::StorageImage,
                                       .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                                 TextureUsage::Storage, VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                                 TextureUsage::Storage|TextureUsage::TransferSrc, VK_FORMAT_R16G16B16A16_SFLOAT}});
 
     auto rtSampleImg  = rg.AddResource({.name = "rtSampleImg",.type = ResourceType::Texture,
                                             .textureInfo = TextureInfo{WINDOW_EXTENT,
@@ -429,8 +429,8 @@ void RenderSystem::DeclareResource()
     auto rtUniform = rg.AddResource({.name = "RTUniform",.type = ResourceType::Uniform,
                                          .bufferInfo = BufferInfo{.size = sizeof(RTUniform)}});
 
-    auto materialArray = rg.AddResource({"MaterialArray",.type=ResourceType::SSBO,
-                                             .bufferInfo = {BufferInfo{.size = 300*sizeof(Material)}}});
+    auto nodeArray = rg.AddResource({"GeometryNodeArray",.type=ResourceType::SSBO,
+                                             .bufferInfo = {BufferInfo{.size = 300*sizeof(GeometryNode)}}});
     //Pass
     //GeoPass
     {
@@ -582,31 +582,31 @@ void RenderSystem::DeclareResource()
     }
 
 
-//        {
-//            struct alignas(16) RTPC
-//            {
-//                Handle outputImg;
-//                Handle tlas;
-//                Handle rtUniform;
-//                Handle materialArray;
-//            };
-//
-//            rg.AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
-//                            .input = {rtIMG,tlasData,rtUniform,materialArray},
-//                            .output = {rtIMG},
-//                            .pipeline = {.type = PipelineType::RayTracing,
-//                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
-//                                         .handleSize = sizeof(RTPC)},
-//                            .executeFunc = [=](CommandList& cmd)
-//                            {
-//                                RTPC rtpc = {rtIMG,tlasData,rtUniform,materialArray};
-//                                cmd.PushConstantsForHandles(&rtpc);
-//                                cmd.RayTracing();
-//                                cmd.TransImage(resourceMap[rtIMG].textureInfo.value(),resourceMap[rtSampleImg].textureInfo.value(),
-//                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-//                            }});
-//
-//        }
+        {
+            struct alignas(16) RTPC
+            {
+                Handle outputImg;
+                Handle tlas;
+                Handle rtUniform;
+                Handle geometryNodeArray;
+            };
+
+            rg.AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
+                            .input = {rtIMG,tlasData,rtUniform,nodeArray},
+                            .output = {rtIMG},
+                            .pipeline = {.type = PipelineType::RayTracing,
+                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
+                                         .handleSize = sizeof(RTPC)},
+                            .executeFunc = [=](CommandList& cmd)
+                            {
+                                RTPC rtpc = {rtIMG,tlasData,rtUniform,nodeArray};
+                                cmd.PushConstantsForHandles(&rtpc);
+                                cmd.RayTracing();
+                                cmd.TransImage(rg.resourceMap[rtIMG].textureInfo.value(),rg.resourceMap[rtSampleImg].textureInfo.value(),
+                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                            }});
+
+        }
 
 
 
