@@ -7,7 +7,7 @@ RTScene RTBuilder::CreateRTScene(entt::view<entt::get_t<Renderable,Transform>> v
     RTScene rtScene;
     if(view.size_hint()<=0)
     {
-        rtScene.allBlas.push_back(CreateEmptyBLAS());
+       // rtScene.allBlas.push_back(CreateEmptyBLAS());
     } else
     {
         rtScene.allBlas = CreateBLAS(view);
@@ -148,32 +148,32 @@ std::vector<BLAS> RTBuilder::CreateBLAS(entt::view<entt::get_t<Renderable,Transf
     return allBlas;
 }
 
-std::vector<Vertex> nVertices = {
-        // 第一个顶点
-        {
-                glm::vec3( 0.0f,  1.0f,  0.0f),    // position
-                glm::vec3( 0.0f,  0.0f,  1.0f),    // normal (假设法线朝向屏幕)
-                glm::vec2( 0.5f,  1.0f),            // uv
-                glm::vec4( 1.0f,  0.0f,  0.0f, 1.0f), // tangent
-                glm::vec3( 0.0f,  1.0f,  0.0f)     // bitangent
-        },
-        // 第二个顶点
-        {
-                glm::vec3(-1.0f, -1.0f,  0.0f),    // position
-                glm::vec3( 0.0f,  0.0f,  1.0f),    // normal
-                glm::vec2( 0.0f,  0.0f),            // uv
-                glm::vec4( 1.0f,  0.0f,  0.0f, 1.0f), // tangent
-                glm::vec3( 0.0f,  1.0f,  0.0f)     // bitangent
-        },
-        // 第三个顶点
-        {
-                glm::vec3( 1.0f, -1.0f,  0.0f),    // position
-                glm::vec3( 0.0f,  0.0f,  1.0f),    // normal
-                glm::vec2( 1.0f,  0.0f),            // uv
-                glm::vec4( 1.0f,  0.0f,  0.0f, 1.0f), // tangent
-                glm::vec3( 0.0f,  1.0f,  0.0f)     // bitangent
-        }
-};
+//std::vector<Vertex> nVertices = {
+//        // 第一个顶点
+//        {
+//                glm::vec3( 0.0f,  1.0f,  0.0f),    // position
+//                glm::vec3( 0.0f,  0.0f,  1.0f),    // normal (假设法线朝向屏幕)
+//                glm::vec2( 0.5f,  1.0f),            // uv
+//                glm::vec4( 1.0f,  0.0f,  0.0f, 1.0f), // tangent
+//                glm::vec3( 0.0f,  1.0f,  0.0f)     // bitangent
+//        },
+//        // 第二个顶点
+//        {
+//                glm::vec3(-1.0f, -1.0f,  0.0f),    // position
+//                glm::vec3( 0.0f,  0.0f,  1.0f),    // normal
+//                glm::vec2( 0.0f,  0.0f),            // uv
+//                glm::vec4( 1.0f,  0.0f,  0.0f, 1.0f), // tangent
+//                glm::vec3( 0.0f,  1.0f,  0.0f)     // bitangent
+//        },
+//        // 第三个顶点
+//        {
+//                glm::vec3( 1.0f, -1.0f,  0.0f),    // position
+//                glm::vec3( 0.0f,  0.0f,  1.0f),    // normal
+//                glm::vec2( 1.0f,  0.0f),            // uv
+//                glm::vec4( 1.0f,  0.0f,  0.0f, 1.0f), // tangent
+//                glm::vec3( 0.0f,  1.0f,  0.0f)     // bitangent
+//        }
+//};
 
 // 三角形的索引
 std::vector<uint32_t> nIndices = {
@@ -210,25 +210,21 @@ BLAS RTBuilder::CreateEmptyBLAS()
     sizeInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
     int index = 0;
 
-
-    Mesh mesh(nVertices,nIndices);
-
-
     geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
     geometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
     geometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
 
-    range.primitiveCount = mesh.indexCount/3;
+    range.primitiveCount =0;
     range.primitiveOffset = 0;
     range.firstVertex = 0;
     range.transformOffset = 0;
 
     geometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
-    geometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
-    geometry.geometry.triangles.vertexData.deviceAddress = mesh.vertAddress;
+    geometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+    geometry.geometry.triangles.vertexData.deviceAddress = 0;
     geometry.geometry.triangles.vertexStride = sizeof(Vertex);
-    geometry.geometry.triangles.maxVertex = mesh.vertexCount;
-    geometry.geometry.triangles.indexData.deviceAddress = mesh.indexAddress;
+    geometry.geometry.triangles.maxVertex = 0;
+    geometry.geometry.triangles.indexData.deviceAddress = 0;
     geometry.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32;
     geometry.geometry.triangles.transformData.deviceAddress = transAddress;
 
@@ -329,7 +325,6 @@ TLAS RTBuilder::CreateTLAS(const std::vector<BLAS>& allblas)
         emptyInstance.instanceShaderBindingTableRecordOffset = 0;
         emptyInstance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
         emptyInstance.accelerationStructureReference = 0;
-        std::cout<<"Empty is disable now\n";
         instances.push_back(emptyInstance);
     }else
     {

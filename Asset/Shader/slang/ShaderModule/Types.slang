@@ -6,11 +6,11 @@ public static const int CASCADED_COUNT = 4;
 
 public struct Vertex
 {
-    public float3 position;
-    public float3 normal;
-   public float2 uv;
+    public float4 position;
+    public float4 normal;
+   public float4 uv;
    public float4 tangent;
-   public float3 bitangent;
+   public float4 bitangent;
 }
 
 public struct VerticesArr

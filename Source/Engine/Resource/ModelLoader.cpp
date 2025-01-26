@@ -103,19 +103,21 @@ std::shared_ptr<Res::ResMesh> ModelLoader::LoadMesh(std::shared_ptr<Res::ResMode
     //Copy
     vertices.resize(positions.size());
     for (size_t i = 0; i < vertices.size(); ++i) {
-        vertices[i].position = positions[i];
-        resModel->minPoint = glm::min(resModel->minPoint,positions[i]);
-        resModel->maxPoint = glm::max(resModel->maxPoint,positions[i]);
-        vertices[i].normal = i < normals.size() ? normals[i] : glm::vec3(0.0f);
-        vertices[i].uv = i < uvs.size() ? uvs[i] : glm::vec2(0.0f);
+        vertices[i].position = glm::vec4 (positions[i],1.0);
+        resModel->minPoint = glm::min(resModel->minPoint,glm::vec3(positions[i]));
+        resModel->maxPoint = glm::max(resModel->maxPoint,glm::vec3(positions[i]));
+        vertices[i].normal = i < normals.size() ? glm::vec4 (normals[i],0.0) : glm::vec4(0.0f);
+        vertices[i].uv = i < uvs.size() ? glm::vec4 (uvs[i],0,0) : glm::vec4(0.0f);
         if(i < tangents.size())
         {
             vertices[i].tangent = tangents[i];
-            vertices[i].bitangent = glm::cross(vertices[i].normal, glm::vec3(vertices[i].tangent))*vertices[i].tangent.w;
+            auto bi =glm::cross(glm::vec3(vertices[i].normal), glm::vec3(vertices[i].tangent))*vertices[i].tangent.w;
+            vertices[i].bitangent = glm::vec4(bi,0.0);
         } else
         {
             vertices[i].tangent = glm::vec4(0,0,0,0);
-            vertices[i].bitangent =glm::cross(vertices[i].normal, glm::vec3(vertices[i].tangent));
+            auto bi = glm::cross(glm::vec3(vertices[i].normal), glm::vec3(vertices[i].tangent));
+            vertices[i].bitangent =  glm::vec4(bi,0.0);
         }
     }
 
