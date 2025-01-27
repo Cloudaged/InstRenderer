@@ -186,8 +186,11 @@ void RenderSystem::SetupUniforms()
         };
         rtU->CustomUpdate = [=]()
         {
-            rtU->data.invView = glm::inverse(scene->mainCamera.vpMat.view);
-            rtU->data.invProj = glm::inverse(scene->mainCamera.vpMat.proj);
+            const Camera& mainCamera = scene->mainCamera;
+            rtU->data.invView = glm::inverse(mainCamera.vpMat.view);
+            rtU->data.invProj = glm::inverse(mainCamera.vpMat.proj);
+            rtU->data.camUp = glm::vec4(mainCamera.upDir,0);
+            rtU->data.camRight = glm::vec4(mainCamera.rightDir,0);
         };
         uniArr.push_back(rtU);
     }

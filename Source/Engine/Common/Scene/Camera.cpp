@@ -2,7 +2,8 @@
 #include "Camera.h"
 #include "../../Render/VulkanContext.h"
 
-Camera::Camera(entt::registry* reg,std::string name):GameObject(reg,name)
+Camera::Camera(entt::registry* reg,std::string name):
+GameObject(reg,name)
 {
 
 
@@ -10,17 +11,12 @@ Camera::Camera(entt::registry* reg,std::string name):GameObject(reg,name)
 
 void Camera::InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir)
 {
-    this->zAxis = glm::normalize(Target-Position);
-    this->yAxis = glm::normalize(UpDir);
-    this->xAxis = glm::cross(yAxis,zAxis);
-
     position = Position;
     viewPoint = Target;
     upDir = UpDir;
-
-
+    rightDir = glm::cross(UpDir,Target);
     this->vpMat.view = glm::lookAt(position,
-                                   viewPoint + position,yAxis);
+                                   viewPoint + position,upDir);
 
     this->vpMat.proj = glm::perspective(cameraData.fov,
                                         (float)VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
@@ -55,14 +51,13 @@ glm::vec3 Camera::GetCameraTarget()
 void Camera::SetCameraTarget(glm::vec3 newTarget)
 {
     this->viewPoint = newTarget;
-    this->zAxis = newTarget;
-    this->xAxis = glm::cross(this->yAxis,newTarget);
+    this->rightDir = glm::cross(upDir,newTarget);
     Update();
 }
 
 glm::vec3 Camera::GetCameraUpDir()
 {
-    return this->yAxis;
+    return this->upDir;
 }
 
 

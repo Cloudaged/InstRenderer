@@ -60,7 +60,7 @@ public struct RayTracingHandles
     Handle outputImg;
     Handle tlas;
     Handle rtUniform;
-    Handle materials;
+    Handle node;
 }
 
 public struct PresentHandle

@@ -20,7 +20,7 @@ public struct VerticesArr
 
 public struct IndicesArr
 {
-   public uint i[];
+   public uint3 i[];
 }
 
 public struct GeometryNode
@@ -92,6 +92,8 @@ public struct RTUniform
 {
     public float4x4 invView;
     public float4x4 invProj;
+    public float4 camRight;
+    public float4 camUp;
 }
 
 public struct ShadowSetting

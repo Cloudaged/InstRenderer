@@ -148,7 +148,7 @@ void Scene::onCameraUpdate(Camera &camera)
 {
 
     camera.vpMat.view = glm::lookAt(camera.position,
-                                    camera.viewPoint+camera.position,camera.yAxis);
+                                    camera.viewPoint+camera.position,camera.upDir);
 }
 
 void Scene::onLightUpdate(Light* light)

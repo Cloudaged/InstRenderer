@@ -88,6 +88,8 @@ struct RTUniform
 {
     glm::mat4 invView;
     glm::mat4 invProj;
+    glm::vec4 camRight;
+    glm::vec4 camUp;
 };
 
 

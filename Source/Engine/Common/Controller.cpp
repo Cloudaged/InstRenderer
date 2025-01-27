@@ -83,8 +83,8 @@ void Controller::ViewInteract(Camera* cam)
         deltaY *= interactInfo.distance;
 
 
-        cam->SetCameraPos(cam->GetCameraPos()+cam->xAxis*deltaX);
-        cam->SetCameraPos(cam->GetCameraPos()+cam->yAxis*deltaY);
+        cam->SetCameraPos(cam->GetCameraPos()+cam->rightDir*deltaX);
+        cam->SetCameraPos(cam->GetCameraPos()+cam->upDir*deltaY);
 
 
     }

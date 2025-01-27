@@ -37,7 +37,7 @@ public:
     glm::vec3 viewPoint;
     glm::vec3 position;
     glm::vec3 upDir;
-    glm::vec3 xAxis,yAxis,zAxis;
+    glm::vec3 rightDir;
     struct VPMat
     {
         glm::mat4 view;
