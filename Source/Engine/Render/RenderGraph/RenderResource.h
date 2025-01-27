@@ -118,6 +118,7 @@ namespace RDG
         ShaderName chit;
         ShaderName gen;
         ShaderName miss;
+        ShaderName miss_shadow;
         ShaderName ahit;
     };
 

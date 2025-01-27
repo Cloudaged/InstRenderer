@@ -280,16 +280,18 @@ namespace RDG
         enum RTStageIndices : uint32_t
         {
             Gen = 0,
-            Miss = 2,
             ClosetHit = 1,
-            ShaderGroupCount = 3
+            Miss = 2,
+            Miss_Shadow = 3,
+            ShaderGroupCount = 4
         };
 
         std::vector<VkShaderModule> modules =
                 {
                     LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.gen)),
                     LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.chit)),
-                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.miss))
+                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.miss)),
+                    LoadShaderData(GetShaderFullPath(pipelineRef.rtShaders.miss_shadow))
                 };
 
         std::vector<VkPipelineShaderStageCreateInfo> stages(ShaderGroupCount);
@@ -308,6 +310,11 @@ namespace RDG
         stage.module = modules[ClosetHit];
         stage.stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
         stages[ClosetHit] = stage;
+
+        //miss_shadow
+        stage.module = modules[Miss_Shadow];
+        stage.stage = VK_SHADER_STAGE_MISS_BIT_KHR;
+        stages[Miss_Shadow] = stage;
 
         VkRayTracingShaderGroupCreateInfoKHR group{VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR};
         group.anyHitShader       = VK_SHADER_UNUSED_KHR;
@@ -329,14 +336,17 @@ namespace RDG
         group.generalShader = Miss;
         pipelineRef.sbt.groups.push_back(group);
 
-
+        group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+        group.closestHitShader = VK_SHADER_UNUSED_KHR;
+        group.generalShader = Miss_Shadow;
+        pipelineRef.sbt.groups.push_back(group);
 
         VkRayTracingPipelineCreateInfoKHR rayPipelineInfo{VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR};
         rayPipelineInfo.stageCount = stages.size();
         rayPipelineInfo.pStages = stages.data();
         rayPipelineInfo.groupCount =  pipelineRef.sbt.groups.size();
         rayPipelineInfo.pGroups =  pipelineRef.sbt.groups.data();
-        rayPipelineInfo.maxPipelineRayRecursionDepth = 1;
+        rayPipelineInfo.maxPipelineRayRecursionDepth = 2;
         rayPipelineInfo.layout = pipelineRef.pipelineLayout;
         auto device = VulkanContext::GetContext().device;
         vkCreateRayTracingPipelinesKHR(device,{},{},1,&rayPipelineInfo, nullptr,&pipelineRef.pipeline);
@@ -360,6 +370,9 @@ namespace RDG
         uint32_t handleAlignment = rtProps.shaderGroupHandleAlignment;
         uint32_t baseAligment = rtProps.shaderGroupBaseAlignment;
 
+        uint32_t missCount = 2;
+        uint32_t hitCount = 1;
+
         auto AlignUp = [](uint32_t value, uint32_t alignment) {
             return (value + alignment - 1) & ~(alignment - 1);
         };
@@ -370,13 +383,13 @@ namespace RDG
         pipelineRef.sbt.genRegion.size =  handleSizeAligned;
 
         pipelineRef.sbt.missRegion.stride = handleSizeAligned;
-        pipelineRef.sbt.missRegion.size = handleSizeAligned;
+        pipelineRef.sbt.missRegion.size = handleSizeAligned*missCount;
 
         pipelineRef.sbt.hitRegion.stride = handleSizeAligned;
-        pipelineRef.sbt.hitRegion.size = handleSizeAligned;
+        pipelineRef.sbt.hitRegion.size = handleSizeAligned*hitCount;
 
         //Get Handle
-        uint32_t handleCount = 3;
+        uint32_t handleCount = 1+missCount+hitCount;
         uint32_t handleSize =pipelineRef.sbt.genRegion.size+pipelineRef.sbt.missRegion.size+pipelineRef.sbt.hitRegion.size;
         std::vector<uint8_t> handles(handleSize);
         if(vkGetRayTracingShaderGroupHandlesKHR(device,pipelineRef.pipeline,0,handleCount,handleSize,handles.data())!=VK_SUCCESS)
@@ -396,7 +409,7 @@ namespace RDG
         pipelineRef.sbt.genRegion.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfoG);
 
 
-        pipelineRef.sbt.missBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(pipelineRef.sbt.shaderHandleSize,
+        pipelineRef.sbt.missBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(pipelineRef.sbt.shaderHandleSize*missCount,
                                                                                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
                                                                                              | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
                                                                                              VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -406,7 +419,7 @@ namespace RDG
         pipelineRef.sbt.missRegion.deviceAddress = vkGetBufferDeviceAddress(device,&deviceAddressInfoM);
 
 
-        pipelineRef.sbt.hitBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(pipelineRef.sbt.shaderHandleSize,
+        pipelineRef.sbt.hitBuffer = VulkanContext::GetContext().bufferAllocator.CreateBuffer(pipelineRef.sbt.shaderHandleSize*hitCount,
                                                                                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
                                                                                              | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR,
                                                                                              VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -426,11 +439,17 @@ namespace RDG
         uint8_t* pData = (uint8_t*)genMappedData;
         memcpy(pData, getHandle(handleIndex++), pipelineRef.sbt.shaderHandleSize);
 
-        pData = hitMappedData;
-        memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
+        for(int i = 0;i<hitCount;i++)
+        {
+            pData = hitMappedData;
+            memcpy(pData, getHandle(handleIndex++), pipelineRef.sbt.shaderHandleSize);
+        }
 
-        pData = missMappedData;
-        memcpy(pData,getHandle(handleIndex++),pipelineRef.sbt.shaderHandleSize);
+        for(int i = 0;i<missCount;i++)
+        {
+            pData = missMappedData+i*pipelineRef.sbt.missRegion.stride;
+            memcpy(pData, getHandle(handleIndex++), pipelineRef.sbt.shaderHandleSize);
+        }
 
 
 

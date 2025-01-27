@@ -61,6 +61,7 @@ public struct RayTracingHandles
     Handle tlas;
     Handle rtUniform;
     Handle node;
+    Handle lightUniform;
 }
 
 public struct PresentHandle

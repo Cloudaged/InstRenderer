@@ -8,7 +8,8 @@ public struct Attributes
 
 public struct MyPayload
 {
-    public float3 hitValue;    
+    public float3 hitValue;
+    public bool isInShadow;  
 }
 
 public struct Pixel

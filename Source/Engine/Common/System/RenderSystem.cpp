@@ -592,17 +592,18 @@ void RenderSystem::DeclareResource()
                 Handle tlas;
                 Handle rtUniform;
                 Handle geometryNodeArray;
+                Handle lightData;
             };
 
             rg.AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
-                            .input = {rtIMG,tlasData,rtUniform,nodeArray},
+                            .input = {rtIMG,tlasData,rtUniform,nodeArray,lightData},
                             .output = {rtIMG},
                             .pipeline = {.type = PipelineType::RayTracing,
-                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
+                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.miss_shadow = "shadowMiss",.ahit ="anyHit"},
                                          .handleSize = sizeof(RTPC)},
                             .executeFunc = [=](CommandList& cmd)
                             {
-                                RTPC rtpc = {rtIMG,tlasData,rtUniform,nodeArray};
+                                RTPC rtpc = {rtIMG,tlasData,rtUniform,nodeArray,lightData};
                                 cmd.PushConstantsForHandles(&rtpc);
                                 cmd.RayTracing();
                                 cmd.TransImage(rg.resourceMap[rtIMG].textureInfo.value(),rg.resourceMap[rtSampleImg].textureInfo.value(),
