@@ -42,6 +42,7 @@ void main(inout MyPayload payload,Attributes att)
     TraceRay(tlas2, flags, 0XFF, 0, 0, 1, ray, payload);
     if (payload.isInShadow)
     {
-        payload.hitValue *= 0.3;
+        payload.hitValue *= 0;
     }
+    
 }

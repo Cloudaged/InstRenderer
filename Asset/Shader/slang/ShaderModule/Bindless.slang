@@ -62,6 +62,7 @@ public struct RayTracingHandles
     Handle rtUniform;
     Handle node;
     Handle lightUniform;
+    Handle skyboxTex;
 }
 
 public struct PresentHandle
