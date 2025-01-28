@@ -75,14 +75,11 @@ float4 main(FragInput input) : SV_Target
     float3 view = normalize(lightUniform.cameraPos.xyz-posWS.xyz);
 
     float3 finalColor = float3(0.0f);
-    float shading = 0;
     float shadow = 0;
-    float blocker = 0;
     for (int i = 0; i < lightUniform.lightCount; i++)
     {
         Light light = lightUniform.light[i];
         LightProperty lp = GetLightProperty(light, posWS.xyz);
-        shading = lp.intensity;
         float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
         finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
