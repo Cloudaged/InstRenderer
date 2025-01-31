@@ -34,8 +34,8 @@ FragmentOutput main(FragmentInput input)
     float3 rtColor = rtImg_Arr[handles.rtImg].Sample(input.uv).xyz;
     //float3 mapped = hdrColor / (hdrColor + float3(1.0));
 
-    color = Uncharted2Tonemap(color * 1);
-    color = color * (1.0f / Uncharted2Tonemap(float3(11.2f)));
+    rtColor = Uncharted2Tonemap(rtColor * 1);
+    rtColor = rtColor * (1.0f / Uncharted2Tonemap(float3(11.2f)));
 
     output.presentColor = float4(rtColor,1.0f);
 

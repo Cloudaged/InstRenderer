@@ -43,15 +43,47 @@ void main(inout MyPayload payload,Attributes att)
     float roughness = metallicRoughness.g;
     Light light = lightUniform.light[0];
     LightProperty lp = GetLightProperty(light, curPos.xyz);
+
+    // Secondary bounce
+    payload.curDepth++;
+    uint seed = (DispatchRaysIndex().y * DispatchRaysDimensions().x) + DispatchRaysIndex().x;
+    float3 secDir = GetRandomCosineDirectionOnHemisphere(normal, seed);
+    if (payload.curDepth < payload.maxBounceTimes)
+    {
+        RayDesc secRay;
+        secRay.Origin = curPos;
+        secRay.Direction = secDir;
+        secRay.TMin = 0.001;
+        secRay.TMax = 10000;
+        payload.visibility = 0.0;
+        TraceRay(tlas2, RAY_FLAG_FORCE_OPAQUE, 0XFF, 0, 0, 0, secRay, payload);
+    }
+
+
+    //BRDF
     // diffuse
     float3 F0 = GetF0(baseColor.xyz, metallic);
     float3 ks = F0;
     float3 kd = float3(1.0) - F0;
     float3 diffuseBRDF = GetDiffuseBRDF(baseColor.xyz);
-    //specular
-    float3 specularBRDF = GetSpecularBRDF(normal, lp.lightDir, view, roughness, F0);
-    float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-    float3 finalColor = lp.intensity * dot(normal, lp.lightDir.xyz) * finalBRDF;
+
+    float3 directColor;
+    //direct Light
+    {
+        // specular
+        float3 specularBRDF = GetSpecularBRDF(normal, lp.lightDir, -WorldRayDirection(), roughness, F0);
+        float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
+        directColor = lp.intensity *float3(1,1,1)* dot(normal, lp.lightDir.xyz) * finalBRDF;
+    }
+    float3 indirectColor;
+    // indirect light
+    {
+        // specular
+        float3 specularBRDF = GetSpecularBRDF(normal, secDir, -WorldRayDirection(), roughness, F0);
+        float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
+        indirectColor = float3(payload.radiance) * finalBRDF;
+    }
+    
     //Visibility
     RayDesc ray;
     ray.Origin = curPos;
@@ -62,20 +94,7 @@ void main(inout MyPayload payload,Attributes att)
     payload.visibility = 0;
     TraceRay(tlas2, flags, 0XFF, 0, 0, 1, ray, payload);
 
-    payload.radiance += payload.visibility * finalColor;
+    payload.radiance = directColor*payload.visibility+indirectColor;
 
-    payload.curDepth++;
-    uint seed = (DispatchRaysIndex().y * DispatchRaysDimensions().x) + DispatchRaysIndex().x;
-    //Secondary bounce
-    if (payload.curDepth < payload.maxBounceTimes)
-    {
-        RayDesc secRay;
-        secRay.Origin = curPos;
-        secRay.Direction = GetRandomCosineDirectionOnHemisphere(normal, seed);
-        secRay.TMin = 0.001;
-        secRay.TMax = 10000;
-        payload.visibility = 0.0;
-        TraceRay(tlas2, RAY_FLAG_FORCE_OPAQUE, 0XFF, 0, 0, 0, secRay, payload);
-    }
     
 }
