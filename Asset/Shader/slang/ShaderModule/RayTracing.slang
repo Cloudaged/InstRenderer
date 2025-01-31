@@ -8,8 +8,10 @@ public struct Attributes
 
 public struct MyPayload
 {
-    public float3 hitValue;
-    public bool isInShadow;  
+    public float3 radiance;
+    public float visibility;
+    public int maxBounceTimes;
+    public int curDepth;
 }
 
 public struct Pixel
@@ -99,6 +101,41 @@ public UVDiff GetUVDifferentials(Face face,Camera cam,float rayT,float2 dims)
     uvDiff.duvdy = dBarydy.x * delta1 + dBarydy.y * delta2;
     return uvDiff;
 }
+
+uint WangHash(uint seed)
+{
+    seed = (seed ^ 61) ^ (seed >> 16);
+    seed *= 9;
+    seed = seed ^ (seed >> 4);
+    seed *= 0x27d4eb2d;
+    seed = seed ^ (seed >> 15);
+    return seed;
+}
+
+uint Xorshift(uint seed)
+{
+    seed ^= (seed << 13);
+    seed ^= (seed >> 17);
+    seed ^= (seed << 5);
+    return seed;
+}
+
+float GetRandomNumber(inout uint seed)
+{
+    seed = WangHash(seed);
+    return float(Xorshift(seed)) * (1.f / 4294967296.f);
+}
+
+public float3 GetRandomCosineDirectionOnHemisphere(float3 direction, inout uint seed)
+{
+    float a = GetRandomNumber(seed) * PI*2;
+    float z = GetRandomNumber(seed) * 2.f - 1.f;
+    float r = sqrt(1.f - z * z);
+
+    float3 p = float3(r * cos(a), r * sin(a), z) + direction;
+    return normalize(p);
+}
+
 
 public Face GetFaceData(GeometryNode node,int primitiveID)
 {

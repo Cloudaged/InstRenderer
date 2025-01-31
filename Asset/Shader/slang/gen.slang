@@ -33,7 +33,12 @@ void main()
 
     uint rayFlag = RAY_FLAG_FORCE_OPAQUE;
     MyPayload payload;
+    payload.maxBounceTimes = 2;
+    payload.curDepth = 0;
+    payload.radiance = float3(0);
     TraceRay(tlas2, rayFlag, 0XFF, 0, 0, 0, ray, payload);
-    outputImg[pixelCoord] = float4(payload.hitValue, 1.0);
+
+
+    outputImg[pixelCoord] = float4(payload.radiance, 1.0);
 
 }

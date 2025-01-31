@@ -7,6 +7,6 @@ import ShaderModule.Bindless;
 void main(inout MyPayload payload)
 {
 
-    payload.hitValue = cubeMap[handles.skyboxTex].SampleLevel(WorldRayDirection(),0).xyz;
+    payload.radiance = clamp(cubeMap[handles.skyboxTex].SampleLevel(WorldRayDirection(),0).xyz,0,1);
 
 }

@@ -51,22 +51,31 @@ void main(inout MyPayload payload,Attributes att)
     //specular
     float3 specularBRDF = GetSpecularBRDF(normal, lp.lightDir, view, roughness, F0);
     float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-     float3 finalColor = lp.intensity * dot(normal, lp.lightDir.xyz) * finalBRDF;
-     // float3 finalColor = specularBRDF;
-     payload.hitValue = float3(finalColor.xyz);
-
-    // float3 dir = normalize(light.position.xyz - curPos);
+    float3 finalColor = lp.intensity * dot(normal, lp.lightDir.xyz) * finalBRDF;
+    //Visibility
     RayDesc ray;
     ray.Origin = curPos;
     ray.Direction = -normalize(light.toward.xyz);
     ray.TMin = 0.001;
     ray.TMax = 10000;
     uint flags = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER;
-    payload.isInShadow = true;
+    payload.visibility = 0;
     TraceRay(tlas2, flags, 0XFF, 0, 0, 1, ray, payload);
-    if (payload.isInShadow)
+
+    payload.radiance += payload.visibility * finalColor;
+
+    payload.curDepth++;
+    uint seed = (DispatchRaysIndex().y * DispatchRaysDimensions().x) + DispatchRaysIndex().x;
+    //Secondary bounce
+    if (payload.curDepth < payload.maxBounceTimes)
     {
-        payload.hitValue *= 1;
+        RayDesc secRay;
+        secRay.Origin = curPos;
+        secRay.Direction = GetRandomCosineDirectionOnHemisphere(normal, seed);
+        secRay.TMin = 0.001;
+        secRay.TMax = 10000;
+        payload.visibility = 0.0;
+        TraceRay(tlas2, RAY_FLAG_FORCE_OPAQUE, 0XFF, 0, 0, 0, secRay, payload);
     }
     
 }

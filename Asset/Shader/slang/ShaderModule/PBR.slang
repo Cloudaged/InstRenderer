@@ -18,6 +18,27 @@ float3 F_Schlick(float3 F0, float VoN)
     return F0 + (1 - F0) * pow(1-VoN, 5);
 }
 
+public float3 ImportanceSampleGGX(float2 xi, float3 normal,float roughness)
+{
+    float a = roughness * roughness;
+
+    float phi = 2.0 * PI * xi.x;
+    float cosTheta = sqrt(1.0 - xi.y) / (1.0 + (a * a - 1.0) * xi.y);
+    float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+
+    float3 h;
+    h.x = cos(phi) * sinTheta;
+    h.y = sin(phi) * sinTheta;
+    h.z = cosTheta;
+
+    float3 up = float3(0, 0, 1);
+    float3 tangent = normalize(cross(up, normal));
+    float3 bitangent = cross(normal, tangent);
+
+    float3 sampleVec = tangent * h.x + bitangent * h.y + normal * h.z;
+    return normalize(sampleVec);
+}
+
 float D_GGX(float roughness, float NoH)
 {
     float alpha = roughness * roughness;

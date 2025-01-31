@@ -2,5 +2,5 @@ import ShaderModule.RayTracing;
 [shader("miss")]
 void main(inout MyPayload payload)
 {
-    payload.isInShadow = false;
+    payload.visibility = 1.0;
 }

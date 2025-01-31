@@ -346,7 +346,7 @@ namespace RDG
         rayPipelineInfo.pStages = stages.data();
         rayPipelineInfo.groupCount =  pipelineRef.sbt.groups.size();
         rayPipelineInfo.pGroups =  pipelineRef.sbt.groups.data();
-        rayPipelineInfo.maxPipelineRayRecursionDepth = 2;
+        rayPipelineInfo.maxPipelineRayRecursionDepth = 10;
         rayPipelineInfo.layout = pipelineRef.pipelineLayout;
         auto device = VulkanContext::GetContext().device;
         vkCreateRayTracingPipelinesKHR(device,{},{},1,&rayPipelineInfo, nullptr,&pipelineRef.pipeline);
