@@ -231,8 +231,33 @@ public float3 GetBrdfPDFDir(float3 normal,float3 viewDir,float roughness,inout u
 
     float3 halfDir = tangent * localDir.x + bitangent * localDir.y + normal * localDir.z;
 
-    float3 outDir = normalize(reflect(viewDir, halfDir));
+    float3 outDir = normalize(reflect(-viewDir, halfDir));
     return outDir;
+    // 生成随机数
+    // float random1 = GetRandomNumber(seed);
+    // float random2 = GetRandomNumber(seed);
+
+    // // GGX 采样（重要性采样）
+    // float a2 = roughness * roughness;
+    // float cosTheta = sqrt((1 - random1) / (1 + (a2 - 1) * random1));
+    // float sinTheta = sqrt(1 - cosTheta * cosTheta);
+    // float phi = 2 * PI * random2;
+
+    // // 计算局部半向量
+    // float3 localDir = float3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
+
+    // // 计算正交基（TBN）
+    // float3 up = abs(normal.z) < 0.999 ? float3(0, 0, 1) : float3(1, 0, 0);
+    // float3 tangent = normalize(cross(up, normal));
+    // float3 bitangent = cross(normal, tangent);
+
+    // // 转换到世界坐标系
+    // float3 halfDir = tangent * localDir.x + bitangent * localDir.y + normal * localDir.z;
+
+    // // 计算最终采样方向
+    // float3 outDir = reflect(-viewDir, halfDir); // 这里要确保 viewDir 指向表面
+
+    // return outDir;
 }
 
 public Face GetFaceData(GeometryNode node,int primitiveID)

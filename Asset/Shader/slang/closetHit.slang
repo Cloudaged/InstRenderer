@@ -62,7 +62,8 @@ void main(inout MyPayload payload,Attributes att)
     uint seed = ((DispatchRaysIndex().y * DispatchRaysDimensions().x) + DispatchRaysIndex().x)+payload.curSPP * 1664525;
     float cosineP,brdfP;
     // float3 secDir = MultipleSample(normal, -WorldRayDirection(),roughness, cosineP,brdfP,seed);
-    float3 secDir = GetRandomCosineDirectionOnHemisphere(normal, seed);
+    // float3 secDir = GetRandomCosineDirectionOnHemisphere(normal, seed);
+    float3 secDir = GetBrdfPDFDir(normal, -WorldRayDirection(), roughness, seed);
     if (payload.curDepth < payload.maxBounceTimes)
     {
         RayDesc secRay;
@@ -76,8 +77,11 @@ void main(inout MyPayload payload,Attributes att)
     //BRDF
     // diffuse
     float3 F0 = GetF0(baseColor.xyz, metallic);
-    float3 ks = F0;
-    float3 kd = float3(1.0) - F0;
+    float NOV =clamp(dot(normal, -WorldRayDirection()),0.0001,1);
+    float3 F = F_Schlick(F0, NOV);
+    float3 ks = F;
+    float3 kd = float3(1.0) - ks;
+    kd *= (1.0 - metallic);
     float3 diffuseBRDF = GetDiffuseBRDF(baseColor.xyz);
 
     float3 directColor = (0,0,0);
@@ -93,26 +97,22 @@ void main(inout MyPayload payload,Attributes att)
     if (payload.curDepth < payload.maxBounceTimes)
     {
         float3 halfDir = normalize(secDir + (-WorldRayDirection()));
-        float HoN = dot(halfDir, normal);
-        float VoH = dot(-WorldRayDirection(), halfDir);
+
+        float VoH = clamp(dot(-WorldRayDirection(), halfDir), 0.0001, 1);
+        float HoN = clamp(dot(halfDir, normal), 0.0001, 1);
         float a2 = roughness * roughness;
-        float num = a2 * HoN;
+        float num = a2;
         float den = PI * pow(((a2 - 1) * pow(HoN, 2) + 1), 2);
         float halfPdf = num / den;
-        float brdfPdf = halfPdf / 4 * VoH;
-
-        float cosPdf = dot(normal, secDir)/PI;
+        float brdfPdf = halfPdf / (4 * VoH);
 
         float totalWeight = brdfP+cosineP;
         // specular
         float3 specularBRDF = GetSpecularBRDF(normal, secDir, -WorldRayDirection(), roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-        float3 cosColor = float3(payload.radiance) *dot(normal, secDir) * finalBRDF / cosPdf;
-
         float3 brdfColor = float3(payload.radiance) * dot(normal, secDir) * finalBRDF / brdfPdf;
-        indirectColor = cosColor;
-        // indirectColor = (cosineP/totalWeight)*cosColor+(brdfP/totalWeight)*brdfColor;
-        //indirectColor = 0.5 * cosColor + 0.5 * brdfColor;
+        indirectColor = brdfColor;
+        
     }
     
     //Visibility

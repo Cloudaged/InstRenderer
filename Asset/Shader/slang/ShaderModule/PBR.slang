@@ -13,9 +13,14 @@ public float3 GetDiffuseBRDF(float3 albedo)
     return albedo * (1 / PI);
 }
 
-float3 F_Schlick(float3 F0, float VoN)
+public float3 F_Schlick(float3 F0, float VoN)
 {
     return F0 + (1 - F0) * pow(1-VoN, 5);
+}
+
+public float3 F_SchlickR(float3 F0, float VoN, float roughness)
+{
+    return F0 + (max(float3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - VoN, 0.0, 1.0), 5.0);
 }
 
 public float3 ImportanceSampleGGX(float2 xi, float3 normal,float roughness)
