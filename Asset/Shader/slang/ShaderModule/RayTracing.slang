@@ -12,6 +12,7 @@ public struct MyPayload
     public float visibility;
     public int maxBounceTimes;
     public int curDepth;
+    public int curSPP;
 }
 
 public struct Pixel
@@ -120,22 +121,119 @@ uint Xorshift(uint seed)
     return seed;
 }
 
-float GetRandomNumber(inout uint seed)
+uint MixSeed(uint s)
 {
-    seed = WangHash(seed);
-    return float(Xorshift(seed)) * (1.f / 4294967296.f);
+    s ^= s >> 17;
+    s *= 0xed5ad4bb;
+    s ^= s >> 11;
+    s *= 0xac4c1b51;
+    s ^= s >> 15;
+    return s;
 }
 
-public float3 GetRandomCosineDirectionOnHemisphere(float3 direction, inout uint seed)
+uint stepRNG(uint rngState)
 {
-    float a = GetRandomNumber(seed) * PI*2;
-    float z = GetRandomNumber(seed) * 2.f - 1.f;
-    float r = sqrt(1.f - z * z);
-
-    float3 p = float3(r * cos(a), r * sin(a), z) + direction;
-    return normalize(p);
+    return rngState * 747796405 + 1;
 }
 
+// Steps the RNG and returns a floating-point value between 0 and 1 inclusive.
+float stepAndOutputRNGFloat(inout uint rngState)
+{
+    // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
+    rngState = stepRNG(rngState);
+    uint word = ((rngState >> ((rngState >> 28) + 4)) ^ rngState) * 277803737;
+    word = (word >> 22) ^ word;
+    return float(word) / 4294967295.0f;
+}
+
+public float GetRandomNumber(inout uint seed)
+{
+    // seed = WangHash(seed);
+    // return float(Xorshift(seed)) * (1.f / 4294967296.f);
+    uint newSeed = MixSeed(seed);
+    return stepAndOutputRNGFloat(newSeed);
+}
+
+// float a = GetRandomNumber(seed) * PI*2;
+// float z = GetRandomNumber(seed) * 2.f - 1.f;
+// float r = sqrt(1.f - z * z);
+
+// float3 p = float3(r * cos(a), r * sin(a), z) + direction;
+// return normalize(p);
+
+public float3 MultipleSample(float3 normal, float3 viewDir, float roughness ,inout float cosWeight,inout float brdfWeight,inout uint seed)
+{
+    float random1 = GetRandomNumber(seed);
+    float random2 = GetRandomNumber(seed);
+    float phi = 2 * PI * random2;
+
+    //Cosine
+    float thetaC = acos(sqrt(1 - random1));
+    float3 localDirC = float3(sin(thetaC) * cos(phi), sin(thetaC) * sin(phi), cos(thetaC));
+
+    float3 upC = abs(normal.z) < 0.999 ? float3(0, 0, 1) : float3(1, 0, 0);
+    float3 tangentC = normalize(cross(upC, normal));
+    float3 bitangentC = cross(normal, tangentC);
+    float3 outDirC = tangentC * localDirC.x + bitangentC * localDirC.y + normal * localDirC.z;
+
+    // BRDF
+    // float thetaB = atan(roughness * sqrt(random1 / (1 - random1)));
+    float alpha2 = roughness * roughness;
+    float thetaB = acos(sqrt((1 - random1) / (1 + (alpha2 - 1) * random1)));
+
+    float3 localDirB = float3(sin(thetaB) * cos(phi), sin(thetaB) * sin(phi), cos(thetaB));
+    float3 upB = abs(normal.z) < 0.999 ? float3(0, 0, 1) : float3(1, 0, 0);
+    float3 tangentB = normalize(cross(upB, normal));
+    float3 bitangentB = cross(normal, tangentB);
+
+    float3 halfDir = tangentB * localDirB.x + bitangentB * localDirB.y + normal * localDirB.z;
+
+    float3 outDirB = normalize(reflect(viewDir, halfDir));
+
+    cosWeight = thetaC;
+    brdfWeight = thetaB;
+    float total = brdfWeight + cosWeight;
+    // float3 finalDir = (cosWeight / total) * outDirC + (brdfWeight / total) * outDirB;
+    float3 finalDir = outDirC;
+    return finalDir;
+}
+
+
+public float3 GetRandomCosineDirectionOnHemisphere(float3 normal,inout uint seed)
+{
+    float random1 = GetRandomNumber(seed);
+    float random2 = GetRandomNumber(seed);
+
+    float theta = acos(sqrt(1 - random1));
+    float phi = 2 * PI * random2;
+
+    float3 localDir = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+
+    float3 up = abs(normal.z) < 0.999 ? float3(0, 0, 1) : float3(1, 0, 0);
+    float3 tangent = normalize(cross(up, normal));
+    float3 bitangent = cross(normal, tangent);
+
+    return normalize(tangent * localDir.x + bitangent * localDir.y + normal * localDir.z);
+}
+
+public float3 GetBrdfPDFDir(float3 normal,float3 viewDir,float roughness,inout uint seed)
+{
+    float random1 = GetRandomNumber(seed);
+    float random2 = GetRandomNumber(seed);
+
+    float theta = atan(roughness * sqrt(random1 / (1 - random1)));
+    float phi = 2 * PI * random2;
+
+    float3 localDir = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+    float3 up = abs(normal.z) < 0.999 ? float3(0, 0, 1) : float3(1, 0, 0);
+    float3 tangent = normalize(cross(up, normal));
+    float3 bitangent = cross(normal, tangent);
+
+    float3 halfDir = tangent * localDir.x + bitangent * localDir.y + normal * localDir.z;
+
+    float3 outDir = normalize(reflect(viewDir, halfDir));
+    return outDir;
+}
 
 public Face GetFaceData(GeometryNode node,int primitiveID)
 {

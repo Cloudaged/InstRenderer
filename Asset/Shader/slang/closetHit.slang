@@ -32,13 +32,26 @@ void main(inout MyPayload payload,Attributes att)
     cam.right = rtU.camRight.xyz;
     UVDiff uvDiff = GetUVDifferentials(face, cam, RayTCurrent(), dims);
     // Shading
-    float4 baseColor = textures[node.baseColor].SampleGrad(pixel.uv, uvDiff.duvdx, uvDiff.duvdy);
-    float4 normalColor = textures[node.normal].SampleGrad(pixel.uv, uvDiff.duvdx, uvDiff.duvdy);
-    normalColor = pow(normalColor, float4(1 / 2.2));
-    normalColor = normalColor * 2.0 - 1.0;
-    float3 normal = UnpackNormalMap(normalColor.xyz, pixel.tangent, pixel.bitangent, pixel.normal);
-    float4 metallicRoughness = textures[node.metallicRoughness].SampleGrad(pixel.uv, uvDiff.duvdx, uvDiff.duvdy);
-    metallicRoughness = pow(metallicRoughness, float4(1/2.2));
+    float4 baseColor = (0, 0, 0, 0);
+    float3 normal = pixel.normal;
+    float4 metallicRoughness = float4(0, 0, 0, 0);
+    if (node.baseColor != 0)
+    {
+        // output.outBaseColor = pow(baseColor.Sample(input.uv),float4(2.2));
+        baseColor = textures[node.baseColor].SampleGrad(pixel.uv, uvDiff.duvdx, uvDiff.duvdy);
+    }
+    if (node.normal != 0)
+    {
+        float4 normalColor = textures[node.normal].SampleGrad(pixel.uv, uvDiff.duvdx, uvDiff.duvdy);
+        normalColor = pow(normalColor, float4(1 / 2.2));
+        normalColor = normalColor * 2.0 - 1.0;
+        normal = UnpackNormalMap(normalColor.xyz, pixel.tangent, pixel.bitangent, pixel.normal);
+    }
+    if (node.metallicRoughness != 0)
+    {
+        metallicRoughness = textures[node.metallicRoughness].SampleGrad(pixel.uv, uvDiff.duvdx, uvDiff.duvdy);
+        metallicRoughness = pow(metallicRoughness, float4(1 / 2.2));
+    }
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
     Light light = lightUniform.light[0];
@@ -46,7 +59,9 @@ void main(inout MyPayload payload,Attributes att)
 
     // Secondary bounce
     payload.curDepth++;
-    uint seed = (DispatchRaysIndex().y * DispatchRaysDimensions().x) + DispatchRaysIndex().x;
+    uint seed = ((DispatchRaysIndex().y * DispatchRaysDimensions().x) + DispatchRaysIndex().x)+payload.curSPP * 1664525;
+    float cosineP,brdfP;
+    // float3 secDir = MultipleSample(normal, -WorldRayDirection(),roughness, cosineP,brdfP,seed);
     float3 secDir = GetRandomCosineDirectionOnHemisphere(normal, seed);
     if (payload.curDepth < payload.maxBounceTimes)
     {
@@ -58,8 +73,6 @@ void main(inout MyPayload payload,Attributes att)
         payload.visibility = 0.0;
         TraceRay(tlas2, RAY_FLAG_FORCE_OPAQUE, 0XFF, 0, 0, 0, secRay, payload);
     }
-
-
     //BRDF
     // diffuse
     float3 F0 = GetF0(baseColor.xyz, metallic);
@@ -67,7 +80,7 @@ void main(inout MyPayload payload,Attributes att)
     float3 kd = float3(1.0) - F0;
     float3 diffuseBRDF = GetDiffuseBRDF(baseColor.xyz);
 
-    float3 directColor;
+    float3 directColor = (0,0,0);
     //direct Light
     {
         // specular
@@ -75,13 +88,31 @@ void main(inout MyPayload payload,Attributes att)
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
         directColor = lp.intensity *float3(1,1,1)* dot(normal, lp.lightDir.xyz) * finalBRDF;
     }
-    float3 indirectColor;
+    float3 indirectColor= (0,0,0);
     // indirect light
+    if (payload.curDepth < payload.maxBounceTimes)
     {
+        float3 halfDir = normalize(secDir + (-WorldRayDirection()));
+        float HoN = dot(halfDir, normal);
+        float VoH = dot(-WorldRayDirection(), halfDir);
+        float a2 = roughness * roughness;
+        float num = a2 * HoN;
+        float den = PI * pow(((a2 - 1) * pow(HoN, 2) + 1), 2);
+        float halfPdf = num / den;
+        float brdfPdf = halfPdf / 4 * VoH;
+
+        float cosPdf = dot(normal, secDir)/PI;
+
+        float totalWeight = brdfP+cosineP;
         // specular
         float3 specularBRDF = GetSpecularBRDF(normal, secDir, -WorldRayDirection(), roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-        indirectColor = float3(payload.radiance) * finalBRDF;
+        float3 cosColor = float3(payload.radiance) *dot(normal, secDir) * finalBRDF / cosPdf;
+
+        float3 brdfColor = float3(payload.radiance) * dot(normal, secDir) * finalBRDF / brdfPdf;
+        indirectColor = cosColor;
+        // indirectColor = (cosineP/totalWeight)*cosColor+(brdfP/totalWeight)*brdfColor;
+        //indirectColor = 0.5 * cosColor + 0.5 * brdfColor;
     }
     
     //Visibility
@@ -94,7 +125,13 @@ void main(inout MyPayload payload,Attributes att)
     payload.visibility = 0;
     TraceRay(tlas2, flags, 0XFF, 0, 0, 1, ray, payload);
 
-    payload.radiance = directColor*payload.visibility+indirectColor;
-
-    
+    // if (payload.curDepth == 2)
+    // {
+    //     payload.radiance = directColor * payload.visibility + indirectColor;
+    // } else
+    // {
+    //     payload.radiance = indirectColor;
+    // }
+    payload.radiance = directColor * payload.visibility + indirectColor;
+    payload.curDepth--;
 }

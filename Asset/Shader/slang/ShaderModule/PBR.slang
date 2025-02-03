@@ -58,10 +58,10 @@ public float3 GetSpecularBRDF(float3 N, float3 L, float3 V, float roughness, flo
 {
     float3 H = normalize(V + L);
 
-    float NoL = clamp(dot(N, L), 0, 1);
-    float NoV = clamp(dot(N, V), 0, 1);
-    float VoH = clamp(dot(V, H), 0, 1);
-    float NoH = clamp(dot(N, H), 0, 1);
+    float NoL = clamp(dot(N, L), 0.0001, 1);//avoid to divide zero
+    float NoV = clamp(dot(N, V), 0.0001, 1);
+    float VoH = clamp(dot(V, H), 0.0001, 1);
+    float NoH = clamp(dot(N, H), 0.0001, 1);
 
     // float NoL = dot(N, L);
     // float NoV = dot(N, V);
@@ -72,5 +72,5 @@ public float3 GetSpecularBRDF(float3 N, float3 L, float3 V, float roughness, flo
     float D = D_GGX(roughness, NoH);
     float G = G_SchlickGGX(roughness, NoV)*G_SchlickGGX(roughness,NoL);
 
-    return float3(F * D * G) / (4 * NoL * NoV);
+    return float3(F * D * G) / 4 * NoL * NoV;
 }
