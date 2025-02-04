@@ -77,42 +77,49 @@ void main(inout MyPayload payload,Attributes att)
     //BRDF
     // diffuse
     float3 F0 = GetF0(baseColor.xyz, metallic);
-    float NOV =clamp(dot(normal, -WorldRayDirection()),0.0001,1);
-    float3 F = F_Schlick(F0, NOV);
-    float3 ks = F;
-    float3 kd = float3(1.0) - ks;
-    kd *= (1.0 - metallic);
+    
     float3 diffuseBRDF = GetDiffuseBRDF(baseColor.xyz);
 
     float3 directColor = (0,0,0);
     //direct Light
     {
+        float3 halfDir = normalize(lp.lightDir + (-WorldRayDirection()));
+        float VoH = clamp(dot(-WorldRayDirection(), halfDir), 0.0001, 1);
+        float3 F = F_Schlick(F0, VoH);
+        float3 ks = F;
+        float3 kd = float3(1.0) - F0;
+        kd *= (1.0 - metallic);
+
         // specular
         float3 specularBRDF = GetSpecularBRDF(normal, lp.lightDir, -WorldRayDirection(), roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-        directColor = lp.intensity *float3(1,1,1)* dot(normal, lp.lightDir.xyz) * finalBRDF;
+        directColor = lp.intensity *float3(1,1,1)* max(dot(normal, lp.lightDir.xyz),0.0) * finalBRDF;
     }
     float3 indirectColor= (0,0,0);
     // indirect light
     if (payload.curDepth < payload.maxBounceTimes)
     {
         float3 halfDir = normalize(secDir + (-WorldRayDirection()));
-
+        float a = max(roughness, 1e-1);
         float VoH = clamp(dot(-WorldRayDirection(), halfDir), 0.0001, 1);
         float HoN = clamp(dot(halfDir, normal), 0.0001, 1);
-        float a2 = roughness * roughness;
+        float a2 = a * a;
         float num = a2;
         float den = PI * pow(((a2 - 1) * pow(HoN, 2) + 1), 2);
-        float halfPdf = num / den;
+        float halfPdf = num*HoN / den;
         float brdfPdf = halfPdf / (4 * VoH);
 
-        float totalWeight = brdfP+cosineP;
+        float3 F = F_Schlick(F0, VoH);
+        float3 ks = F;
+        float3 kd = float3(1.0) - F0;
+        kd *= (1.0 - metallic);
         // specular
         float3 specularBRDF = GetSpecularBRDF(normal, secDir, -WorldRayDirection(), roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-        float3 brdfColor = float3(payload.radiance) * dot(normal, secDir) * finalBRDF / brdfPdf;
+        float3 brdfColor = float3(payload.radiance) * max(dot(normal, secDir), 0.0) * finalBRDF/brdfPdf;
         indirectColor = brdfColor;
-        
+        // indirectColor = float3(payload.radiance) * max(dot(normal, secDir), 0.0) * finalBRDF;
+        //indirectColor = roughness;
     }
     
     //Visibility
@@ -125,13 +132,13 @@ void main(inout MyPayload payload,Attributes att)
     payload.visibility = 0;
     TraceRay(tlas2, flags, 0XFF, 0, 0, 1, ray, payload);
 
-    // if (payload.curDepth == 2)
-    // {
-    //     payload.radiance = directColor * payload.visibility + indirectColor;
-    // } else
-    // {
-    //     payload.radiance = indirectColor;
-    // }
-    payload.radiance = directColor * payload.visibility + indirectColor;
+    if (payload.curDepth == 2)
+    {
+        payload.radiance = directColor * payload.visibility + indirectColor;
+    } else
+    {
+        payload.radiance = indirectColor;
+    }
+    //payload.radiance = directColor * payload.visibility + indirectColor;
     payload.curDepth--;
 }
