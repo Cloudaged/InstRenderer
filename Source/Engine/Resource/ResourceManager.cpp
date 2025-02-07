@@ -158,7 +158,7 @@ std::shared_ptr<GameObject> ResourceManager::AddSceneNode(GameInstance* instance
         auto meshData= ResourceManager::Get().TransMesh(mesh);
         auto materialData = ResourceManager::Get().TransMaterial(instance->renderSystem.rg, mesh->material);
         auto handle = instance->mainScene->materialAllocator.Allocate();
-        instance->mainScene->nodeArr.at(handle) = GeometryNode{meshData.vertAddress,meshData.indexAddress,materialData};
+        instance->mainScene->nodeArr.at(handle) = GeometryNode{meshData.vertAddress,meshData.indexAddress,meshData.transformAddress,0,materialData};
         instance->mainScene->reg.emplace<Renderable>(meshGo->entityID,meshData,materialData,handle);
 
     }

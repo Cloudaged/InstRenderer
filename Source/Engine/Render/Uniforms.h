@@ -68,9 +68,11 @@ struct CSMUniform
 
 struct GeometryNode
 {
-    VkDeviceAddress vertBufferAddress;
-    VkDeviceAddress indexBufferAddress;
-    Material material;
+    VkDeviceAddress vertBufferAddress;//8
+    VkDeviceAddress indexBufferAddress;//8
+    VkDeviceAddress transformAddress;//8
+    VkDeviceAddress pad0=0;//8
+    Material material;//16
 };
 
 struct GeometryNodeArr

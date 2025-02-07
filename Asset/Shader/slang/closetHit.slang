@@ -132,13 +132,13 @@ void main(inout MyPayload payload,Attributes att)
     payload.visibility = 0;
     TraceRay(tlas2, flags, 0XFF, 0, 0, 1, ray, payload);
 
-    if (payload.curDepth == 2)
-    {
-        payload.radiance = directColor * payload.visibility + indirectColor;
-    } else
-    {
-        payload.radiance = indirectColor;
-    }
-    //payload.radiance = directColor * payload.visibility + indirectColor;
+    // if (payload.curDepth == 2)
+    // {
+    //     payload.radiance = directColor * payload.visibility + indirectColor;
+    // } else
+    // {
+    //     payload.radiance = indirectColor;
+    // }
+    payload.radiance = directColor * payload.visibility + indirectColor;
     payload.curDepth--;
 }

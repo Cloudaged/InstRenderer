@@ -27,10 +27,12 @@ public struct GeometryNode
 {
    public uint64_t vertices;
    public uint64_t indices;
+   public uint64_t transform;
+   public uint64_t pad0;
    Handle baseColor;
    Handle normal;
    Handle metallicRoughness;
-   int pad0;
+   int pad1;
 }
 
 public struct Material

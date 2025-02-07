@@ -20,7 +20,9 @@ struct TLAS
 {
     Buffer* asBuffer;
     VkAccelerationStructureKHR accelerationStructure;
-    VkDeviceAddress address;
+    VkDeviceAddress tlasAddress;
+    VkDeviceAddress instancesAddress;
+    std::vector<VkAccelerationStructureInstanceKHR> instances;
 };
 
 struct RTScene
@@ -62,6 +64,7 @@ private:
     static BLAS CreateEmptyBLAS();
     static std::vector<BLAS> CreateBLAS(entt::view<entt::get_t<Renderable,Transform>> view);
     static TLAS CreateTLAS(const std::vector<BLAS>& allblas);
+    static void UpdateTransform(TLAS& tlas);
 };
 
 

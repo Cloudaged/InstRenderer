@@ -34,6 +34,18 @@ Mesh::Mesh(const std::vector<Vertex>& vertData,const std::vector<uint32_t>& inde
 
     indexAddress = vkGetBufferDeviceAddress(VulkanContext::GetContext().device,&indexDeviceAddressInfo);
 
+    transformBuffer = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(sizeof(glm::mat4),VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
+                                                                                        |VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                                                                            VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+    VkBufferDeviceAddressInfo transformDeviceAddressInfo{};
+    transformDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    transformDeviceAddressInfo.buffer = transformBuffer.vk_buffer;
+
+    transformAddress = vkGetBufferDeviceAddress(VulkanContext::GetContext().device,&transformDeviceAddressInfo);
+
+    auto identityMat = glm::mat4(1);
+    memcpy(VulkanContext::GetContext().bufferAllocator.GetMappedMemory(transformBuffer),&identityMat,sizeof(glm::mat4));
 
     Buffer staging = *VulkanContext::GetContext().bufferAllocator.CreateBuffer(verticesSize+indicesSize,
                                                                               VK_BUFFER_USAGE_TRANSFER_SRC_BIT,

@@ -6,6 +6,7 @@ import ShaderModule.RayTracing;
 [[vk::binding(0, 0)]] ConstantBuffer<RTUniform> rtUniform_Arr[];
 
 [[vk::push_constant]] ConstantBuffer<RayTracingHandles> handles;
+[[vk::binding(1, 0)]] StructuredBuffer<GeometryNode> node_Arr[];
 
 [shader("raygeneration")]
 void main()

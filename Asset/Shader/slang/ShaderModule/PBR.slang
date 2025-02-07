@@ -49,6 +49,5 @@ public float3 GetSpecularBRDF(float3 N, float3 L, float3 V, float roughness, flo
     float D = clamp(D_GGX(roughness, NoH),0,10);
     float G = G_SchlickGGX(roughness, NoV)*G_SchlickGGX(roughness,NoL);
 
-    return float3(D);
-    //return float3(F * D * G) /(4 * NoL * NoV);
+    return float3(F * D * G) /(4 * NoL * NoV);
 }
