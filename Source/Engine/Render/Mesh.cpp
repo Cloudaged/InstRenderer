@@ -61,7 +61,7 @@ Mesh::Mesh(const std::vector<Vertex>& vertData,const std::vector<uint32_t>& inde
     vertexCopy.srcOffset = 0;
     vertexCopy.dstOffset = 0;
 
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(CmdThread::Resource);
 
     vkCmdCopyBuffer(cmd,staging.vk_buffer,vertBuffer.vk_buffer,1,&vertexCopy);
 
@@ -72,7 +72,7 @@ Mesh::Mesh(const std::vector<Vertex>& vertData,const std::vector<uint32_t>& inde
     vkCmdCopyBuffer(cmd,staging.vk_buffer,indexBuffer.vk_buffer,1,&indexCopy);
 
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd, CmdThread::Resource);
 
     VulkanContext::GetContext().bufferAllocator.DestroyBuffer(staging);
 }

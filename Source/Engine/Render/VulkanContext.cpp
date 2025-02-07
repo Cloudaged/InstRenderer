@@ -321,11 +321,11 @@ void VulkanContext::CreateSwapchain()
 
     for (auto& image:presentManager.swapchainImage)
     {
-        auto cmd = BeginSingleTimeCommands();
+        auto cmd = BeginSingleTimeCommands(CmdThread::Game);
 
         bufferAllocator.TransitionImage(cmd,image,VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-        EndSingleTimeCommands(cmd);
+        EndSingleTimeCommands(cmd,CmdThread::Game);
     }
 
 
@@ -378,12 +378,17 @@ void VulkanContext::CreateCommandPool()
     poolInfo.queueFamilyIndex = VulkanContext::GetContext().familyIndices.graphicFamily.value();
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-    if(vkCreateCommandPool(VulkanContext::GetContext().device,&poolInfo, nullptr,&VulkanContext::GetContext().cmdPool)!=VK_SUCCESS)
+    if(vkCreateCommandPool(VulkanContext::GetContext().device,&poolInfo, nullptr,&VulkanContext::GetContext().gameCmdPool)!=VK_SUCCESS)
     {
         std::cout<<"Failed to create pool\n";
     }
 
-    if(vkCreateCommandPool(VulkanContext::GetContext().device,&poolInfo, nullptr,&VulkanContext::GetContext().resourceCmdpool)!=VK_SUCCESS)
+    if(vkCreateCommandPool(VulkanContext::GetContext().device,&poolInfo, nullptr,&VulkanContext::GetContext().resourceCmdPool)!=VK_SUCCESS)
+    {
+        std::cout<<"Failed to create pool\n";
+    }
+
+    if(vkCreateCommandPool(VulkanContext::GetContext().device,&poolInfo, nullptr,&VulkanContext::GetContext().editorCmdPool)!=VK_SUCCESS)
     {
         std::cout<<"Failed to create pool\n";
     }
@@ -527,21 +532,25 @@ void VulkanContext::CreateDescriptorPool()
     }
 }
 
-VkCommandBuffer VulkanContext::BeginSingleTimeCommands(bool isResourceThread)
+VkCommandBuffer VulkanContext::BeginSingleTimeCommands(CmdThread thread)
 {
+    VkCommandPool cmdPool;
+    switch (thread)
+    {
+        case CmdThread::Game:
+            cmdPool = gameCmdPool;
+        case CmdThread::Resource:
+            cmdPool = resourceCmdPool;
+        case CmdThread::Editor:
+            cmdPool = editorCmdPool;
+    }
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = 1;
+    allocInfo.commandPool = cmdPool;
 
-    if(!isResourceThread)
-    {
-        allocInfo.commandPool =  cmdPool;
-    } else
-    {
-        allocInfo.commandPool = resourceCmdpool;
-    }
 
     VkCommandBuffer commandBuffer;
     vkAllocateCommandBuffers(VulkanContext::GetContext().device, &allocInfo, &commandBuffer);
@@ -555,7 +564,7 @@ VkCommandBuffer VulkanContext::BeginSingleTimeCommands(bool isResourceThread)
 
 }
 
-void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer,bool isResourceThread)
+void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer,CmdThread thread)
 {
     std::lock_guard<std::mutex> guard(Locker::Get().queueMtx);
 
@@ -569,19 +578,19 @@ void VulkanContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer,bool isR
     vkQueueSubmit(VulkanContext::GetContext().queues.graphicsQueue,1,&submitInfo,VK_NULL_HANDLE);
     vkQueueWaitIdle(VulkanContext::GetContext().queues.graphicsQueue);
 
-
-    if(!isResourceThread)
+    VkCommandPool cmdPool;
+    switch (thread)
     {
-        vkFreeCommandBuffers(VulkanContext::GetContext().device,
-                             cmdPool,
-                             1,&commandBuffer);
-    } else
-    {
-        vkFreeCommandBuffers(VulkanContext::GetContext().device,
-                             resourceCmdpool,
-                             1,&commandBuffer);
+        case CmdThread::Game:
+            cmdPool = gameCmdPool;
+        case CmdThread::Resource:
+            cmdPool = resourceCmdPool;
+        case CmdThread::Editor:
+            cmdPool = editorCmdPool;
     }
-
+    vkFreeCommandBuffers(VulkanContext::GetContext().device,
+                         cmdPool,
+                         1,&commandBuffer);
 }
 
 VkResult  VulkanContext::SetupDebugMessenger()

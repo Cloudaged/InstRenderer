@@ -81,7 +81,7 @@ void AllocatedImage::LoadData(std::shared_ptr<Res::ResTexture> resTexture)
     void* stagingData = VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*staging);
     memcpy(stagingData,resTexture->data.data(),resTexture->size);
 
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(CmdThread::Resource);
     VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd, this->vk_image,VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mipLevels,layer);
 
     VkBufferImageCopy region{};
@@ -97,7 +97,7 @@ void AllocatedImage::LoadData(std::shared_ptr<Res::ResTexture> resTexture)
 
     vkCmdCopyBufferToImage(cmd, (*staging).vk_buffer, vk_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd,true);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd,CmdThread::Resource);
 
     if(mipLevels!=1)
     {
@@ -112,7 +112,7 @@ void AllocatedImage::LoadData(void *data, size_t size)
     void* stagingData = VulkanContext::GetContext().bufferAllocator.GetMappedMemory(*staging);
     memcpy(stagingData,data,size);
 
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(CmdThread::Resource);
     VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd, this->vk_image,VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mipLevels,layer);
 
     VkBufferImageCopy region{};
@@ -128,7 +128,7 @@ void AllocatedImage::LoadData(void *data, size_t size)
 
     vkCmdCopyBufferToImage(cmd, (*staging).vk_buffer, vk_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd,true);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd,CmdThread::Resource);
 
     if(mipLevels!=1)
     {
@@ -145,7 +145,7 @@ void AllocatedImage::GenerateMipmap()
         throw std::runtime_error("texture image format does not support linear blitting!");
     }
 
-    VkCommandBuffer cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
+    VkCommandBuffer cmd = VulkanContext::GetContext().BeginSingleTimeCommands(CmdThread::Resource);
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -207,7 +207,7 @@ void AllocatedImage::GenerateMipmap()
         if (mipHeight > 1) mipHeight /= 2;
     }
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd, CmdThread::Resource);
 
 }
 

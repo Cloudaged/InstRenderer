@@ -102,11 +102,11 @@ std::shared_ptr<Texture> ResourceManager::AllocTexture(std::shared_ptr<Res::ResT
 
     img->LoadData(resTexture);
 
-    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(true);
+    auto cmd = VulkanContext::GetContext().BeginSingleTimeCommands(CmdThread::Resource);
 
     VulkanContext::GetContext().bufferAllocator.TransitionImage(cmd,img->vk_image,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,img->mipLevels);
 
-    VulkanContext::GetContext().EndSingleTimeCommands(cmd, true);
+    VulkanContext::GetContext().EndSingleTimeCommands(cmd, CmdThread::Resource);
 
     return std::make_shared<Texture>(img,resTexture->textureType);
 }

@@ -19,7 +19,7 @@ void PresentManager::InitFrameData(VkRenderPass renderPass,int width,int height)
         cmdInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         cmdInfo.pNext = nullptr;
 
-        cmdInfo.commandPool = VulkanContext::GetContext().cmdPool;
+        cmdInfo.commandPool = VulkanContext::GetContext().gameCmdPool;
         cmdInfo.commandBufferCount = 1;
 
         cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;

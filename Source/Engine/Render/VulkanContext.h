@@ -18,6 +18,14 @@
 #include "Buffer/Buffer.h"
 #include "Buffer/BufferAllocator.h"
 #include "Uniforms.h"
+
+
+enum class CmdThread
+{
+    Game=0,
+    Resource=1,
+    Editor=2
+};
 class VulkanContext
 {
 public:
@@ -26,8 +34,8 @@ public:
     void DrawPrepare();
     void Submit();
     void CreateSwapchain();
-    VkCommandBuffer BeginSingleTimeCommands(bool isResourceThread= false);
-    void EndSingleTimeCommands(VkCommandBuffer commandBuffer,bool isResourceThread= false);
+    VkCommandBuffer BeginSingleTimeCommands(CmdThread thread);
+    void EndSingleTimeCommands(VkCommandBuffer commandBuffer,CmdThread thread);
 public:
     VkExtent2D windowExtent;
     VkInstance instance;
@@ -38,8 +46,9 @@ public:
     ContextQueues queues;
     QueueFamilyIndices familyIndices;
     VmaAllocator allocator;
-    VkCommandPool cmdPool;
-    VkCommandPool resourceCmdpool;
+    VkCommandPool gameCmdPool;
+    VkCommandPool resourceCmdPool;
+    VkCommandPool editorCmdPool;
     PresentManager presentManager;
     VkDescriptorPool pool;
     BufferAllocator bufferAllocator;
