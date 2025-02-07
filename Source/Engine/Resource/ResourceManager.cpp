@@ -154,7 +154,7 @@ std::shared_ptr<GameObject> ResourceManager::AddSceneNode(GameInstance* instance
         glm::vec3 scale = {1.0,1.0,1.0};
         auto& transComp = instance->mainScene->reg.get<Transform>(meshGo->entityID);
         transComp = {pos,rotation,scale};
-
+        meshGo->componentBits.set((int)ComponentType::Renderable);
         auto meshData= ResourceManager::Get().TransMesh(mesh);
         auto materialData = ResourceManager::Get().TransMaterial(instance->renderSystem.rg, mesh->material);
         auto handle = instance->mainScene->materialAllocator.Allocate();

@@ -61,14 +61,34 @@ void Presenter::ChangeSelectedItem()
     });
 }
 
-void UpdateTrans(std::shared_ptr<GameObject> go,entt::registry& reg)
+void Presenter::UpdateTrans(std::shared_ptr<GameObject> go,entt::registry& reg)
 {
     auto& trans = reg.get<Transform>(go->entityID);
+
     if(go->parent!= nullptr)
     {
         trans.localTransform = EngineMath::GetModelMatrix(trans);
         auto& parentTrans = reg.get<Transform>(go->parent->entityID);
         trans.globalTransform = parentTrans.globalTransform*trans.localTransform;
+
+        if(go->componentBits.test((int)ComponentType::Renderable))
+        {
+            auto& renderable = reg.get<Renderable>(go->entityID);
+            TLAS& tlas = instance->mainScene->rtScene.topAS;
+            for (auto& instance:tlas.instances)
+            {
+                if(instance.instanceCustomIndex == renderable.nodeID)
+                {
+                    instance.transform = EngineMath::GlmToVkTransform(trans.globalTransform);
+                    break;
+                }
+            }
+            memcpy(tlas.instancesHostAddress,
+                   tlas.instances.data(),
+                   tlas.instances.size()*sizeof(VkAccelerationStructureInstanceKHR));
+            RTBuilder::UpdateTransform(tlas);
+        }
+
         trans.isDirty = false;
     }
 

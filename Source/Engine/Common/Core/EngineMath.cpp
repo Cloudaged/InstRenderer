@@ -10,6 +10,20 @@ namespace EngineMath
         return mat;
     }
 
+    VkTransformMatrixKHR GlmToVkTransform(const glm::mat4& mat)
+    {
+        VkTransformMatrixKHR transform{};
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                transform.matrix[i][j] = mat[j][i];
+            }
+        }
+        return transform;
+    }
+
+
     glm::mat4 GetRotateMatrix(const glm::vec3& rotationAngle,glm::mat4 mat)
     {
         mat = glm::rotate(mat,glm::radians(rotationAngle.x),{1,0,0});

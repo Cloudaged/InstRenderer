@@ -29,6 +29,7 @@ namespace EngineMath
     MaxMinPoints TransformAABB(const BoundingPoint& min,const BoundingPoint& max,const glm::mat4 mat);
     MaxMinPoints UpdateFrustumBoundingBox(Camera& camera);
     Circumsphere GetFrustumCircumsphere(const std::vector<glm::vec3>& corners);
+    VkTransformMatrixKHR GlmToVkTransform(const glm::mat4& mat);
 }
 
 #endif //INSTRENDERER_ENGINEMATH_H
