@@ -88,7 +88,7 @@ float4 main(FragInput input) : SV_Target
 
         float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-        finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
+        finalColor += lp.intensity * saturate(dot(normal.xyz, lp.lightDir.xyz)) * finalBRDF;
 
         // finalColor = specularBRDF;
         shadow = CSM(textureArr[ps.shadowMap], csmIndex,blendIndex,blendValue,
@@ -99,7 +99,7 @@ float4 main(FragInput input) : SV_Target
              graphicSetting.shadowSetting);
     }
 
-    float3 hdrColor = finalColor * ssao;
+    float3 hdrColor = finalColor;
     return float4(hdrColor,1.0);
     // return testValues;
     //return float4(0.0f);
