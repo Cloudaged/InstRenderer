@@ -67,8 +67,7 @@ float4 main(FragInput input) : SV_Target
     float roughness = metallicRoughness.g;
 
     float3 F0 = GetF0(baseColor.xyz, metallic);
-    float3 ks = F0;
-    float3 kd = float3(1.0) - F0;
+
 
     float3 diffuseBRDF = GetDiffuseBRDF(baseColor.xyz);
 
@@ -80,7 +79,14 @@ float4 main(FragInput input) : SV_Target
     {
         Light light = lightUniform.light[i];
         LightProperty lp = GetLightProperty(light, posWS.xyz);
-        float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F0);
+
+        float3 H = normalize(lp.lightDir + view);
+        float VoH = clamp(dot(view, H), 0.0001, 1);
+        float3 F = F_Schlick(F0, VoH);
+        float3 ks = F0;
+        float3 kd = float3(1.0) - F0;
+
+        float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
         finalColor += lp.intensity * dot(normal.xyz, lp.lightDir.xyz) * finalBRDF;
 
@@ -93,7 +99,7 @@ float4 main(FragInput input) : SV_Target
              graphicSetting.shadowSetting);
     }
 
-    float3 hdrColor = finalColor * shadow * ssao;
+    float3 hdrColor = finalColor * ssao;
     return float4(hdrColor,1.0);
     // return testValues;
     //return float4(0.0f);

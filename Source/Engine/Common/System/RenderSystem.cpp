@@ -432,6 +432,27 @@ void RenderSystem::DeclareResource()
     auto rtUniform = rg.AddResource({.name = "RTUniform",.type = ResourceType::Uniform,
                                          .bufferInfo = BufferInfo{.size = sizeof(RTUniform)}});
 
+
+
+    auto ddgiIrradianceVolume = rg.AddResource({.name = "IrradianceVolume",.type = ResourceType::Texture,
+                                                .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE,PROBE_AREA_SIZE},
+                                                                           TextureUsage::ColorAttachment,VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto ddgiDepthVolume = rg.AddResource({.name = "DepthVolume",.type = ResourceType::Texture,
+                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE,PROBE_AREA_SIZE},
+                                                                                  TextureUsage::ColorAttachment,VK_FORMAT_R16G16_SFLOAT}});
+
+    auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::Texture,
+                                                         .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
+                                                                                    TextureUsage::ColorAttachment,VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto ddgiDepthRaySamples = rg.AddResource({.name = "DepthSample",.type = ResourceType::Texture,
+                                                         .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
+                                                                                    TextureUsage::ColorAttachment,VK_FORMAT_R16G16_SFLOAT}});
+
+    auto ddgiProbesArea = rg.AddResource({"ProbeArea",.type=ResourceType::SSBO,
+                                            .bufferInfo = {BufferInfo{.size = sizeof(ProbeArea)}}});
+
     auto nodeArray = rg.AddResource({"GeometryNodeArray",.type=ResourceType::SSBO,
                                              .bufferInfo = {BufferInfo{.size = 300*sizeof(GeometryNode)}}});
     //Pass
@@ -585,33 +606,33 @@ void RenderSystem::DeclareResource()
     }
 
 
-        {
-            struct alignas(16) RTPC
-            {
-                Handle outputImg;
-                Handle tlas;
-                Handle rtUniform;
-                Handle geometryNodeArray;
-                Handle lightData;
-                Handle skyboxTex;
-            };
-
-            rg.AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
-                            .input = {rtIMG,tlasData,rtUniform,nodeArray,lightData,skyboxTex},
-                            .output = {rtIMG},
-                            .pipeline = {.type = PipelineType::RayTracing,
-                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.miss_shadow = "shadowMiss",.ahit ="anyHit"},
-                                         .handleSize = sizeof(RTPC)},
-                            .executeFunc = [=](CommandList& cmd)
-                            {
-                                RTPC rtpc = {rtIMG,tlasData,rtUniform,nodeArray,lightData,skyboxTex};
-                                cmd.PushConstantsForHandles(&rtpc);
-                                cmd.RayTracing();
-                                cmd.TransImage(rg.resourceMap[rtIMG].textureInfo.value(),rg.resourceMap[rtSampleImg].textureInfo.value(),
-                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                            }});
-
-        }
+//    {
+//        struct alignas(16) RTPC
+//        {
+//            Handle outputImg;
+//            Handle tlas;
+//            Handle rtUniform;
+//            Handle geometryNodeArray;
+//            Handle lightData;
+//            Handle skyboxTex;
+//        };
+//
+//        rg.AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
+//                        .input = {rtIMG,tlasData,rtUniform,nodeArray,lightData,skyboxTex},
+//                        .output = {rtIMG},
+//                        .pipeline = {.type = PipelineType::RayTracing,
+//                                     .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.miss_shadow = "shadowMiss",.ahit ="anyHit"},
+//                                     .handleSize = sizeof(RTPC)},
+//                        .executeFunc = [=](CommandList& cmd)
+//                        {
+//                            RTPC rtpc = {rtIMG,tlasData,rtUniform,nodeArray,lightData,skyboxTex};
+//                            cmd.PushConstantsForHandles(&rtpc);
+//                            cmd.RayTracing();
+//                            cmd.TransImage(rg.resourceMap[rtIMG].textureInfo.value(),rg.resourceMap[rtSampleImg].textureInfo.value(),
+//                                           VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+//                        }});
+//
+//    }
 
 
 

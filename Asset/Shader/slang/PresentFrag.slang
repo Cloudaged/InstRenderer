@@ -12,7 +12,6 @@ struct FragmentOutput
 
 [[vk::push_constant]] ConstantBuffer<PresentHandle> handles;
 [[vk::binding(2, 0)]] Sampler2D outputImg_Arr[];
-[[vk::binding(2, 0)]] Sampler2D rtImg_Arr[];
 
 float3 Uncharted2Tonemap(float3 x)
 {
@@ -31,13 +30,11 @@ FragmentOutput main(FragmentInput input)
 {
     FragmentOutput output;
     float3 color = outputImg_Arr[handles.lighted].Sample(input.uv).xyz;
-    float3 rtColor = rtImg_Arr[handles.rtImg].Sample(input.uv).xyz;
-    //float3 mapped = hdrColor / (hdrColor + float3(1.0));
 
-    rtColor = Uncharted2Tonemap(rtColor * 1);
-    rtColor = rtColor * (1.0f / Uncharted2Tonemap(float3(11.2f)));
+    color = Uncharted2Tonemap(color * 1);
+    color = color * (1.0f / Uncharted2Tonemap(float3(11.2f)));
 
-    output.presentColor = float4(rtColor,1.0f);
+    output.presentColor = float4(color,1.0f);
 
 
     return output;

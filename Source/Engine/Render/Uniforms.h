@@ -8,6 +8,9 @@
 #define CASCADED_WIDTH 1024
 #define CASCADED_HEIGHT 1024
 #define SSAO_ROTATION_SIZE 4
+#define PROBE_AREA_SIZE 16
+#define RAYS_PER_PROBE 64
+#define PROBE_NORMAL_COUNT 32
 struct GlobalUniform
 {
     glm::mat4 view;
@@ -19,7 +22,17 @@ struct GlobalUniform
     float farPlane;
 };
 
+struct Probe
+{
+    glm::vec4 position;
+    glm::vec4 normals[PROBE_NORMAL_COUNT];
+};
 
+
+struct ProbeArea
+{
+    Probe probes[PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE];
+};
 
 struct LightUnitsInShader
 {
