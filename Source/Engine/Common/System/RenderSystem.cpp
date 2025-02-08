@@ -309,7 +309,6 @@ void RenderSystem::UpdateProbeArea()
             {
                 auto index = GetArrayIndex3D(x,y,z);
                 probes[index].position =glm::vec4(sceneMin,0.0)+glm::vec4(x*xStride,y*yStride,z*zStride,1.0);
-                std::cout<<glm::to_string(probes[index].position)<<" i:"<<index<<"\n";
                 for (int n = 0; n < PROBE_NORMAL_COUNT; ++n)
                 {
                     //Fibonacci grid
@@ -496,13 +495,13 @@ void RenderSystem::DeclareResource()
                                                        .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE,PROBE_AREA_SIZE},
                                                                                   TextureUsage::ColorAttachment,VK_FORMAT_R16G16_SFLOAT}});
 
-    auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::Texture,
+    auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::StorageImage,
                                                          .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
-                                                                                    TextureUsage::ColorAttachment,VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                                                    TextureUsage::Storage,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-    auto ddgiDepthRaySamples = rg.AddResource({.name = "DepthSample",.type = ResourceType::Texture,
+    auto ddgiDepthRaySamples = rg.AddResource({.name = "DepthSample",.type = ResourceType::StorageImage,
                                                          .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
-                                                                                    TextureUsage::ColorAttachment,VK_FORMAT_R16G16_SFLOAT}});
+                                                                                    TextureUsage::Storage,VK_FORMAT_R16G16_SFLOAT}});
 
     auto ddgiProbesArea = rg.AddResource({"ProbeArea",.type=ResourceType::SSBO,
                                             .bufferInfo = {BufferInfo{.size = sizeof(ProbeArea)}}});
@@ -609,6 +608,33 @@ void RenderSystem::DeclareResource()
                            }});
     }
 
+    {
+        struct alignas(16) RTRadiancePC
+        {
+            Handle radianceMap;
+            Handle depthMap;
+            Handle tlas;
+            Handle geometryNodeArray;
+            Handle lightData;
+            Handle skyboxTex;
+            Handle probesArea;
+        };
+
+        rg.AddPass({.name = "RTRadiancePass",.type = RenderPassType::RayTracing,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
+                           .input = {ddgiRadianceRaySamples,ddgiDepthRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea},
+                           .output = {ddgiRadianceRaySamples,ddgiDepthRaySamples},
+                           .pipeline = {.type = PipelineType::RayTracing,
+                                   .rtShaders ={.chit = "DDGIClosestHit",.gen = "DDGIGen",.miss = "DDGIMiss",.miss_shadow = "DDGIShadowMiss",.ahit ="anyHit"},
+                                   .handleSize = sizeof(RTRadiancePC)},
+                           .executeFunc = [=](CommandList& cmd)
+                           {
+                               RTRadiancePC radiancePc = {ddgiRadianceRaySamples,ddgiDepthRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea};
+                               cmd.PushConstantsForHandles(&radiancePc);
+                               cmd.RayTracing();
+                           }});
+
+    }
+
     //Light
     {
         struct alignas(16) CompPC
@@ -658,8 +684,6 @@ void RenderSystem::DeclareResource()
                         }
                 });
     }
-
-
 //    {
 //        struct alignas(16) RTPC
 //        {

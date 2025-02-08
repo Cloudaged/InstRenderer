@@ -79,5 +79,15 @@ public struct SSAOBlurHandle
     public int yBlurRange;
 }
 
+public struct DDGIRadianceHandle
+{
+    Handle radianceMap;
+    Handle depthMap;
+    Handle tlas;
+    Handle geometryNodeArray;
+    Handle lightData;
+    Handle skyboxTex;
+    Handle probesArea;
+}
 
 

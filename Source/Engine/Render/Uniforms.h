@@ -9,8 +9,9 @@
 #define CASCADED_HEIGHT 1024
 #define SSAO_ROTATION_SIZE 4
 #define PROBE_AREA_SIZE 16
-#define RAYS_PER_PROBE 64
 #define PROBE_NORMAL_COUNT 32
+#define RAYS_PER_PROBE PROBE_NORMAL_COUNT
+
 struct GlobalUniform
 {
     glm::mat4 view;

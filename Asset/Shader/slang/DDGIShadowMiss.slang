@@ -7,6 +7,4 @@ import ShaderModule.Bindless;
 void main(inout DDGIPayload payload)
 {
 
-    payload.radiance = clamp(cubeMap[handles.skyboxTex].SampleLevel(WorldRayDirection(), 0).xyz, 0, 1);
-    payload.depth = 1;
 }
