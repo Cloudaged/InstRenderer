@@ -27,6 +27,7 @@ public:
     void BeginSystem(std::shared_ptr<Scene> scene);
     void Execute();
     void UpdateLightArray();
+    void UpdateProbeArea();
     void RecreateRTScene();
 public:
     RDG::RenderGraph rg;
@@ -37,6 +38,8 @@ private:
     void SetupUniforms();
     void InitSettings();
 private:
+    UniPtr<ProbeArea> probeArea;
+
     std::shared_ptr<UniContainer<GeometryNodeArr>> materialArr;
     RenderSettingSerializer settingSerializer;
     UniPtr<LightUniform> lightU;

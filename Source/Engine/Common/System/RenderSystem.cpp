@@ -267,9 +267,63 @@ void RenderSystem::SetupUniforms()
         allocIMG->LoadData(ssaoNoise.data(),ssaoNoise.size()*sizeof(glm::vec2));
         rotationRes.textureInfo->data = std::make_shared<Texture>(allocIMG,TextureType::DontCare);
     }
+
+    {
+        probeArea = INIT_UNIPTR(ProbeArea);
+        probeArea->Setup("ProbeArea", rg);
+        probeArea->CustomInit = [=]()
+        {
+            UpdateProbeArea();
+        };
+        probeArea->CustomUpdate = [=]()
+        {
+
+        };
+        uniArr.push_back(probeArea);
+    }
+
 }
 
+void RenderSystem::UpdateProbeArea()
+{
+    auto GetArrayIndex3D = [&](int x,int y,int z)
+    {
+        return x+PROBE_AREA_SIZE*y+z*PROBE_AREA_SIZE*PROBE_AREA_SIZE;
+    };
 
+    auto sceneMin = scene->minPoint;
+    auto sceneMax = scene->maxPoint;
+
+    float xStride = (sceneMax.x-sceneMin.x)/(float)PROBE_AREA_SIZE;
+    float yStride = (sceneMax.y-sceneMin.y)/(float)PROBE_AREA_SIZE;
+    float zStride = (sceneMax.z-sceneMin.z)/(float)PROBE_AREA_SIZE;
+
+    auto& probes = probeArea->data.probes;
+    size_t probeCount = PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE;
+
+    for (int z = 0; z < PROBE_AREA_SIZE; ++z)
+    {
+        for (int y = 0; y < PROBE_AREA_SIZE; ++y)
+        {
+            for (int x = 0; x < PROBE_AREA_SIZE; ++x)
+            {
+                auto index = GetArrayIndex3D(x,y,z);
+                probes[index].position =glm::vec4(sceneMin,0.0)+glm::vec4(x*xStride,y*yStride,z*zStride,1.0);
+                std::cout<<glm::to_string(probes[index].position)<<" i:"<<index<<"\n";
+                for (int n = 0; n < PROBE_NORMAL_COUNT; ++n)
+                {
+                    //Fibonacci grid
+                    float phi = 0.618;
+                    auto& normal = probes[index].normals[n];
+                    float zn = std::clamp((2*n-1)/(float)PROBE_NORMAL_COUNT-1,-1.0f,1.0f);
+                    float xn = sqrt(1-zn*zn)* cos(2*PI*n*phi);
+                    float yn = sqrt(1-zn*zn)* sin(2*PI*n*phi);
+                    normal = glm::vec4(xn,yn,zn,0.0);
+                }
+            }
+        }
+    }
+}
 
 void RenderSystem::PrepareData()
 {
@@ -655,6 +709,8 @@ void RenderSystem::DeclareResource()
                         }});
     }
 }
+
+
 
 
 

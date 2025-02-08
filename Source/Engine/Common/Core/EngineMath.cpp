@@ -115,6 +115,4 @@ namespace EngineMath
 
         return circumsphere;
     }
-
-
 }

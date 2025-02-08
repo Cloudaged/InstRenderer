@@ -21,7 +21,6 @@ void Camera::InitCamera(glm::vec3 Position, glm::vec3 Target, glm::vec3 UpDir)
     this->vpMat.proj = glm::perspective(cameraData.fov,
                                         (float)VulkanContext::GetContext().windowExtent.width/(float)VulkanContext::GetContext().windowExtent.height,
                                         cameraData.nearPlane, cameraData.farPlane);
-    std::cout<<glm::to_string(vpMat.proj);
     this->vpMat.proj[1][1] *=-1;
 
 }

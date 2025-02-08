@@ -23,6 +23,7 @@ namespace EngineMath
         glm::vec3 center;
         float radius;
     };
+#define PI 3.1415926
     glm::mat4 GetModelMatrix(const Transform& trans);
     glm::mat4 GetRotateMatrix(const glm::vec3& rotationAngle,glm::mat4 mat = glm::mat4(1.0f));
     glm::vec3 SphereToRectCoord(const glm::vec3& angle,const float& r);

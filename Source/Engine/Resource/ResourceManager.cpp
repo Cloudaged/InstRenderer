@@ -131,7 +131,7 @@ void ResourceManager::AsynCompile(GameInstance *instance, std::shared_ptr<Res::R
     instance->mainScene->minPoint = glm::min(model->minPoint,instance->mainScene->minPoint);
     instance->mainScene->maxPoint = glm::max(model->maxPoint,instance->mainScene->maxPoint);
     instance->renderSystem.RecreateRTScene();
-
+    instance->renderSystem.UpdateProbeArea();
     //instance->renderSystem.materialManager.AllocateDescriptorSets();
 }
 
