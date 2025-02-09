@@ -49,6 +49,7 @@ namespace RDG
     enum class PipelineType
     {
         Mesh,
+        MeshTask,
         Skybox,
         RenderQuad,
         RayTracing,
@@ -106,6 +107,8 @@ namespace RDG
     {
         ShaderName vert;
         ShaderName frag;
+        ShaderName mesh;
+        ShaderName task;
     };
 
     struct ComputeShaders

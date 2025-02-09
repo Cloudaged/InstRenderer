@@ -508,6 +508,10 @@ void RenderSystem::DeclareResource()
 
     auto nodeArray = rg.AddResource({"GeometryNodeArray",.type=ResourceType::SSBO,
                                              .bufferInfo = {BufferInfo{.size = 300*sizeof(GeometryNode)}}});
+
+    auto visual = rg.AddResource({.name = "visual",.type = ResourceType::Texture,
+                                                    .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                               TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
     //Pass
     //GeoPass
     {
@@ -635,6 +639,31 @@ void RenderSystem::DeclareResource()
 
     }
 
+    {
+        struct IrradianceVolumePC
+        {
+            Handle radianceMap;
+            Handle depthMap;
+            Handle irradianceVolume;
+            Handle depthVolume;
+        };
+
+        rg.AddPass({.name = "IrradianceVolumePass",.type = RenderPassType::Compute,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE,PROBE_AREA_SIZE},
+                           .input = {ddgiRadianceRaySamples,ddgiDepthRaySamples,ddgiIrradianceVolume,ddgiDepthVolume},
+                           .output = {ddgiIrradianceVolume,ddgiDepthVolume},
+                           .pipeline = {.type = PipelineType::Compute, .cpShaders = {"DDGIVolume"},.handleSize = sizeof(IrradianceVolumePC)},
+                           .executeFunc = [=](CommandList& cmd)
+                           {
+                               IrradianceVolumePC pushConstants = {ddgiRadianceRaySamples,ddgiDepthRaySamples,ddgiIrradianceVolume,ddgiDepthVolume};
+                               cmd.PushConstantsForHandles(&pushConstants);
+                               cmd.Dispatch();
+                               /*cmd.TransImage(rg.resourceMap[ssaoBlurIMG].textureInfo.value(),rg.resourceMap[ssaoOutput].textureInfo.value(),
+                                              VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);*/
+                           }});
+
+    }
+
+
     //Light
     {
         struct alignas(16) CompPC
@@ -663,6 +692,28 @@ void RenderSystem::DeclareResource()
                         }});
 
 
+    }
+
+    {
+        {
+            struct ProbeVisualPC
+            {
+                Handle ProbeArea;
+            };
+
+            rg.AddPass({.name = "ProbeVisual", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
+                               .input = {ddgiProbesArea},
+                               .output = {visual},
+                               .pipeline = {.type = PipelineType::MeshTask, .rsShaders = {.frag = "DDGIProbeVisualFrag", .mesh="DDGIProbeVisualMesh",}, .handleSize = sizeof(ProbeVisualPC)},
+                               .executeFunc = [=](CommandList &cmd)
+                               {
+                                   ProbeVisualPC pushConstant = {ddgiProbesArea};
+                                   cmd.PushConstantsForHandles(&pushConstant);
+                                   cmd.DrawMeshTask(PROBE_AREA_SIZE * PROBE_AREA_SIZE * PROBE_AREA_SIZE);
+                                   //cmd.DrawMeshTask(1);
+                               }
+                       });
+        }
     }
 
     {
@@ -718,16 +769,16 @@ void RenderSystem::DeclareResource()
         struct alignas(16) PresentPC
         {
             Handle lastAtt;
-            Handle rtSampleImg;
+            Handle visual;
         };
 
         rg.AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
-                        .input = {lighted,rtSampleImg},
+                        .input = {lighted,visual},
                         .output = {},
                         .pipeline = {.type = PipelineType::RenderQuad, .rsShaders ={"PresentVert", "PresentFrag"},.handleSize = sizeof(PresentPC)},
                         .executeFunc = [=](CommandList& cmd)
                         {
-                            PresentPC pushConstants = {lighted,rtSampleImg};
+                            PresentPC pushConstants = {lighted,visual};
                             cmd.PushConstantsForHandles(&pushConstants);
                             cmd.DrawRenderQuad();
                         }});

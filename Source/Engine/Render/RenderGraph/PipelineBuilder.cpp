@@ -58,6 +58,9 @@ namespace RDG
                 case PipelineType::Mesh:
                     settings = {true, true, true, VK_CULL_MODE_BACK_BIT};
                     break;
+                case PipelineType::MeshTask:
+                    settings = {FALSE,false, false,VK_CULL_MODE_FRONT_BIT};
+                    break;
                 case PipelineType::RenderQuad:
                     settings = {true, false, false, VK_CULL_MODE_FRONT_BIT};
                     break;
@@ -70,8 +73,39 @@ namespace RDG
             }
         }
 
-        VkShaderModule vertModule =LoadShaderData(GetShaderFullPath(pipelineRef.rsShaders.vert));
-        VkShaderModule fragModule = LoadShaderData(GetShaderFullPath(pipelineRef.rsShaders.frag));
+        std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+
+        if(!pipelineRef.rsShaders.vert.empty())
+        {
+            VkShaderModule vertModule =LoadShaderData(GetShaderFullPath(pipelineRef.rsShaders.vert));
+
+            VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+            vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+            vertShaderStageInfo.module = vertModule;
+            vertShaderStageInfo.pName = "main";
+            shaderStages.push_back(vertShaderStageInfo);
+        }
+        if(!pipelineRef.rsShaders.frag.empty())
+        {
+            VkShaderModule fragModule = LoadShaderData(GetShaderFullPath(pipelineRef.rsShaders.frag));
+            VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+            fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+            fragShaderStageInfo.module = fragModule;
+            fragShaderStageInfo.pName = "main";
+            shaderStages.push_back(fragShaderStageInfo);
+        }
+        if(!pipelineRef.rsShaders.mesh.empty())
+        {
+            VkShaderModule meshModule = LoadShaderData(GetShaderFullPath(pipelineRef.rsShaders.mesh));
+            VkPipelineShaderStageCreateInfo meshShaderStageInfo{};
+            meshShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            meshShaderStageInfo.stage = VK_SHADER_STAGE_MESH_BIT_EXT;
+            meshShaderStageInfo.module = meshModule;
+            meshShaderStageInfo.pName = "main";
+            shaderStages.push_back(meshShaderStageInfo);
+        }
 
         std::vector<VkDynamicState> dynamicStates =
                 {
@@ -109,11 +143,7 @@ namespace RDG
         inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-        VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertShaderStageInfo.module = vertModule;
-        vertShaderStageInfo.pName = "main";
+
 
         VkPipelineViewportStateCreateInfo viewportState{};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -141,17 +171,6 @@ namespace RDG
         multisampling.pSampleMask = nullptr; // Optional
         multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
         multisampling.alphaToOneEnable = VK_FALSE; // Optional
-
-        VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragShaderStageInfo.module = fragModule;
-        fragShaderStageInfo.pName = "main";
-
-        VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,fragShaderStageInfo};
-
-
-
 
         VkPipelineColorBlendAttachmentState colorBlendAttachment;
         colorBlendAttachment.colorWriteMask =VK_COLOR_COMPONENT_R_BIT |
@@ -214,8 +233,8 @@ namespace RDG
         //shaders
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount = 2;
-        pipelineInfo.pStages = shaderStages;
+        pipelineInfo.stageCount = shaderStages.size();
+        pipelineInfo.pStages = shaderStages.data();
         //fix function
         pipelineInfo.pVertexInputState = &vertexInputInfo;
         pipelineInfo.pInputAssemblyState = &inputAssembly;

@@ -24,6 +24,7 @@ namespace RDG
         void PushConstantsForHandles(void* data);
         void RayTracing();
         void Dispatch();
+        void DrawMeshTask(int groupCount);
         void TransImage(TextureInfo& src,TextureInfo& dst,VkImageLayout srcFinalLayout,VkImageLayout dstFinalLayout);
     public:
         VkCommandBuffer cmd;

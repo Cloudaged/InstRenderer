@@ -224,3 +224,8 @@ void RDG::CommandList::Dispatch()
     vkCmdDispatch(cmd, ceil(curPass->fbExtent.GetVkExtent().width/16)+10,
                   ceil(curPass->fbExtent.GetVkExtent().height/16)+10,1);
 }
+
+void RDG::CommandList::DrawMeshTask(int groupCount)
+{
+    vkCmdDrawMeshTasksEXT(cmd,groupCount,1,1);
+}

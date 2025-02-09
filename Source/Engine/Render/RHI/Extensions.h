@@ -22,7 +22,8 @@ const std::vector<const char*> deviceExtensions =
                 VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
                 VK_KHR_SPIRV_1_4_EXTENSION_NAME,
                 VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
-                VK_NV_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME
+                VK_NV_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME,
+                VK_EXT_MESH_SHADER_EXTENSION_NAME
         };
 \
 
