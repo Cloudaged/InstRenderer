@@ -39,6 +39,7 @@ private:
     void InitSettings();
 private:
     UniPtr<ProbeArea> probeArea;
+    std::shared_ptr<Mesh> visualProbe;
 
     std::shared_ptr<UniContainer<GeometryNodeArr>> materialArr;
     RenderSettingSerializer settingSerializer;

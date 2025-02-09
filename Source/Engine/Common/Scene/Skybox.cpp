@@ -1,4 +1,4 @@
-
+\
 #include "Skybox.h"
 
 Skybox::Skybox(std::string boxPath, std::vector<std::string> paths)

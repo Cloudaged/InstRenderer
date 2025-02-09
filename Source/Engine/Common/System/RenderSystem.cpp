@@ -282,6 +282,14 @@ void RenderSystem::SetupUniforms()
         uniArr.push_back(probeArea);
     }
 
+    {
+
+        auto boxModel = ModelLoader::Load(FILE_PATH("Asset/Model/probe/probe.gltf"));
+        auto& rawMesh = boxModel->rootNode->meshes[0];
+        visualProbe = std::make_shared<Mesh>(rawMesh->verts,rawMesh->index);
+
+    }
+
 }
 
 void RenderSystem::UpdateProbeArea()
@@ -508,10 +516,6 @@ void RenderSystem::DeclareResource()
 
     auto nodeArray = rg.AddResource({"GeometryNodeArray",.type=ResourceType::SSBO,
                                              .bufferInfo = {BufferInfo{.size = 300*sizeof(GeometryNode)}}});
-
-    auto visual = rg.AddResource({.name = "visual",.type = ResourceType::Texture,
-                                                    .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                                               TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
     //Pass
     //GeoPass
     {
@@ -699,18 +703,18 @@ void RenderSystem::DeclareResource()
             struct ProbeVisualPC
             {
                 Handle ProbeArea;
+                Handle globalUniform;
             };
 
             rg.AddPass({.name = "ProbeVisual", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
-                               .input = {ddgiProbesArea},
-                               .output = {visual},
-                               .pipeline = {.type = PipelineType::MeshTask, .rsShaders = {.frag = "DDGIProbeVisualFrag", .mesh="DDGIProbeVisualMesh",}, .handleSize = sizeof(ProbeVisualPC)},
+                               .input = {ddgiProbesArea,globalData,lighted,depth},
+                               .output = {lighted,depth},
+                               .pipeline = {.type = PipelineType::Mesh, .rsShaders = {.vert = "DDGIProbeVisualVert",.frag = "DDGIProbeVisualFrag",}, .handleSize = sizeof(ProbeVisualPC)},
                                .executeFunc = [=](CommandList &cmd)
                                {
-                                   ProbeVisualPC pushConstant = {ddgiProbesArea};
+                                   ProbeVisualPC pushConstant = {ddgiProbesArea,globalData};
                                    cmd.PushConstantsForHandles(&pushConstant);
-                                   cmd.DrawMeshTask(PROBE_AREA_SIZE * PROBE_AREA_SIZE * PROBE_AREA_SIZE);
-                                   //cmd.DrawMeshTask(1);
+                                   cmd.DrawInstances(*visualProbe,PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE);
                                }
                        });
         }
@@ -773,12 +777,12 @@ void RenderSystem::DeclareResource()
         };
 
         rg.AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
-                        .input = {lighted,visual},
+                        .input = {lighted},
                         .output = {},
                         .pipeline = {.type = PipelineType::RenderQuad, .rsShaders ={"PresentVert", "PresentFrag"},.handleSize = sizeof(PresentPC)},
                         .executeFunc = [=](CommandList& cmd)
                         {
-                            PresentPC pushConstants = {lighted,visual};
+                            PresentPC pushConstants = {lighted};
                             cmd.PushConstantsForHandles(&pushConstants);
                             cmd.DrawRenderQuad();
                         }});

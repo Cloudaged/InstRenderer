@@ -30,10 +30,9 @@ FragmentOutput main(FragmentInput input)
 {
     FragmentOutput output;
     float3 color = outputImg_Arr[handles.lighted].Sample(input.uv).xyz;
-    float3 visual = outputImg_Arr[handles.rtImg].Sample(input.uv).xyz;
     color = Uncharted2Tonemap(color * 1);
     color = color * (1.0f / Uncharted2Tonemap(float3(11.2f)));
-    output.presentColor = float4(visual,1.0f);
+    output.presentColor = float4(color,1.0f);
 
 
     return output;

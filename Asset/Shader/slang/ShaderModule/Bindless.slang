@@ -68,7 +68,6 @@ public struct RayTracingHandles
 public struct PresentHandle
 {
     Handle lighted;
-    Handle rtImg;
 }
 
 public struct SSAOBlurHandle
@@ -90,4 +89,8 @@ public struct DDGIRadianceHandle
     Handle probesArea;
 }
 
-
+public struct DDGIVisualProbeHandle
+{
+    Handle probeArea;
+    Handle globalUniform;
+}

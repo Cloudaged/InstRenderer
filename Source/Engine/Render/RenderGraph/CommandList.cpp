@@ -229,3 +229,17 @@ void RDG::CommandList::DrawMeshTask(int groupCount)
 {
     vkCmdDrawMeshTasksEXT(cmd,groupCount,1,1);
 }
+
+void RDG::CommandList::DrawInstances(const Mesh &mesh, int instanceCount)
+{
+    if(mesh.vertBuffer.vk_buffer==VK_NULL_HANDLE||mesh.indexBuffer.vk_buffer==VK_NULL_HANDLE)
+    {
+        return;
+    }
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(cmd,0,1,&mesh.vertBuffer.vk_buffer, offsets);
+
+    vkCmdBindIndexBuffer(cmd,mesh.indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
+    //Draw
+    vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indexCount), instanceCount, 0, 0, 0);
+}

@@ -23,18 +23,6 @@ struct GlobalUniform
     float farPlane;
 };
 
-struct Probe
-{
-    glm::vec4 position;
-    glm::vec4 normals[PROBE_NORMAL_COUNT];
-};
-
-
-struct ProbeArea
-{
-    Probe probes[PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE];
-};
-
 struct LightUnitsInShader
 {
     alignas(16) glm::vec4 position;
@@ -107,6 +95,22 @@ struct RTUniform
     glm::vec4 camRight;
     glm::vec4 camUp;
 };
+struct Probe
+{
+    glm::vec4 position;
+    glm::vec4 normals[PROBE_NORMAL_COUNT];
+};
 
 
+struct ProbeArea
+{
+    Probe probes[PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE];
+};
+struct ProbeVisualSphere
+{
+    VkDeviceAddress vertAddress;
+    VkDeviceAddress indicesAddress;
+    int vertCount;
+    int indicesCount;
+};
 #endif //INSTRENDERER_UNIFORMS_H

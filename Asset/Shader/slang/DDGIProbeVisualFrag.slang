@@ -1,7 +1,6 @@
 import ShaderModule.Bindless;
 struct FragInput
 {
-    float4 color : COLOR0;
 };
 
 struct FragOutput

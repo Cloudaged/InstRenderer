@@ -25,6 +25,7 @@ namespace RDG
         void RayTracing();
         void Dispatch();
         void DrawMeshTask(int groupCount);
+        void DrawInstances(const Mesh& mesh,int instanceCount);
         void TransImage(TextureInfo& src,TextureInfo& dst,VkImageLayout srcFinalLayout,VkImageLayout dstFinalLayout);
     public:
         VkCommandBuffer cmd;

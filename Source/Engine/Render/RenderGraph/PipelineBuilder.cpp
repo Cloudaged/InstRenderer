@@ -59,7 +59,7 @@ namespace RDG
                     settings = {true, true, true, VK_CULL_MODE_BACK_BIT};
                     break;
                 case PipelineType::MeshTask:
-                    settings = {FALSE,false, false,VK_CULL_MODE_FRONT_BIT};
+                    settings = {true,true, false,VK_CULL_MODE_FRONT_BIT};
                     break;
                 case PipelineType::RenderQuad:
                     settings = {true, false, false, VK_CULL_MODE_FRONT_BIT};
