@@ -12,7 +12,7 @@ import ShaderModule.DDGI;
 void main()
 {
 
-    RaytracingAccelerationStructure tlas2 = tlasUniform_Arr[handles.tlas];
+    RaytracingAccelerationStructure tlas = tlasUniform_Arr[handles.tlas];
     RWTexture2D<float4> raddianceMap = rwImg_Arr[handles.radianceMap];
     RWTexture2D<float4> depthMap = rwImg_Arr[handles.depthMap];
 
@@ -24,15 +24,15 @@ void main()
     
     DDGIPayload payload;
     payload.radiance = float3(0);
-    payload.depth = 0.0f;
+    payload.distance = 0.0f;
     Probe p = probeBuffer.Load(pixelCoord.x);
     RayDesc ray;
     ray.Origin = p.position.xyz;
     ray.Direction = p.normals[pixelCoord.y].xyz;
     ray.TMin = 0.001;
     ray.TMax = 10000.0;
-    TraceRay(tlas2, rayFlag, 0XFF, 0, 0, 0, ray, payload);
-    raddianceMap[pixelCoord] = float4(payload.radiance,0.0);
+    TraceRay(tlas, rayFlag, 0XFF, 0, 0, 0, ray, payload);
+    raddianceMap[pixelCoord] = float4(payload.radiance,payload.distance);
     
     
 }

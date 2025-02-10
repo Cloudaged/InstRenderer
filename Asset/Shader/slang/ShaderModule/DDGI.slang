@@ -9,5 +9,6 @@ public struct ProbeArea
 public struct DDGIPayload
 {
    public float3 radiance;
-   public float depth;
+   public float distance;
+   public float visibility;
 }

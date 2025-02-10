@@ -87,6 +87,7 @@ public struct DDGIRadianceHandle
     Handle lightData;
     Handle skyboxTex;
     Handle probesArea;
+    Handle rtUniform;
 }
 
 public struct DDGIVisualProbeHandle

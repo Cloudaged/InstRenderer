@@ -496,11 +496,11 @@ void RenderSystem::DeclareResource()
 
 
     auto ddgiIrradianceVolume = rg.AddResource({.name = "IrradianceVolume",.type = ResourceType::Texture,
-                                                .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE,PROBE_AREA_SIZE},
+                                                .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
                                                                            TextureUsage::ColorAttachment,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
     auto ddgiDepthVolume = rg.AddResource({.name = "DepthVolume",.type = ResourceType::Texture,
-                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE,PROBE_AREA_SIZE},
+                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*14,PROBE_AREA_SIZE*14},
                                                                                   TextureUsage::ColorAttachment,VK_FORMAT_R16G16_SFLOAT}});
 
     auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::StorageImage,
@@ -626,17 +626,18 @@ void RenderSystem::DeclareResource()
             Handle lightData;
             Handle skyboxTex;
             Handle probesArea;
+            Handle rtUniform;
         };
 
         rg.AddPass({.name = "RTRadiancePass",.type = RenderPassType::RayTracing,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
-                           .input = {ddgiRadianceRaySamples,ddgiDepthRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea},
+                           .input = {ddgiRadianceRaySamples,ddgiDepthRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform},
                            .output = {ddgiRadianceRaySamples,ddgiDepthRaySamples},
                            .pipeline = {.type = PipelineType::RayTracing,
                                    .rtShaders ={.chit = "DDGIClosestHit",.gen = "DDGIGen",.miss = "DDGIMiss",.miss_shadow = "DDGIShadowMiss",.ahit ="anyHit"},
                                    .handleSize = sizeof(RTRadiancePC)},
                            .executeFunc = [=](CommandList& cmd)
                            {
-                               RTRadiancePC radiancePc = {ddgiRadianceRaySamples,ddgiDepthRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea};
+                               RTRadiancePC radiancePc = {ddgiRadianceRaySamples,ddgiDepthRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform};
                                cmd.PushConstantsForHandles(&radiancePc);
                                cmd.RayTracing();
                            }});
