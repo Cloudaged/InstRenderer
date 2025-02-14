@@ -269,7 +269,7 @@ void RenderSystem::SetupUniforms()
     }
 
     {
-        probeArea = INIT_UNIPTR(ProbeArea);
+        this->probeArea = INIT_UNIPTR(ProbeArea);
         probeArea->Setup("ProbeArea", rg);
         probeArea->CustomInit = [=]()
         {
@@ -279,13 +279,13 @@ void RenderSystem::SetupUniforms()
         {
 
         };
-        uniArr.push_back(probeArea);
+        uniArr.push_back(this->probeArea);
     }
 
     {
 
-        auto boxModel = ModelLoader::Load(FILE_PATH("Asset/Model/probe/probe.gltf"));
-        auto& rawMesh = boxModel->rootNode->meshes[0];
+        auto sphereModel = ModelLoader::Load(FILE_PATH("Asset/Model/probe/probe.gltf"));
+        auto& rawMesh = sphereModel->rootNode->meshes[0];
         visualProbe = std::make_shared<Mesh>(rawMesh->verts,rawMesh->index);
 
     }
@@ -317,12 +317,12 @@ void RenderSystem::UpdateProbeArea()
             {
                 auto index = GetArrayIndex3D(x,y,z);
                 probes[index].position =glm::vec4(sceneMin,0.0)+glm::vec4(x*xStride,y*yStride,z*zStride,1.0);
-                for (int n = 0; n < PROBE_NORMAL_COUNT; ++n)
+                for (int n = 0; n < RAYS_PER_PROBE; ++n)
                 {
                     //Fibonacci grid
                     float phi = 0.618;
-                    auto& normal = probes[index].normals[n];
-                    float zn = std::clamp((2*n-1)/(float)PROBE_NORMAL_COUNT-1,-1.0f,1.0f);
+                    auto& normal = probes[index].rayDirs[n];
+                    float zn = std::clamp((2*n-1)/(float)RAYS_PER_PROBE-1,-1.0f,1.0f);
                     float xn = sqrt(1-zn*zn)* cos(2*PI*n*phi);
                     float yn = sqrt(1-zn*zn)* sin(2*PI*n*phi);
                     normal = glm::vec4(xn,yn,zn,0.0);
@@ -495,13 +495,13 @@ void RenderSystem::DeclareResource()
 
 
 
-    auto ddgiIrradianceVolume = rg.AddResource({.name = "IrradianceVolume",.type = ResourceType::Texture,
+    auto ddgiIrradianceVolume = rg.AddResource({.name = "IrradianceVolume",.type = ResourceType::StorageImage,
                                                 .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
-                                                                           TextureUsage::ColorAttachment,VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                                           TextureUsage::Storage,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
-    auto ddgiDepthVolume = rg.AddResource({.name = "DepthVolume",.type = ResourceType::Texture,
+    auto ddgiDepthVolume = rg.AddResource({.name = "DepthVolume",.type = ResourceType::StorageImage,
                                                        .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*14,PROBE_AREA_SIZE*14},
-                                                                                  TextureUsage::ColorAttachment,VK_FORMAT_R16G16_SFLOAT}});
+                                                                                  TextureUsage::Storage,VK_FORMAT_R16G16_SFLOAT}});
 
     auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::StorageImage,
                                                          .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
@@ -651,15 +651,16 @@ void RenderSystem::DeclareResource()
             Handle depthMap;
             Handle irradianceVolume;
             Handle depthVolume;
+            Handle probeArea;
         };
 
-        rg.AddPass({.name = "IrradianceVolumePass",.type = RenderPassType::Compute,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE,PROBE_AREA_SIZE},
-                           .input = {ddgiRadianceRaySamples,ddgiDepthRaySamples,ddgiIrradianceVolume,ddgiDepthVolume},
+        rg.AddPass({.name = "IrradianceVolumePass",.type = RenderPassType::Compute,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
+                           .input = {ddgiRadianceRaySamples,ddgiDepthRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea},
                            .output = {ddgiIrradianceVolume,ddgiDepthVolume},
                            .pipeline = {.type = PipelineType::Compute, .cpShaders = {"DDGIVolume"},.handleSize = sizeof(IrradianceVolumePC)},
                            .executeFunc = [=](CommandList& cmd)
                            {
-                               IrradianceVolumePC pushConstants = {ddgiRadianceRaySamples,ddgiDepthRaySamples,ddgiIrradianceVolume,ddgiDepthVolume};
+                               IrradianceVolumePC pushConstants = {ddgiRadianceRaySamples,ddgiDepthRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea};
                                cmd.PushConstantsForHandles(&pushConstants);
                                cmd.Dispatch();
                                /*cmd.TransImage(rg.resourceMap[ssaoBlurIMG].textureInfo.value(),rg.resourceMap[ssaoOutput].textureInfo.value(),
@@ -699,27 +700,27 @@ void RenderSystem::DeclareResource()
 
     }
 
-    {
-        {
-            struct ProbeVisualPC
-            {
-                Handle ProbeArea;
-                Handle globalUniform;
-            };
-
-            rg.AddPass({.name = "ProbeVisual", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
-                               .input = {ddgiProbesArea,globalData,lighted,depth},
-                               .output = {lighted,depth},
-                               .pipeline = {.type = PipelineType::Mesh, .rsShaders = {.vert = "DDGIProbeVisualVert",.frag = "DDGIProbeVisualFrag",}, .handleSize = sizeof(ProbeVisualPC)},
-                               .executeFunc = [=](CommandList &cmd)
-                               {
-                                   ProbeVisualPC pushConstant = {ddgiProbesArea,globalData};
-                                   cmd.PushConstantsForHandles(&pushConstant);
-                                   cmd.DrawInstances(*visualProbe,PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE);
-                               }
-                       });
-        }
-    }
+//    {
+//        {
+//            struct ProbeVisualPC
+//            {
+//                Handle ProbeArea;
+//                Handle globalUniform;
+//            };
+//
+//            rg.AddPass({.name = "ProbeVisual", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
+//                               .input = {ddgiProbesArea,globalData,lighted,depth},
+//                               .output = {lighted,depth},
+//                               .pipeline = {.type = PipelineType::Mesh, .rsShaders = {.vert = "DDGIProbeVisualVert",.frag = "DDGIProbeVisualFrag",}, .handleSize = sizeof(ProbeVisualPC)},
+//                               .executeFunc = [=](CommandList &cmd)
+//                               {
+//                                   ProbeVisualPC pushConstant = {ddgiProbesArea,globalData};
+//                                   cmd.PushConstantsForHandles(&pushConstant);
+//                                   cmd.DrawInstances(*visualProbe,PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE);
+//                               }
+//                       });
+//        }
+//    }
 
     {
         struct alignas(16) SkyboxPC

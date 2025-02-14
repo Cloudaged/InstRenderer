@@ -90,6 +90,15 @@ public struct DDGIRadianceHandle
     Handle rtUniform;
 }
 
+public struct DDGIIrradianceVolumeHandle
+{
+    Handle radianceMap;
+    Handle depthMap;
+    Handle irradianceVolume;
+    Handle depthVolume;
+    Handle probeArea;
+}
+
 public struct DDGIVisualProbeHandle
 {
     Handle probeArea;

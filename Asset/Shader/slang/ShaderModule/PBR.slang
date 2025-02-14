@@ -17,6 +17,11 @@ public float3 F_Schlick(float3 F0, float HOV)
     return F0 + (1 - F0) * pow(1 - HOV, 5);
 }
 
+public float3 F_SchlickR(float3 F0, float VoN, float roughness)
+{
+    return F0 + (max(float3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - VoN, 0.0, 1.0), 5.0);
+}
+
 float D_GGX(float roughness, float NoH)
 {
     float alpha = roughness * roughness;

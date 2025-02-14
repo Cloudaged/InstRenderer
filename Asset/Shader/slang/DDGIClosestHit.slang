@@ -94,7 +94,8 @@ void main(inout DDGIPayload payload,Attributes att)
         // specular
         float3 specularBRDF = GetSpecularBRDF(normal, lp.lightDir, -WorldRayDirection(), roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-        directColor = lp.intensity * float3(1, 1, 1) * max(dot(normal, lp.lightDir.xyz), 0.0) * finalBRDF;
+         directColor = lp.intensity * float3(1, 1, 1) * max(dot(normal, lp.lightDir.xyz), 0.0) * finalBRDF;
     }
-    payload.radiance = directColor.xyz;
+    payload.radiance = directColor.xyz*payload.visibility;
     payload.distance = RayTCurrent();
+}

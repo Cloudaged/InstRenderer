@@ -28,7 +28,7 @@ void main()
     Probe p = probeBuffer.Load(pixelCoord.x);
     RayDesc ray;
     ray.Origin = p.position.xyz;
-    ray.Direction = p.normals[pixelCoord.y].xyz;
+    ray.Direction = p.rayDirs[pixelCoord.y].xyz;
     ray.TMin = 0.001;
     ray.TMax = 10000.0;
     TraceRay(tlas, rayFlag, 0XFF, 0, 0, 0, ray, payload);

@@ -6,5 +6,5 @@ import ShaderModule.Bindless;
 [shader("miss")]
 void main(inout DDGIPayload payload)
 {
-
+    payload.visibility = 1.0;
 }

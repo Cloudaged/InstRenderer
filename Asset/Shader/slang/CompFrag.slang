@@ -82,15 +82,17 @@ float4 main(FragInput input) : SV_Target
 
         float3 H = normalize(lp.lightDir + view);
         float VoH = clamp(dot(view, H), 0.0001, 1);
-        float3 F = F_Schlick(F0, VoH);
-        float3 ks = F0;
-        float3 kd = float3(1.0) - F0;
 
-        float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F);
+        // float3 F = F_SchlickR(F0, VoH,roughness);
+        float3 F = F_Schlick(F0, VoH);
+        float3 ks = F;
+        float3 kd = float3(1.0) - F;
+
+        float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
         finalColor += lp.intensity * saturate(dot(normal.xyz, lp.lightDir.xyz)) * finalBRDF;
 
-        // finalColor = specularBRDF;
+        finalColor = specularBRDF;
         shadow = CSM(textureArr[ps.shadowMap], csmIndex,blendIndex,blendValue,
             csmU,
              posWS,

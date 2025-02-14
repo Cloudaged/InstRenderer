@@ -4,8 +4,8 @@ public static const int CASCADED_COUNT = 4;
 
 #define Handle public int
 public static const int PROBE_AREA_SIZE = 16;
-public static const int PROBE_NORMAL_COUNT = 32;
-
+public static const int RAYS_PER_PROBE = 64;
+public static const int IRRADIANCE_VOLUME_SIZE = 6;
 public struct Vertex
 {
     public float4 position;
@@ -113,9 +113,5 @@ public struct RenderSetting
 {
     public ShadowSetting shadowSetting;
 }
-public struct Probe
-{
-   public float4 position;
-   public float4 normals[PROBE_NORMAL_COUNT];
-}
+
 

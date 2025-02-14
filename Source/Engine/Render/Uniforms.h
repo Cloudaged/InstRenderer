@@ -9,8 +9,7 @@
 #define CASCADED_HEIGHT 1024
 #define SSAO_ROTATION_SIZE 4
 #define PROBE_AREA_SIZE 16
-#define PROBE_NORMAL_COUNT 32
-#define RAYS_PER_PROBE PROBE_NORMAL_COUNT
+#define RAYS_PER_PROBE 64
 
 struct GlobalUniform
 {
@@ -98,7 +97,7 @@ struct RTUniform
 struct Probe
 {
     glm::vec4 position;
-    glm::vec4 normals[PROBE_NORMAL_COUNT];
+    glm::vec4 rayDirs[RAYS_PER_PROBE];
 };
 
 
