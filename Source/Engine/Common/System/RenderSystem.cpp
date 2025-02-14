@@ -317,16 +317,6 @@ void RenderSystem::UpdateProbeArea()
             {
                 auto index = GetArrayIndex3D(x,y,z);
                 probes[index].position =glm::vec4(sceneMin,0.0)+glm::vec4(x*xStride,y*yStride,z*zStride,1.0);
-                for (int n = 0; n < RAYS_PER_PROBE; ++n)
-                {
-                    //Fibonacci grid
-                    float phi = 0.618;
-                    auto& normal = probes[index].rayDirs[n];
-                    float zn = std::clamp((2*n-1)/(float)RAYS_PER_PROBE-1,-1.0f,1.0f);
-                    float xn = sqrt(1-zn*zn)* cos(2*PI*n*phi);
-                    float yn = sqrt(1-zn*zn)* sin(2*PI*n*phi);
-                    normal = glm::vec4(xn,yn,zn,0.0);
-                }
             }
         }
     }

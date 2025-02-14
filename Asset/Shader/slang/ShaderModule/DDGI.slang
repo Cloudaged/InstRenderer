@@ -11,7 +11,6 @@ public struct DDGIPayload
 public struct Probe
 {
     public float4 position;
-    public float4 rayDirs[RAYS_PER_PROBE];
 }
 
 public int GetProbeIndex(int2 coords, int volumeSize)
@@ -35,4 +34,14 @@ public float3 OctDecode(int2 coords, int volumeSize)
         direction.xy = (1.0 - abs(direction.yx)) * sign(direction.xy);
     }
     return normalize(direction);
+}
+
+public float3 FibonacciSphere(float sampleIndex, float numSamples)
+{
+    const float b = (sqrt(5.f) * 0.5f + 0.5f) - 1.f;
+    float phi = PIx2 * frac(sampleIndex * b);
+    float cosTheta = 1.f - (2.f * sampleIndex + 1.f) * (1.f / numSamples);
+    float sinTheta = sqrt(saturate(1.f - (cosTheta * cosTheta)));
+
+    return float3((cos(phi) * sinTheta), (sin(phi) * sinTheta), cosTheta);
 }

@@ -92,7 +92,6 @@ float4 main(FragInput input) : SV_Target
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
         finalColor += lp.intensity * saturate(dot(normal.xyz, lp.lightDir.xyz)) * finalBRDF;
 
-        finalColor = specularBRDF;
         shadow = CSM(textureArr[ps.shadowMap], csmIndex,blendIndex,blendValue,
             csmU,
              posWS,

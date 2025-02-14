@@ -30,7 +30,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
         for (int i = 0; i < RAYS_PER_PROBE; i++)
         {
             int2 uv = int2(probeIndex, i);
-            float3 rayDir = probe.rayDirs[i].xyz;
+            float3 rayDir = FibonacciSphere(i, RAYS_PER_PROBE);
             float3 texelDir = OctDecode(coordsInVolume, IRRADIANCE_VOLUME_SIZE);
             float weight = max(0.0, dot(texelDir, rayDir));
             float4 sampleValue = raddianceMap.Load(uv);
