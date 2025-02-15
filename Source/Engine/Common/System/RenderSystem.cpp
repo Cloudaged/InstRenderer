@@ -491,15 +491,11 @@ void RenderSystem::DeclareResource()
 
     auto ddgiDepthVolume = rg.AddResource({.name = "DepthVolume",.type = ResourceType::StorageImage,
                                                        .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
-                                                                                  TextureUsage::Storage,VK_FORMAT_R16G16_SFLOAT}});
+                                                                                  TextureUsage::Storage,VK_FORMAT_R32G32_SFLOAT}});
 
     auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::StorageImage,
                                                          .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
                                                                                     TextureUsage::Storage,VK_FORMAT_R16G16B16A16_SFLOAT}});
-
-    auto ddgiDepthRaySamples = rg.AddResource({.name = "DepthSample",.type = ResourceType::StorageImage,
-                                                         .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
-                                                                                    TextureUsage::Storage,VK_FORMAT_R16G16_SFLOAT}});
 
     auto ddgiProbesArea = rg.AddResource({"ProbeArea",.type=ResourceType::SSBO,
                                             .bufferInfo = {BufferInfo{.size = sizeof(ProbeArea)}}});
@@ -611,7 +607,6 @@ void RenderSystem::DeclareResource()
         struct alignas(16) RTRadiancePC
         {
             Handle radianceMap;
-            Handle depthMap;
             Handle tlas;
             Handle geometryNodeArray;
             Handle lightData;
@@ -621,14 +616,14 @@ void RenderSystem::DeclareResource()
         };
 
         rg.AddPass({.name = "RTRadiancePass",.type = RenderPassType::RayTracing,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
-                           .input = {ddgiRadianceRaySamples,ddgiDepthRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform},
-                           .output = {ddgiRadianceRaySamples,ddgiDepthRaySamples},
+                           .input = {ddgiRadianceRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform},
+                           .output = {ddgiRadianceRaySamples},
                            .pipeline = {.type = PipelineType::RayTracing,
                                    .rtShaders ={.chit = "DDGIClosestHit",.gen = "DDGIGen",.miss = "DDGIMiss",.miss_shadow = "DDGIShadowMiss",.ahit ="anyHit"},
                                    .handleSize = sizeof(RTRadiancePC)},
                            .executeFunc = [=](CommandList& cmd)
                            {
-                               RTRadiancePC radiancePc = {ddgiRadianceRaySamples,ddgiDepthRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform};
+                               RTRadiancePC radiancePc = {ddgiRadianceRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform};
                                cmd.PushConstantsForHandles(&radiancePc);
                                cmd.RayTracing();
                            }});
@@ -639,21 +634,20 @@ void RenderSystem::DeclareResource()
         struct IrradianceVolumePC
         {
             Handle radianceMap;
-            Handle depthMap;
             Handle irradianceVolume;
             Handle depthVolume;
             Handle probeArea;
         };
 
         rg.AddPass({.name = "IrradianceVolumePass",.type = RenderPassType::Compute,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
-                           .input = {ddgiRadianceRaySamples,ddgiDepthRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea},
+                           .input = {ddgiRadianceRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea},
                            .output = {ddgiIrradianceVolume,ddgiDepthVolume},
                            .pipeline = {.type = PipelineType::Compute, .cpShaders = {"DDGIVolume"},.handleSize = sizeof(IrradianceVolumePC)},
                            .executeFunc = [=](CommandList& cmd)
                            {
                                 int width =PROBE_AREA_SIZE*PROBE_AREA_SIZE*6;
                                 int height = PROBE_AREA_SIZE*6;
-                               IrradianceVolumePC pushConstants = {ddgiRadianceRaySamples,ddgiDepthRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea};
+                               IrradianceVolumePC pushConstants = {ddgiRadianceRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea};
                                cmd.PushConstantsForHandles(&pushConstants);
                                cmd.Dispatch(width/6+10,height/6+10,1.0);
                                /*cmd.TransImage(rg.resourceMap[ssaoBlurIMG].textureInfo.value(),rg.resourceMap[ssaoOutput].textureInfo.value(),

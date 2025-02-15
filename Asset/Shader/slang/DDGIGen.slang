@@ -14,7 +14,6 @@ void main()
 
     RaytracingAccelerationStructure tlas = tlasUniform_Arr[handles.tlas];
     RWTexture2D<float4> raddianceMap = rwImg_Arr[handles.radianceMap];
-    RWTexture2D<float4> depthMap = rwImg_Arr[handles.depthMap];
 
     uint2 pixelCoord = DispatchRaysIndex().xy;
     float2 pixelCenter = float2(pixelCoord) + float2(0.5, 0.5);

@@ -81,7 +81,6 @@ public struct SSAOBlurHandle
 public struct DDGIRadianceHandle
 {
     Handle radianceMap;
-    Handle depthMap;
     Handle tlas;
     Handle geometryNodeArray;
     Handle lightData;
@@ -93,7 +92,6 @@ public struct DDGIRadianceHandle
 public struct DDGIIrradianceVolumeHandle
 {
     Handle radianceMap;
-    Handle depthMap;
     Handle irradianceVolume;
     Handle depthVolume;
     Handle probeArea;
