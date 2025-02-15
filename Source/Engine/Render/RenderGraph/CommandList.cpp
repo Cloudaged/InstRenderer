@@ -219,10 +219,9 @@ void RDG::CommandList::TransImage(TextureInfo& src,TextureInfo& dst,VkImageLayou
     dst.currentLayout = dstFinalLayout;
 }
 
-void RDG::CommandList::Dispatch()
+void RDG::CommandList::Dispatch(int groupX, int groupY,int groupZ)
 {
-    vkCmdDispatch(cmd, ceil(curPass->fbExtent.GetVkExtent().width/16)+10,
-                  ceil(curPass->fbExtent.GetVkExtent().height/16)+10,1);
+    vkCmdDispatch(cmd, groupX,groupY,groupZ);
 }
 
 void RDG::CommandList::DrawMeshTask(int groupCount)

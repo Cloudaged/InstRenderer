@@ -490,7 +490,7 @@ void RenderSystem::DeclareResource()
                                                                            TextureUsage::Storage,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
     auto ddgiDepthVolume = rg.AddResource({.name = "DepthVolume",.type = ResourceType::StorageImage,
-                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*14,PROBE_AREA_SIZE*14},
+                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
                                                                                   TextureUsage::Storage,VK_FORMAT_R16G16_SFLOAT}});
 
     auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::StorageImage,
@@ -594,12 +594,13 @@ void RenderSystem::DeclareResource()
                            .pipeline = {.type = PipelineType::Compute, .cpShaders = {"SSAOBlur"},.handleSize = sizeof(SSAOBlurPC)},
                            .executeFunc = [=](CommandList& cmd)
                            {
+                               VkExtent2D extent=WINDOW_EXTENT.GetVkExtent();
                                SSAOBlurPC pushConstants = {ssaoBlurIMG,ssaoOutput,5,0};
                                cmd.PushConstantsForHandles(&pushConstants);
-                               cmd.Dispatch();
+                               cmd.Dispatch(extent.width/16+10,extent.height/16+10,1.0);
                                pushConstants = {ssaoBlurIMG,ssaoOutput,0,5};
                                cmd.PushConstantsForHandles(&pushConstants);
-                               cmd.Dispatch();
+                               cmd.Dispatch(extent.width/16+10,extent.height/16+10,1.0);
                                cmd.TransImage(rg.resourceMap[ssaoBlurIMG].textureInfo.value(),rg.resourceMap[ssaoOutput].textureInfo.value(),
                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 //
@@ -650,9 +651,11 @@ void RenderSystem::DeclareResource()
                            .pipeline = {.type = PipelineType::Compute, .cpShaders = {"DDGIVolume"},.handleSize = sizeof(IrradianceVolumePC)},
                            .executeFunc = [=](CommandList& cmd)
                            {
+                                int width =PROBE_AREA_SIZE*PROBE_AREA_SIZE*6;
+                                int height = PROBE_AREA_SIZE*6;
                                IrradianceVolumePC pushConstants = {ddgiRadianceRaySamples,ddgiDepthRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea};
                                cmd.PushConstantsForHandles(&pushConstants);
-                               cmd.Dispatch();
+                               cmd.Dispatch(width/6+10,height/6+10,1.0);
                                /*cmd.TransImage(rg.resourceMap[ssaoBlurIMG].textureInfo.value(),rg.resourceMap[ssaoOutput].textureInfo.value(),
                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);*/
                            }});

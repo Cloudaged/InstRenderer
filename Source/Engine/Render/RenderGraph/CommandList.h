@@ -23,7 +23,7 @@ namespace RDG
         void DrawRenderQuad();
         void PushConstantsForHandles(void* data);
         void RayTracing();
-        void Dispatch();
+        void Dispatch(int groupX, int groupY,int groupZ);
         void DrawMeshTask(int groupCount);
         void DrawInstances(const Mesh& mesh,int instanceCount);
         void TransImage(TextureInfo& src,TextureInfo& dst,VkImageLayout srcFinalLayout,VkImageLayout dstFinalLayout);
