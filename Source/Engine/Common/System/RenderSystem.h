@@ -40,7 +40,8 @@ private:
 private:
     UniPtr<ProbeArea> probeArea;
     std::shared_ptr<Mesh> visualProbe;
-
+    glm::vec4 probeBasePosition;
+    glm::vec4 probeSpacing;
     std::shared_ptr<UniContainer<GeometryNodeArr>> materialArr;
     RenderSettingSerializer settingSerializer;
     UniPtr<LightUniform> lightU;

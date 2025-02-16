@@ -320,6 +320,9 @@ void RenderSystem::UpdateProbeArea()
             }
         }
     }
+
+    probeBasePosition = probes[0].position;
+    probeSpacing = glm::vec4(xStride,yStride,zStride,1.0);
 }
 
 void RenderSystem::PrepareData()
@@ -487,11 +490,19 @@ void RenderSystem::DeclareResource()
 
     auto ddgiIrradianceVolume = rg.AddResource({.name = "IrradianceVolume",.type = ResourceType::StorageImage,
                                                 .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
-                                                                           TextureUsage::Storage,VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                                           TextureUsage::Storage|TextureUsage::TransferSrc,VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto IrradianceVolumeSampleImg = rg.AddResource({.name = "IrradianceVolumeSampleImg",.type = ResourceType::Texture,
+                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
+                                                                                  TextureUsage::ColorAttachment|TextureUsage::TransferDst,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
     auto ddgiDepthVolume = rg.AddResource({.name = "DepthVolume",.type = ResourceType::StorageImage,
                                                        .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
-                                                                                  TextureUsage::Storage,VK_FORMAT_R32G32_SFLOAT}});
+                                                                                  TextureUsage::Storage|TextureUsage::TransferSrc,VK_FORMAT_R32G32_SFLOAT}});
+
+    auto DepthVolumeSampleImg = rg.AddResource({.name = "DepthVolumeSampleImg",.type = ResourceType::Texture,
+                                                  .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
+                                                                             TextureUsage::ColorAttachment|TextureUsage::TransferDst,VK_FORMAT_R32G32_SFLOAT}});
 
     auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::StorageImage,
                                                          .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
@@ -502,6 +513,15 @@ void RenderSystem::DeclareResource()
 
     auto nodeArray = rg.AddResource({"GeometryNodeArray",.type=ResourceType::SSBO,
                                              .bufferInfo = {BufferInfo{.size = 300*sizeof(GeometryNode)}}});
+
+    auto indirectLight = rg.AddResource({"IndirectLight",.type = ResourceType::StorageImage,
+                                         .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                    TextureUsage::Storage|TextureUsage::TransferSrc,VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto indirectLightSampleImg = rg.AddResource({"IndirectLightSampleImg",.type = ResourceType::Texture,
+                                                .textureInfo = TextureInfo{WINDOW_EXTENT,
+                                                                           TextureUsage::ColorAttachment|TextureUsage::TransferDst,VK_FORMAT_R16G16B16A16_SFLOAT}});
+
     //Pass
     //GeoPass
     {
@@ -650,10 +670,43 @@ void RenderSystem::DeclareResource()
                                IrradianceVolumePC pushConstants = {ddgiRadianceRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea};
                                cmd.PushConstantsForHandles(&pushConstants);
                                cmd.Dispatch(width/6+10,height/6+10,1.0);
-                               /*cmd.TransImage(rg.resourceMap[ssaoBlurIMG].textureInfo.value(),rg.resourceMap[ssaoOutput].textureInfo.value(),
-                                              VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);*/
+                               cmd.TransImage(rg.resourceMap[ddgiIrradianceVolume].textureInfo.value(),rg.resourceMap[IrradianceVolumeSampleImg].textureInfo.value(),
+                                           VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                               cmd.TransImage(rg.resourceMap[ddgiDepthVolume].textureInfo.value(),rg.resourceMap[DepthVolumeSampleImg].textureInfo.value(),
+                                              VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
                            }});
 
+    }
+
+
+    {
+        struct alignas(16) IndirectLightPC
+        {
+             Handle indirectLight;
+             Handle irradianceVolumeSampleImg;
+             Handle depthVolumeSampleImg;
+             Handle probeArea;
+             Handle position;
+             Handle normal;
+             Handle baseColor;
+             Handle pad0;
+             glm::vec4 probeBasePos;
+             glm::vec4 probeSpacing;
+        };
+
+        rg.AddPass({.name = "IndirectLight",.type = RenderPassType::Compute,.fbExtent = WINDOW_EXTENT,
+                           .input = {indirectLight,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea,position,normal,baseColor},
+                           .output = {indirectLight},
+                           .pipeline = {.type = PipelineType::Compute, .cpShaders = {"IndirectLight"},.handleSize = sizeof(IndirectLightPC)},
+                           .executeFunc = [=](CommandList& cmd)
+                           {
+                               VkExtent2D extent=WINDOW_EXTENT.GetVkExtent();
+                               IndirectLightPC pushConstants = {indirectLight,IrradianceVolumeSampleImg,DepthVolumeSampleImg,ddgiProbesArea,position,normal,baseColor,0,probeBasePosition,probeSpacing};
+                               cmd.PushConstantsForHandles(&pushConstants);
+                               cmd.Dispatch((extent.width+15)/16,(extent.height+15)/16,1.0);
+                               cmd.TransImage(rg.resourceMap[indirectLight].textureInfo.value(),rg.resourceMap[indirectLightSampleImg].textureInfo.value(),
+                                              VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                           }});
     }
 
 
@@ -671,21 +724,24 @@ void RenderSystem::DeclareResource()
             Handle globalUniform;
             Handle renderSettingUniform;
             Handle ssao;
+            Handle indirectLight;
         };
 
         rg.AddPass({.name = "Composition",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
-                        .input = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,globalData,lightData,renderSettings,ssaoOutput},
+                        .input = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,globalData,lightData,renderSettings,ssaoOutput,indirectLightSampleImg},
                         .output = {lighted},
                         .pipeline = {.type = PipelineType::RenderQuad, .rsShaders = {"CompVert", "CompFrag"},.handleSize = sizeof(CompPC)},
                         .executeFunc = [=](CommandList& cmd)
                         {
-                            CompPC pushConstants = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,lightData,globalData,renderSettings,ssaoOutput};
+                            CompPC pushConstants = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,
+                                                    lightData,globalData,renderSettings,ssaoOutput,indirectLightSampleImg};
                             cmd.PushConstantsForHandles(&pushConstants);
                             cmd.DrawRenderQuad();
                         }});
 
 
     }
+
 
 //    {
 //        {

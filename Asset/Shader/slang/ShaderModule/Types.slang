@@ -9,6 +9,7 @@ public static const int PROBE_AREA_SIZE = 16;
 public static const int RAYS_PER_PROBE = 256;
 public static const int IRRADIANCE_VOLUME_SIZE = 6;
 public static const int DEPTH_VOLUME_SIZE = 14;
+public static const int PROBE_COUNT = PROBE_AREA_SIZE * PROBE_AREA_SIZE * PROBE_AREA_SIZE;
 
 public struct Vertex
 {

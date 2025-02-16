@@ -53,6 +53,7 @@ public struct CompHandles
     Handle globalUniform;
     Handle renderSettingUniform;
     Handle ssao;
+    Handle indirectLight;
 }
 
 public struct RayTracingHandles
@@ -101,4 +102,18 @@ public struct DDGIVisualProbeHandle
 {
     Handle probeArea;
     Handle globalUniform;
+}
+
+public struct IndirectLightHandle
+{
+    Handle indirectLight;
+    Handle irradianceVolume;
+    Handle depthVolume;
+    Handle probeArea;
+    Handle position;
+    Handle normal;
+    Handle baseColor;
+    int pad0;
+    public float4 probeBasePos;
+    public float4 probeSpacing;
 }

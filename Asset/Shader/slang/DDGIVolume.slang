@@ -16,8 +16,8 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     RWTexture2D<float4> irradianceVolume = rwImg_Arr[handles.irradianceVolume];
     RWTexture2D<float2> depthVolume = depthImg_Arr[handles.depthVolume];
     int2 coordsInVolume = coords % IRRADIANCE_VOLUME_SIZE;
-    int2 volumeCoord = coords/IRRADIANCE_VOLUME_SIZE;
-    int probeIndex = GetProbeIndex(coords, IRRADIANCE_VOLUME_SIZE);
+    int2 volumeCoord = coords / IRRADIANCE_VOLUME_SIZE;
+    int probeIndex = GetVolumeProbeArrayIndex(coords, IRRADIANCE_VOLUME_SIZE);
     Probe probe = probe_Arr[handles.probeArea].Load(probeIndex);
     float4 irradianceResult = float4(0);
     float2 depthResult = 0;
