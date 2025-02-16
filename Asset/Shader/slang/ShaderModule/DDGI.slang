@@ -43,9 +43,9 @@ public float2 OctEncode(float3 direction, int volumeSize)
         direction.xy = (1.0 - abs(direction.yx)) * sign(direction.xy);
     }
 
-    int2 coords;
-    coords.x = (int)((direction.x * 0.5 + 0.5) * (volumeSize) + 0.5);
-    coords.y = (int)((direction.y * 0.5 + 0.5) * (volumeSize) + 0.5);
+    float2 coords;
+    coords.x = ((direction.x * 0.5 + 0.5) * (volumeSize));
+    coords.y = ((direction.y * 0.5 + 0.5) * (volumeSize));
 
     return coords;
 }
@@ -63,6 +63,15 @@ public float2 GetVolumeUV(float3 direction,int3 probeCoords)
 public int GetProbeArrayIndex1D(int3 coords)
 {
     return coords.x + PROBE_AREA_SIZE * coords.y + coords.z * PROBE_AREA_SIZE * PROBE_AREA_SIZE;
+}
+
+public int3 GetProbeCoords3D(int index)
+{
+    int z = index / (PROBE_AREA_SIZE * PROBE_AREA_SIZE);         
+    int remaining = index % (PROBE_AREA_SIZE * PROBE_AREA_SIZE); 
+    int y = remaining / PROBE_AREA_SIZE;                         
+    int x = remaining % PROBE_AREA_SIZE;
+    return int3(x, y, z);
 }
 
 public float3 FibonacciSphere(float sampleIndex, float numSamples)

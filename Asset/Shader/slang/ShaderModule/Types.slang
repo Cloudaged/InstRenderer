@@ -114,9 +114,15 @@ public struct ShadowSetting
     public const int enablePCF;
 }
 
+public struct DDGISetting
+{
+    public int showProbes;
+}
+
 public struct RenderSetting
 {
     public ShadowSetting shadowSetting;
+    public DDGISetting ddgiSetting;
 }
 
 

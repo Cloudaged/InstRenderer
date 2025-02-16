@@ -14,6 +14,8 @@ struct VertInput
 struct VertOutput
 {
     float4 posSV : SV_Position;
+    float4 normalWS : TEXCOORD0;
+    int instanceID : TEXCOORD1;
 }
 
 [[vk::binding(1, 0)]] StructuredBuffer<Probe> probeAreaUniform_Arr[];
@@ -29,6 +31,8 @@ VertOutput main(VertInput input)
     StructuredBuffer<Probe> probesArea = probeAreaUniform_Arr[handles.probeArea];
     Probe probe = probesArea.Load(input.instanceID);
     float3 pos = input.position.xyz + probe.position.xyz;
-    output.posSV = mul(globalU.projMat, mul(globalU.viewMat, float4(pos,1.0)));
+    output.posSV = mul(globalU.projMat, mul(globalU.viewMat, float4(pos, 1.0)));
+    output.normalWS = input.normal;
+    output.instanceID = input.instanceID;
     return output;
 }

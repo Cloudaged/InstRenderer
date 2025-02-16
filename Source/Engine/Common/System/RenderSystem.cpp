@@ -744,27 +744,29 @@ void RenderSystem::DeclareResource()
     }
 
 
-//    {
-//        {
-//            struct ProbeVisualPC
-//            {
-//                Handle ProbeArea;
-//                Handle globalUniform;
-//            };
-//
-//            rg.AddPass({.name = "ProbeVisual", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
-//                               .input = {ddgiProbesArea,globalData,lighted,depth},
-//                               .output = {lighted,depth},
-//                               .pipeline = {.type = PipelineType::Mesh, .rsShaders = {.vert = "DDGIProbeVisualVert",.frag = "DDGIProbeVisualFrag",}, .handleSize = sizeof(ProbeVisualPC)},
-//                               .executeFunc = [=](CommandList &cmd)
-//                               {
-//                                   ProbeVisualPC pushConstant = {ddgiProbesArea,globalData};
-//                                   cmd.PushConstantsForHandles(&pushConstant);
-//                                   cmd.DrawInstances(*visualProbe,PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE);
-//                               }
-//                       });
-//        }
-//    }
+    {
+        {
+            struct ProbeVisualPC
+            {
+                Handle ProbeArea;
+                Handle globalUniform;
+                Handle irradianceVolume;
+            };
+
+            rg.AddPass({.name = "ProbeVisual", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
+                               .input = {ddgiProbesArea,globalData,IrradianceVolumeSampleImg,lighted,depth},
+                               .output = {lighted,depth},
+                               .pipeline = {.type = PipelineType::Mesh, .rsShaders = {.vert = "DDGIProbeVisualVert",.frag = "DDGIProbeVisualFrag",}, .handleSize = sizeof(ProbeVisualPC)},
+                               .executeFunc = [=](CommandList &cmd)
+                               {
+                                   ProbeVisualPC pushConstant = {ddgiProbesArea,globalData,IrradianceVolumeSampleImg};
+                                   cmd.PushConstantsForHandles(&pushConstant);
+                                   int instanceCount = globalRenderSettingData.uniform.ddgiSetting.probeVisualized==1?PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE:0;
+                                   cmd.DrawInstances(*visualProbe,instanceCount);
+                               }
+                       });
+        }
+    }
 
     {
         struct alignas(16) SkyboxPC

@@ -53,9 +53,15 @@ struct ShadowSetting
     int enablePCF = 1;
 };
 
+struct DDGISetting
+{
+    int probeVisualized;
+};
+
 struct RenderSettingUniform
 {
     ShadowSetting shadowDebug{};
+    DDGISetting ddgiSetting{};
 };
 
 struct CSMUniform

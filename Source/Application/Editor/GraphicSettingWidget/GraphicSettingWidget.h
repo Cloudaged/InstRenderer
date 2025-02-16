@@ -33,6 +33,7 @@ private:
     void InitToolBox();
     void InitPages();
     void ShadowSettings();
+    void DDGISetting();
     void resizeEvent(QResizeEvent *event) override;
 private:
     RenderSettingUniform renderSettingData;
@@ -46,6 +47,7 @@ private:
     TypeSelector* showCascade;
     TriggerBox* antiShimmer;
     TriggerBox* enablePCF;
+    TriggerBox* showProbes;
     RenderSettingUniform UpdateAllData();
 signals:
     void GraphicSettingUpdate(RenderSettingUniform data);

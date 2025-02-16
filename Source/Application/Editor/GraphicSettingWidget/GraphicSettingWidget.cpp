@@ -58,6 +58,7 @@ void GraphicSettingWidget::InitToolBox()
 void GraphicSettingWidget::InitPages()
 {
     ShadowSettings();
+    DDGISetting();
     toolBox->Reconstruct(this->pages);
 }
 
@@ -85,6 +86,17 @@ void GraphicSettingWidget::ShadowSettings()
     pages.push_back({w,"Shadow"});
 }
 
+void GraphicSettingWidget::DDGISetting()
+{
+    QWidget* w = new QWidget(this);
+    QVBoxLayout* layout = new QVBoxLayout(w);
+    showProbes = new TriggerBox("Show Probes",renderSettingData.ddgiSetting.probeVisualized);
+    layout->addWidget(showProbes);
+    w->setLayout(layout);
+    pages.push_back({w,"DDGI"});
+}
+
+
 void GraphicSettingWidget::resizeEvent(QResizeEvent *event)
 {
     toolBox->resize(event->size().width(),this->height());
@@ -108,5 +120,6 @@ RenderSettingUniform GraphicSettingWidget::UpdateAllData()
     }
     this->renderSettingData.shadowDebug.antiShimmering = antiShimmer->trigger->isChecked();
     this->renderSettingData.shadowDebug.enablePCF = enablePCF->trigger->isChecked();
+    this->renderSettingData.ddgiSetting.probeVisualized = showProbes->trigger->isChecked();
     return this->renderSettingData;
 }

@@ -103,6 +103,7 @@ public struct DDGIVisualProbeHandle
 {
     Handle probeArea;
     Handle globalUniform;
+    Handle irradianceVolume;
 }
 
 public struct IndirectLightHandle
