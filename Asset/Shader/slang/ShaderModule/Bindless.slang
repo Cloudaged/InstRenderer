@@ -96,6 +96,7 @@ public struct DDGIIrradianceVolumeHandle
     Handle irradianceVolume;
     Handle depthVolume;
     Handle probeArea;
+    Handle IrradianceVolumeSampleImg;
 }
 
 public struct DDGIVisualProbeHandle

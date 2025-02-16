@@ -5,18 +5,19 @@ import ShaderModule.Bindless;
 [[vk::push_constant]] ConstantBuffer<DDGIIrradianceVolumeHandle> handles;
 [[vk::binding(3, 0)]] RWTexture2D<float4> rwImg_Arr[];
 [[vk::binding(3, 0)]] RWTexture2D<float2> depthImg_Arr[];
-const int kReadTable[6] = {5, 3, 1, -1, -3, -5};
+[[vk::binding(2, 0)]] Sampler2D textures[];
 
 [shader("compute")]
-[numthreads(6, 6, 1)]
+[numthreads(8, 8, 1)]
 void main(uint3 dispatchThreadID: SV_DispatchThreadID)
 {
     int2 coords = dispatchThreadID.xy;
     RWTexture2D<float4> raddianceMap = rwImg_Arr[handles.radianceMap];
     RWTexture2D<float4> irradianceVolume = rwImg_Arr[handles.irradianceVolume];
     RWTexture2D<float2> depthVolume = depthImg_Arr[handles.depthVolume];
-    int2 coordsInVolume = coords % IRRADIANCE_VOLUME_SIZE;
-    int2 volumeCoord = coords / IRRADIANCE_VOLUME_SIZE;
+
+    int2 coordsInVolume = coords % (IRRADIANCE_VOLUME_SIZE);//int coord in volume
+    int2 volumeCoord = coords / (IRRADIANCE_VOLUME_SIZE);//Volume id in volume map
     int probeIndex = GetVolumeProbeArrayIndex(coords, IRRADIANCE_VOLUME_SIZE);
     Probe probe = probe_Arr[handles.probeArea].Load(probeIndex);
     float4 irradianceResult = float4(0);
@@ -42,13 +43,18 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
         irradianceResult += float4(raddiance * weight, weight);
         depthResult += float2(distance * weight, distance * distance*weight); 
     }
-    
+
     if (irradianceResult.w > 0.0001)
     {
         irradianceResult /= irradianceResult.w;
         depthResult /= irradianceResult.w;
     }
-    irradianceVolume[coords] = float4(irradianceResult);
+
+    float2 uv = float2(coords) / float2(PROBE_AREA_SIZE * PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE, PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE);
+    float4 lastIrradiance = irradianceVolume.Load(coords);
+
+    // irradianceVolume[coords] = lerp(irradianceResult, lastIrradiance,0.5);
+    irradianceVolume[coords] = irradianceResult;
     depthVolume[coords] = float2(depthResult);
 
     //change corner
@@ -73,6 +79,10 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
         source.y += IRRADIANCE_VOLUME_SIZE-1-coordsInVolume.y;
     }
     source = source + IRRADIANCE_VOLUME_SIZE*volumeCoord;
+
+
     irradianceVolume[coords] = irradianceVolume[source];
     depthVolume[coords] = depthVolume[source];
+
+
 }

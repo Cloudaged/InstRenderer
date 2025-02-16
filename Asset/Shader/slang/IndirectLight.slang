@@ -1,6 +1,7 @@
 import ShaderModule.DDGI;
 import ShaderModule.Types;
 import ShaderModule.Bindless;
+import ShaderModule.PBR;
 [[vk::binding(1, 0)]] StructuredBuffer<Probe> probe_Arr[];
 [[vk::push_constant]] ConstantBuffer<IndirectLightHandle> handles;
 [[vk::binding(3, 0)]] RWTexture2D<float4> rwImg_Arr[];
@@ -30,6 +31,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     int3 baseGrid = GetGridIndice(position.xyz, handles.probeBasePos.xyz, handles.probeSpacing.xyz);
     float3 baseProbePosWS = handles.probeBasePos.xyz + baseGrid * handles.probeSpacing.xyz;
     float3 sum = 0;
+    float sumWeight = 0;
     for (int z = 0; z < 2; z++)
     {
         for (int y = 0; y < 2; y++)
@@ -38,15 +40,27 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
             {
                 int3 offset = int3(x, y, z);
                 int3 probeCoord = clamp(baseGrid + offset, int3(0), int3(PROBE_AREA_SIZE - 1));
-                float3 curProbePosWS = handles.probeBasePos.xyz + probeCoord * handles.probeSpacing.xyz;
                 Probe probe = probeBuffer.Load(GetProbeArrayIndex1D(probeCoord));
-                float3 sampleDir = normalize(position.xyz - probe.position.xyz);
+                float3 distance = clamp(float3(position.xyz - baseProbePosWS) / handles.probeSpacing.xyz, float3(0.0f), float3(1.0f));
+                float3 trilinear = lerp(1.0 - distance,distance, offset);
+                float weight = 1.0f;
+                weight *= trilinear.x * trilinear.y * trilinear.z + 0.001f;
+                float3 sampleDir = normalize(probe.position.xyz - position.xyz);
                 float2 uv = GetVolumeUV(sampleDir, probeCoord);
-                sum += irradianceVolume.SampleLevel(uv,0).xyz;
+
+                float2 visibility = depthVolume.SampleLevel(uv,0).xy;
+                float meanDistance = visibility.x;
+                float chebyshev = 1.0;
+                weight *= max(0, dot(normal.xyz,sampleDir));
+
+                sum += weight*irradianceVolume.SampleLevel(uv,0).xyz;
+                sumWeight +=weight;
             }
         }
     }
 
-    float3 irradiance = sum/8.0f;
-    indirectLight[coords] = float4(irradiance, 1.0);
+    float3 receive = sum / sumWeight;
+    //float3 irradiance = receive * GetDiffuseBRDF(baseColor.xyz);
+
+    indirectLight[coords] = float4(receive, 1.0);
 }

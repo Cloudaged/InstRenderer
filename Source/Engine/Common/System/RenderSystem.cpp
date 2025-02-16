@@ -489,19 +489,19 @@ void RenderSystem::DeclareResource()
 
 
     auto ddgiIrradianceVolume = rg.AddResource({.name = "IrradianceVolume",.type = ResourceType::StorageImage,
-                                                .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
+                                                .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE,PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE},
                                                                            TextureUsage::Storage|TextureUsage::TransferSrc,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
     auto IrradianceVolumeSampleImg = rg.AddResource({.name = "IrradianceVolumeSampleImg",.type = ResourceType::Texture,
-                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
+                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE,PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE},
                                                                                   TextureUsage::ColorAttachment|TextureUsage::TransferDst,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
     auto ddgiDepthVolume = rg.AddResource({.name = "DepthVolume",.type = ResourceType::StorageImage,
-                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
+                                                       .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE,PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE},
                                                                                   TextureUsage::Storage|TextureUsage::TransferSrc,VK_FORMAT_R32G32_SFLOAT}});
 
     auto DepthVolumeSampleImg = rg.AddResource({.name = "DepthVolumeSampleImg",.type = ResourceType::Texture,
-                                                  .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
+                                                  .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE,PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE},
                                                                              TextureUsage::ColorAttachment|TextureUsage::TransferDst,VK_FORMAT_R32G32_SFLOAT}});
 
     auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::StorageImage,
@@ -657,19 +657,20 @@ void RenderSystem::DeclareResource()
             Handle irradianceVolume;
             Handle depthVolume;
             Handle probeArea;
+            Handle IrradianceVolumeSampleImg;
         };
 
-        rg.AddPass({.name = "IrradianceVolumePass",.type = RenderPassType::Compute,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*6,PROBE_AREA_SIZE*6},
-                           .input = {ddgiRadianceRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea},
+        rg.AddPass({.name = "IrradianceVolumePass",.type = RenderPassType::Compute,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE,PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE},
+                           .input = {ddgiRadianceRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea,IrradianceVolumeSampleImg},
                            .output = {ddgiIrradianceVolume,ddgiDepthVolume},
                            .pipeline = {.type = PipelineType::Compute, .cpShaders = {"DDGIVolume"},.handleSize = sizeof(IrradianceVolumePC)},
                            .executeFunc = [=](CommandList& cmd)
                            {
-                                int width =PROBE_AREA_SIZE*PROBE_AREA_SIZE*6;
-                                int height = PROBE_AREA_SIZE*6;
-                               IrradianceVolumePC pushConstants = {ddgiRadianceRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea};
+                                int width =PROBE_AREA_SIZE*PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE;
+                                int height = PROBE_AREA_SIZE*IRRADIANCE_VOLUME_SIZE;
+                               IrradianceVolumePC pushConstants = {ddgiRadianceRaySamples,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea,IrradianceVolumeSampleImg};
                                cmd.PushConstantsForHandles(&pushConstants);
-                               cmd.Dispatch(width/6+10,height/6+10,1.0);
+                               cmd.Dispatch(width/IRRADIANCE_VOLUME_SIZE+10,height/IRRADIANCE_VOLUME_SIZE+10,1.0);
                                cmd.TransImage(rg.resourceMap[ddgiIrradianceVolume].textureInfo.value(),rg.resourceMap[IrradianceVolumeSampleImg].textureInfo.value(),
                                            VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
                                cmd.TransImage(rg.resourceMap[ddgiDepthVolume].textureInfo.value(),rg.resourceMap[DepthVolumeSampleImg].textureInfo.value(),

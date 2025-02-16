@@ -22,10 +22,9 @@ public int GetVolumeProbeArrayIndex(int2 coords, int volumeSize)
     return x + y * PROBE_AREA_SIZE + z * PROBE_AREA_SIZE * PROBE_AREA_SIZE;
 }
 
-public float3 OctDecode(int2 coords, int volumeSize)
+public float3 OctDecode(float2 coords, int volumeSize)
 {
-    float u = (2.0 * (coords.x / (volumeSize - 1))) - 1.0;
-    float v = (2.0 * (coords.y / (volumeSize - 1))) - 1.0;
+    coords = coords / (volumeSize) * 2.0 - 1.0;
 
     float3 direction = float3(coords.x, coords.y, 1.f - abs(coords.x) - abs(coords.y));
     if (direction.z < 0.0)
@@ -45,20 +44,20 @@ public float2 OctEncode(float3 direction, int volumeSize)
     }
 
     int2 coords;
-    coords.x = (int)((direction.x * 0.5 + 0.5) * (volumeSize - 1) + 0.5);
-    coords.y = (int)((direction.y * 0.5 + 0.5) * (volumeSize - 1) + 0.5);
+    coords.x = (int)((direction.x * 0.5 + 0.5) * (volumeSize) + 0.5);
+    coords.y = (int)((direction.y * 0.5 + 0.5) * (volumeSize) + 0.5);
 
     return coords;
 }
 
 public float2 GetVolumeUV(float3 direction,int3 probeCoords)
 {
-    float2 octCoords = OctEncode(normalize(direction), IRRADIANCE_VOLUME_SIZE);
+    float2 octCoords = OctEncode(normalize(-direction), IRRADIANCE_VOLUME_SIZE);
     float2 grid;
     grid.x = (probeCoords.x + probeCoords.z * PROBE_AREA_SIZE) * IRRADIANCE_VOLUME_SIZE;
     grid.y = probeCoords.y * IRRADIANCE_VOLUME_SIZE;
     float2 irradianceTextureSize = float2(PROBE_AREA_SIZE * PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE, PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE);
-    return (octCoords * IRRADIANCE_VOLUME_SIZE + grid) / irradianceTextureSize;
+    return (octCoords + grid) / irradianceTextureSize;
 }
 
 public int GetProbeArrayIndex1D(int3 coords)

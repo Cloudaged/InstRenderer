@@ -102,8 +102,10 @@ float4 main(FragInput input) : SV_Target
 
     float4 indirectLight = textures[ps.indirectLight].Sample(input.inUV);
 
-    float3 hdrColor = finalColor * ssao * shadow;
-    return float4(indirectLight);
+    float3 hdrColor = (finalColor * shadow + indirectLight.xyz) * ssao;
+
+    // return float4(hdrColor,1.0);
+    return indirectLight;
     // return testValues;
     //return float4(0.0f);
     //return float4(shadow);

@@ -10,6 +10,7 @@
 #define SSAO_ROTATION_SIZE 4
 #define PROBE_AREA_SIZE 16
 #define RAYS_PER_PROBE 256
+#define IRRADIANCE_VOLUME_SIZE 8
 
 struct GlobalUniform
 {
