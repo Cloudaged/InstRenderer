@@ -23,66 +23,72 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     float4 irradianceResult = float4(0);
     float2 depthResult = 0;
 
-    int backface = 0;
-    int maxBackface = int(RAYS_PER_PROBE * 0.1f);
-    for (int i = 0; i < RAYS_PER_PROBE; i++)
+    bool isBorder = coordsInVolume.x == 0 || coordsInVolume.y == 0 ||
+                    (coordsInVolume.x == (IRRADIANCE_VOLUME_SIZE - 1) || coordsInVolume.y == (IRRADIANCE_VOLUME_SIZE - 1));
+    if(!isBorder)
     {
-        int2 uv = int2(probeIndex, i);
-        float3 rayDir = FibonacciSphere(i, RAYS_PER_PROBE);
-        float3 texelDir = OctDecode(coordsInVolume, IRRADIANCE_VOLUME_SIZE);
-        float weight = max(0.0, dot(texelDir, rayDir));
-        float4 sampleValue = raddianceMap.Load(uv);
-        float distance = sampleValue.w;
-
-        if (distance < 0.0f)
+        int backface = 0;
+        int maxBackface = int(RAYS_PER_PROBE * 0.1f);
+        
+        for (int i = 0; i < RAYS_PER_PROBE; i++)
         {
-            continue;
+            int2 uv = int2(probeIndex, i);
+            float3 rayDir = FibonacciSphere(i, RAYS_PER_PROBE);
+            float3 texelDir = OctDecode(NormalizedOctCoords(coordsInVolume));
+            float weight = max(0.0, dot(texelDir, rayDir));
+            float4 sampleValue = raddianceMap.Load(uv);
+            float distance = sampleValue.w;
+
+            if (distance < 0.0f)
+            {
+                continue;
+            }
+
+            float3 raddiance = sampleValue.xyz;
+            irradianceResult += float4(raddiance * weight, weight);
+            depthResult += float2(distance * weight, distance * distance*weight); 
         }
 
-        float3 raddiance = sampleValue.xyz;
-        irradianceResult += float4(raddiance * weight, weight);
-        depthResult += float2(distance * weight, distance * distance*weight); 
+        if (irradianceResult.w > 0.0001)
+        {
+            irradianceResult /= irradianceResult.w;
+            depthResult /= irradianceResult.w;
+        }
+
+        float2 uv = float2(coords) / float2(PROBE_AREA_SIZE * PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE, PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE);
+        float4 lastIrradiance = irradianceVolume.Load(coords);
+
+        // irradianceVolume[coords] = lerp(irradianceResult, lastIrradiance,0.5);
+        irradianceVolume[coords] = irradianceResult;
+        depthVolume[coords] = float2(depthResult);
     }
-
-    if (irradianceResult.w > 0.0001)
+    else
     {
-        irradianceResult /= irradianceResult.w;
-        depthResult /= irradianceResult.w;
+        GroupMemoryBarrierWithGroupSync();
+        int2 dst= 0;
+        bool isCorner = (coordsInVolume.x == 0 || coordsInVolume.x == (IRRADIANCE_VOLUME_SIZE - 1)) &&
+                        (coordsInVolume.y == 0 || coordsInVolume.y == (IRRADIANCE_VOLUME_SIZE - 1));
+
+        bool isRow = coordsInVolume.x > 0 && coordsInVolume.x < (IRRADIANCE_VOLUME_SIZE - 1);
+        if (isCorner)
+        {
+            dst.x = coordsInVolume.x == 0 ? (VOLUME_INTERIOR_SIZE) : 1;
+            dst.y = coordsInVolume.y == 0 ? (VOLUME_INTERIOR_SIZE) : 1;
+        }else if(isRow)
+        {
+            dst.x = IRRADIANCE_VOLUME_SIZE - 1 - coordsInVolume.x;
+            dst.y = ((coordsInVolume.y == 0) ? 1 : VOLUME_INTERIOR_SIZE);
+        }
+        else
+        {
+            dst.x = ((coordsInVolume.x == 0) ? 1 : VOLUME_INTERIOR_SIZE);
+            dst.y = IRRADIANCE_VOLUME_SIZE-1-coordsInVolume.y;
+        }
+        dst =dst + volumeCoord*IRRADIANCE_VOLUME_SIZE;
+
+        irradianceVolume[coords] = irradianceVolume[dst];
+        depthVolume[coords] = depthVolume[dst];
+
     }
-
-    float2 uv = float2(coords) / float2(PROBE_AREA_SIZE * PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE, PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE);
-    float4 lastIrradiance = irradianceVolume.Load(coords);
-
-    // irradianceVolume[coords] = lerp(irradianceResult, lastIrradiance,0.5);
-    irradianceVolume[coords] = irradianceResult;
-    depthVolume[coords] = float2(depthResult);
-
-    //change corner
-    GroupMemoryBarrierWithGroupSync();
-    int2 source = int2(0);
-    bool isCorner = (coordsInVolume.x == 0 || coordsInVolume.y == 0) &&
-                    (coordsInVolume.x == (IRRADIANCE_VOLUME_SIZE - 1) || coordsInVolume.y == (IRRADIANCE_VOLUME_SIZE - 1));
-
-    bool isRow = coordsInVolume.x > 0 && coordsInVolume.x < (IRRADIANCE_VOLUME_SIZE - 1);
-    if (isCorner)
-    {
-        source.x += coordsInVolume.x == 0 ? (IRRADIANCE_VOLUME_SIZE - 1) : (-IRRADIANCE_VOLUME_SIZE + 1); 
-        source.y += coordsInVolume.y == 0 ? (IRRADIANCE_VOLUME_SIZE - 1) : (-IRRADIANCE_VOLUME_SIZE + 1);
-    }else if(isRow)
-    {
-        source.x += IRRADIANCE_VOLUME_SIZE-1-coordsInVolume.x;
-        source.y += coordsInVolume.y+((coordsInVolume.y>0)?-1:1);
-    }
-    else 
-    {
-        source.x += coordsInVolume.x+((coordsInVolume.x>0)?-1:1);
-        source.y += IRRADIANCE_VOLUME_SIZE-1-coordsInVolume.y;
-    }
-    source = source + IRRADIANCE_VOLUME_SIZE*volumeCoord;
-
-
-    irradianceVolume[coords] = irradianceVolume[source];
-    depthVolume[coords] = depthVolume[source];
-
 
 }
