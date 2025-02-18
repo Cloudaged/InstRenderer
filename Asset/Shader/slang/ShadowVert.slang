@@ -21,8 +21,8 @@ struct PushConstantData
 [shader("vertex")]
 VertOutput main(VertInput input)
 {
-    VertOutput output;
-    GlobalUniform globalU = Arr_globalUniform[shadowmapHandles.global];
-    output.positionSV = mul(globalU.lightProjMat, mul(globalU.lightViewMat, mul(shadowmapHandles.modelMat,input.Position)));
-    return output;
+    // VertOutput output;
+    // GlobalUniform globalU = Arr_globalUniform[shadowmapHandles.csm];
+    // output.positionSV = mul(globalU.lightProjMat, mul(globalU.lightViewMat, mul(shadowmapHandles.modelMat,input.Position)));
+    // return output;
 }

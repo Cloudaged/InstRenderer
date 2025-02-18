@@ -61,6 +61,7 @@ public struct GlobalUniform
     public float4x4 lightProjMat;
     public float nearPlane;
     public float farPlane;
+    public int isFirstFrame;
 }
 
 public struct CSMUniform
@@ -113,11 +114,17 @@ public struct ShadowSetting
     public const int showCascaded;
     const int antiShimmer;
     public const int enablePCF;
+    int pad0;
+    int pad1;
+    int pad2;
 }
 
 public struct DDGISetting
 {
     public int showProbes;
+    public int onlyIndirectLight;
+    int pad0;
+    int pad1;
 }
 
 public struct RenderSetting

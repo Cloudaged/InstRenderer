@@ -123,6 +123,7 @@ namespace RDG
             case RenderPassType::Raster: bindingPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;break;
             case RenderPassType::RayTracing: bindingPoint = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;break;
             case RenderPassType::Compute: bindingPoint = VK_PIPELINE_BIND_POINT_COMPUTE;break;
+            default:bindingPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;break;
         }
         vkCmdBindDescriptorSets(cmd, bindingPoint,
                                 curPass->pipeline.pipelineLayout,
@@ -137,6 +138,7 @@ namespace RDG
             case RenderPassType::Raster: bindingPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;break;
             case RenderPassType::RayTracing: bindingPoint = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;break;
             case RenderPassType::Compute: bindingPoint = VK_PIPELINE_BIND_POINT_COMPUTE;break;
+            default:bindingPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;break;
         }
         vkCmdBindPipeline(cmd, bindingPoint, curPass->pipeline.pipeline);
     }
@@ -241,4 +243,57 @@ void RDG::CommandList::DrawInstances(const Mesh &mesh, int instanceCount)
     vkCmdBindIndexBuffer(cmd,mesh.indexBuffer.vk_buffer,0,VK_INDEX_TYPE_UINT32);
     //Draw
     vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indexCount), instanceCount, 0, 0, 0);
+}
+
+void RDG::CommandList::AddBarrier(RDG::TextureInfo &texture, VkImageLayout dstLayout)
+{
+    VkImageMemoryBarrier2 imageBarrier;
+    imageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+    imageBarrier.pNext = nullptr;
+
+    bool isDepth = texture.usage&TextureUsage::Depth;
+
+    if(isDepth)
+    {
+        imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        imageBarrier.srcAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+    }else
+    {
+        imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        imageBarrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        imageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        imageBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+    }
+
+    imageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    imageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+    imageBarrier.oldLayout = texture.currentLayout;
+    imageBarrier.newLayout = dstLayout;
+
+
+    VkImageAspectFlags aspectMask = isDepth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+
+
+    VkImageSubresourceRange subImage {};
+    subImage.aspectMask = aspectMask;
+    subImage.baseMipLevel = 0;
+    subImage.levelCount = texture.mipLevels;
+    subImage.baseArrayLayer = 0;
+    subImage.layerCount = texture.arrayCount;
+
+
+    imageBarrier.subresourceRange = subImage;
+    imageBarrier.image = texture.data->allocatedImage->vk_image;
+
+    VkDependencyInfo depInfo {};
+    depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    depInfo.pNext = nullptr;
+
+    depInfo.imageMemoryBarrierCount = 1;
+    depInfo.pImageMemoryBarriers = &imageBarrier;
+
+    vkCmdPipelineBarrier2(cmd, &depInfo);
 }

@@ -91,6 +91,8 @@ void GraphicSettingWidget::DDGISetting()
     QWidget* w = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(w);
     showProbes = new TriggerBox("Show Probes",renderSettingData.ddgiSetting.probeVisualized);
+    onlyIndirectLight = new TriggerBox("Show Indirect Light",renderSettingData.ddgiSetting.onlyIndirectLight);
+    layout->addWidget(onlyIndirectLight);
     layout->addWidget(showProbes);
     w->setLayout(layout);
     pages.push_back({w,"DDGI"});
@@ -121,5 +123,7 @@ RenderSettingUniform GraphicSettingWidget::UpdateAllData()
     this->renderSettingData.shadowDebug.antiShimmering = antiShimmer->trigger->isChecked();
     this->renderSettingData.shadowDebug.enablePCF = enablePCF->trigger->isChecked();
     this->renderSettingData.ddgiSetting.probeVisualized = showProbes->trigger->isChecked();
+    this->renderSettingData.ddgiSetting.onlyIndirectLight = onlyIndirectLight->trigger->isChecked();
+
     return this->renderSettingData;
 }

@@ -19,7 +19,7 @@ struct VertOutput
 VertOutput main(VertInput input)
 {
     VertOutput output;
-    CSMUniform csmU = Arr_csmUniform[shadowmapHandles.global];
+    CSMUniform csmU = Arr_csmUniform[shadowmapHandles.csm];
     output.positionSV = mul(csmU.vpMat[input.viewID], mul(shadowmapHandles.modelMat,input.Position));
     return output;
 }

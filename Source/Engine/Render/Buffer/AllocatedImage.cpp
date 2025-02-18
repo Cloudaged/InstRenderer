@@ -220,7 +220,7 @@ AllocatedImage::~AllocatedImage()
    }
     if(vk_image!=VK_NULL_HANDLE)
     {
-        vkDestroyImage(device,vk_image, nullptr);
+        vmaDestroyImage(VulkanContext::GetContext().allocator,vk_image,allocation);
     }
 }
 

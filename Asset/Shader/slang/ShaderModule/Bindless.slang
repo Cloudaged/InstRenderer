@@ -17,7 +17,7 @@ public struct GeoHandles
 public struct ShadowMapHandles
 {
     public float4x4 modelMat;
-    Handle global;
+    Handle csm;
 }
 
 public struct CascadedShadowHandles
@@ -88,6 +88,7 @@ public struct DDGIRadianceHandle
     Handle skyboxTex;
     Handle probesArea;
     Handle rtUniform;
+    Handle probeOffset;
 }
 
 public struct DDGIIrradianceVolumeHandle
@@ -104,6 +105,7 @@ public struct DDGIVisualProbeHandle
     Handle probeArea;
     Handle globalUniform;
     Handle irradianceVolume;
+    Handle probeOffset;
 }
 
 public struct IndirectLightHandle
@@ -118,4 +120,13 @@ public struct IndirectLightHandle
     int pad0;
     public float4 probeBasePos;
     public float4 probeSpacing;
+}
+
+public struct DDGIProbeOffsetHandle
+{
+    Handle radianceMap;
+    Handle probeOffsetMap;
+    Handle probeArea;
+    Handle global;
+    public float4 spacing;
 }

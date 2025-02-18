@@ -14,6 +14,7 @@ namespace RDG
     {
     public:
         void BeginCommand();
+        void AddBarrier(TextureInfo& texture,VkImageLayout dstLayout);
         void EndCommand();
         bool BeginRenderPass(const PassRef& passRef);
         void EndRenderPass();

@@ -41,5 +41,6 @@ Texture::~Texture()
     {
         vkDestroySampler(VulkanContext::GetContext().device,sampler, nullptr);
     }
+    allocatedImage.reset();
 }
 

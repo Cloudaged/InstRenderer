@@ -55,13 +55,13 @@ float4 main(FragInput input) : SV_Target
         } 
     }
 
-    // if (graphicSetting.shadowSetting.showCascaded == -1)
-    // {
-    //     return baseColor + ShowCascade(csmIndex);
-    // } else if (graphicSetting.shadowSetting.showCascaded!=-2)
-    // {
-    //     return float4(textureArr[ps.shadowMap].Sample(float3(input.inUV, graphicSetting.shadowSetting.showCascaded)).r);
-    // }
+    if (graphicSetting.shadowSetting.showCascaded == -1)
+    {
+        return baseColor + ShowCascade(csmIndex);
+    } else if (graphicSetting.shadowSetting.showCascaded!=-2)
+    {
+        return float4(textureArr[ps.shadowMap].Sample(float3(input.inUV, graphicSetting.shadowSetting.showCascaded)).r);
+    }
 
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
@@ -100,12 +100,20 @@ float4 main(FragInput input) : SV_Target
              graphicSetting.shadowSetting);
     }
 
-    float4 indirectLight = textures[ps.indirectLight].Sample(input.inUV);
+    float4 indirectIrradiance = textures[ps.indirectLight].Sample(input.inUV);
+    float3 indirectColor = diffuseBRDF * indirectIrradiance.xyz;
+    float3 hdrColor = 0;
 
-    float3 hdrColor = (finalColor * shadow + indirectLight.xyz) * ssao;
+    if (graphicSetting.ddgiSetting.onlyIndirectLight == 1)
+    {
+        hdrColor = indirectIrradiance.xyz;
+    } else
+    {
+        hdrColor = (finalColor * shadow + indirectColor.xyz) * ssao;
+    }
 
     // return float4(hdrColor,1.0);
-    return indirectLight;
+    return float4(hdrColor,1.0);
     // return testValues;
     //return float4(0.0f);
     //return float4(shadow);

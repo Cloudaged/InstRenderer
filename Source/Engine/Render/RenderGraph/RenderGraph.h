@@ -61,13 +61,12 @@ namespace RDG
         void CreateResource();
         void CreateDescriptor();
         void CreateVkPipeline();
-        void InsertBarrier(const CommandList& cmd,const PassRef& passRef);
-        void UpdateResourceLayout(const PassRef& passRef);
+        void InsertBarrier(CommandList& cmd,const PassRef& passRef);
         void CreateImageResource(ResourceRef& resource);
         void CreateBufferResource(ResourceRef& resource);
         void RecreateAllPass();
         void RecreatePassResource(PassRef& pass);
-        void ClearImageResource(ResourceRef& resource);
+        void TransitionLayout(CommandList& cmd,const PassRef& passRef);
     private:
         PassMap passArr;
         std::shared_ptr<Scene> scene;

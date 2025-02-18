@@ -22,6 +22,20 @@ public int GetVolumeProbeArrayIndex(int2 coords, int volumeSize)
     return x + y * PROBE_AREA_SIZE + z * PROBE_AREA_SIZE * PROBE_AREA_SIZE;
 }
 
+public int2 GetProbeOffsetMapUV(int index)
+{
+    int z = index / (PROBE_AREA_SIZE * PROBE_AREA_SIZE);
+    int temp = index - z * PROBE_AREA_SIZE * PROBE_AREA_SIZE;
+    int y = temp / PROBE_AREA_SIZE;
+    int x = temp % PROBE_AREA_SIZE;
+
+    int2 coords;
+    coords.x = x + z * PROBE_AREA_SIZE;
+    coords.y = y;
+
+    return coords;
+}
+
 public float2 NormalizedOctCoords(int2 coordsInVolume)
 {
     float2 octCoord = float2(coordsInVolume - 1) + float2(0.5);

@@ -48,6 +48,7 @@ private:
     TriggerBox* antiShimmer;
     TriggerBox* enablePCF;
     TriggerBox* showProbes;
+    TriggerBox* onlyIndirectLight;
     RenderSettingUniform UpdateAllData();
 signals:
     void GraphicSettingUpdate(RenderSettingUniform data);

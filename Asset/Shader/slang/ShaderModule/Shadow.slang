@@ -193,13 +193,13 @@ public float CSM(Sampler2DArray shadowMapArr,int index,int blendIndex,float blen
     float shadow = 0.0f;
     if (shadowSetting.enablePCF == 1)
     {
-        float result1 = PCF_CSM(shadowMapArr, index, screenPos, viewCamDepthLS, range, 0.03);
-        float result2 = PCF_CSM(shadowMapArr, blendIndex, screenPos1, viewCamDepthLS1, range1, 0.03);
+        float result1 = PCF_CSM(shadowMapArr, index, screenPos, viewCamDepthLS, range, 0.001);
+        float result2 = PCF_CSM(shadowMapArr, blendIndex, screenPos1, viewCamDepthLS1, range1, 0.001);
         shadow = lerp(result1, result2, blendValue);
     } else
     {
-        float result1 = PCF_CSM(shadowMapArr, index, screenPos, viewCamDepthLS, 0, 0.03);
-        float result2 = PCF_CSM(shadowMapArr, blendIndex, screenPos1, viewCamDepthLS1, 0, 0.03);
+        float result1 = PCF_CSM(shadowMapArr, index, screenPos, viewCamDepthLS, 0, 0.001);
+        float result2 = PCF_CSM(shadowMapArr, blendIndex, screenPos1, viewCamDepthLS1, 0, 0.001);
         shadow = lerp(result1, result2, blendValue);
     }
     return shadow;

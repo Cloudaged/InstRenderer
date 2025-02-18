@@ -9,262 +9,6 @@ namespace RDG
 
     void RenderGraph::DeclareResource(std::shared_ptr<Scene> scene)
     {
-//        this->scene = scene;
-//        view = scene->reg.view<Renderable, Transform>();
-//
-//        uint32_t winWidth = (uint32_t)VulkanContext::GetContext().windowExtent.width;
-//        uint32_t winHeight = (uint32_t)VulkanContext::GetContext().windowExtent.height;
-//        auto sceneSkybox = scene->skybox;
-//        auto globalData = AddResource({.name = "GlobalData",.type = ResourceType::Uniform,
-//                                              .bufferInfo = BufferInfo{.size = sizeof(GlobalUniform)}});
-//
-//        auto csmData = AddResource({.name = "CSMData",.type = ResourceType::Uniform,
-//                                           .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});
-//
-//        auto skyboxTex = AddResource({"SkyboxTexture",.type = ResourceType::Texture,
-//                                                .textureInfo = TextureInfo{{sceneSkybox->width,sceneSkybox->height},
-//                                                                           TextureUsage::Color, VK_FORMAT_R8G8B8A8_SRGB, sceneSkybox->texture}});
-//
-//        auto ssaoKernel = AddResource({"SSAOKernel",.type = ResourceType::Uniform,
-//                                                .bufferInfo = BufferInfo{.size = sizeof(SSAOKernels)}});
-////        auto ssaoRotation = AddResource({"SSAORotation",.type = ResourceType::Texture,
-////                                                    .textureInfo = TextureInfo{{SSAO_ROTATION_SIZE,SSAO_ROTATION_SIZE},
-////                                                                               AttachmentUsage::Color,VK_FORMAT_R16G16_UNORM,}})
-//
-//       /* auto cascadedShadowMapData = AddResource({"CascadedShadowMapData",.type = ResourceType::Uniform,
-//                                                         .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});*/
-//
-//        auto cascadedShadowMap = AddResource({"CascadedShadowMap",.type = ResourceType::Texture,
-//                                                        .textureInfo = TextureInfo{{CASCADED_WIDTH, CASCADED_HEIGHT},
-//                                                                                   TextureUsage::ShadowMap, VK_FORMAT_D32_SFLOAT, nullptr, 1, CASCADED_COUNT}});
-//
-//        auto lightData = AddResource({.name = "Lights",.type = ResourceType::Uniform,
-//                                              .bufferInfo = BufferInfo{.size = sizeof(LightUniform)}});
-//
-//        auto renderSettings = AddResource({.name = "RenderSettings",.type = ResourceType::Uniform,
-//                                             .bufferInfo = BufferInfo{.size = sizeof(RenderSettingUniform)}});
-//
-//       auto position = AddResource({.name = "Position",.type = ResourceType::Texture,
-//                                           .textureInfo =TextureInfo{WINDOW_EXTENT,
-//                                                                     TextureUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
-//
-//       auto normal = AddResource({.name = "Normal",.type = ResourceType::Texture,
-//                .textureInfo = TextureInfo{WINDOW_EXTENT,
-//                                           TextureUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
-//
-//        auto baseColor = AddResource({.name = "BaseColor",.type = ResourceType::Texture,
-//                .textureInfo = TextureInfo{WINDOW_EXTENT,
-//                                           TextureUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
-//
-//        auto metallicRoughness = AddResource({.name = "MetallicRoughness",.type = ResourceType::Texture,
-//                .textureInfo = TextureInfo{WINDOW_EXTENT,
-//                                           TextureUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
-//
-//        auto depth = AddResource({.name = "Depth",.type = ResourceType::Texture,
-//                .textureInfo = TextureInfo{WINDOW_EXTENT,
-//                                           TextureUsage::Depth, VK_FORMAT_D32_SFLOAT}});
-//
-//        /*auto shadowMap = AddResource({.name = "ShadowMap",.type = ResourceType::Attachment,
-//                .textureInfo = TextureInfo{{shadowMapWidth, shadowMapWidth},
-//                                           AttachmentUsage::ShadowMap, VK_FORMAT_D32_SFLOAT}});*/
-//
-//        auto lighted = AddResource({.name = "Lighted",.type = ResourceType::Texture,
-//                                .textureInfo = TextureInfo{WINDOW_EXTENT,
-//                                                           TextureUsage::Color, VK_FORMAT_R16G16B16A16_SFLOAT}});
-//
-//        auto rtIMG  = AddResource({.name = "RTIMG",.type = ResourceType::Texture,
-//                                .textureInfo = TextureInfo{WINDOW_EXTENT,
-//                                                           TextureUsage::StoreImage, VK_FORMAT_R16G16B16A16_SFLOAT}});
-//
-//        auto rtSampleImg  = AddResource({.name = "rtSampleImg",.type = ResourceType::Texture,
-//                                          .textureInfo = TextureInfo{WINDOW_EXTENT,
-//                                                                     TextureUsage::TransferDst, VK_FORMAT_R16G16B16A16_SFLOAT}});
-//
-//        auto tlasData = AddResource({.name = "TLAS",.type = ResourceType::Accleration,
-//                                            .rtScene = std::make_shared<RTScene>(scene->rtScene)});
-//
-//        auto rtUniform = AddResource({.name = "RTUniform",.type = ResourceType::Uniform,
-//                                              .bufferInfo = BufferInfo{.size = sizeof(RTUniform)}});
-//
-//        auto materialArray = AddResource({"MaterialArray",.type=ResourceType::SSBO,
-//                                          .bufferInfo = {BufferInfo{.size = 300*sizeof(Material)}}});
-//        //Pass
-//        //GeoPass
-//        {
-//            struct alignas(16) GeoPC
-//            {
-//                Handle global;
-//                Material mat;
-//                glm::mat4 model;
-//            };
-//
-//            AddPass({.name = "Geometry",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
-//                    .input = {globalData},
-//                    .output = {position, normal, baseColor, metallicRoughness, depth},
-//                    .pipeline = {.type=PipelineType::Mesh, .rsShaders={"GeoVert", "GeoFrag"},.handleSize = sizeof(GeoPC)},
-//                    .executeFunc = [=](CommandList& cmd)
-//                    {
-//                        for (auto& entity:view)
-//                        {
-//                            auto renderComp = view.get<Renderable>(entity);
-//                            auto transComp = view.get<Transform>(entity);
-//                            GeoPC pushConstants = {globalData,renderComp.material,transComp.globalTransform};
-//                            cmd.PushConstantsForHandles(&pushConstants);
-//                            cmd.DrawMesh(renderComp.mesh);
-//                        }
-//                    }});
-//        }
-//
-//       /* //ShadowMap
-//        {
-//            struct alignas(16) ShadowMapPC
-//            {
-//                glm::mat4 modelMat;
-//                Handle global;
-//            };
-//
-//            AddPass({.name = "ShadowMap",.type = RenderPassType::Graphic,.fbExtent = {2048,2048},
-//                            .input = {globalData},
-//                            .output = {shadowMap},
-//                            .pipeline = {PipelineType::Mesh, "ShadowVert", "ShadowFrag", sizeof(ShadowMapPC)},
-//                            .executeFunc = [=](CommandList& cmd)
-//                            {
-//                                for (auto& entity:view)
-//                                {
-//                                    auto renderComp = view.get<Renderable>(entity);
-//                                    auto transComp = view.get<Transform>(entity);
-//                                    ShadowMapPC pushConstants = {transComp.globalTransform,globalData};
-//                                    cmd.PushConstantsForHandles(&pushConstants);
-//                                    cmd.DrawMesh(renderComp.mesh);
-//                                }
-//                            }});
-//
-//
-//        }*/
-//
-//
-//        {
-//            struct alignas(16) csmPC
-//            {
-//                glm::mat4 modelMat;
-//                Handle csmUniform;
-//            };
-//
-//            AddPass({.name = "csmPass",.type = RenderPassType::Raster,.fbExtent = {CASCADED_WIDTH, CASCADED_HEIGHT},
-//                            .input = {csmData},
-//                            .output = {cascadedShadowMap},
-//                            .pipeline = {.type=PipelineType::Mesh, .rsShaders={"CascadedShadowVert","CascadedShadowFrag"}, .handleSize = sizeof(csmPC)},
-//                            .executeFunc = [=](CommandList& cmd)
-//                            {
-//                                for (auto& entity:view)
-//                                {
-//                                    auto renderComp = view.get<Renderable>(entity);
-//                                    auto transComp = view.get<Transform>(entity);
-//                                    csmPC pushConstants = {transComp.globalTransform,csmData};
-//                                    cmd.PushConstantsForHandles(&pushConstants);
-//                                    cmd.DrawMesh(renderComp.mesh);
-//                                }
-//                            }});
-//
-//
-//        }
-//
-//        //Light
-//        {
-//            struct alignas(16) CompPC
-//            {
-//                Handle position;
-//                Handle normal;
-//                Handle baseColor;
-//                Handle mr;
-//                Handle shadowMap;
-//                Handle csmData;
-//                Handle lightUniform;
-//                Handle globalUniform;
-//                Handle renderSettingUniform;
-//            };
-//
-//            AddPass({.name = "Composition",.type = RenderPassType::Raster,.fbExtent = WINDOW_EXTENT,
-//                            .input = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,globalData,lightData,renderSettings},
-//                            .output = {lighted},
-//                            .pipeline = {.type = PipelineType::RenderQuad, .rsShaders = {"CompVert", "CompFrag"},.handleSize = sizeof(CompPC)},
-//                            .executeFunc = [=](CommandList& cmd)
-//                            {
-//                                CompPC pushConstants = {position,normal,baseColor,metallicRoughness,cascadedShadowMap,csmData,lightData,globalData,renderSettings};
-//                                cmd.PushConstantsForHandles(&pushConstants);
-//                                cmd.DrawRenderQuad();
-//                            }});
-//
-//
-//        }
-//
-//        {
-//            struct alignas(16) SkyboxPC
-//            {
-//                Handle skyboxTex;
-//                Handle globalData;
-//            };
-//
-//            AddPass({.name = "SkyboxDraw", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
-//                            .input = {skyboxTex,lighted,depth},
-//                            .output = {lighted,depth},
-//                            .pipeline = {.type = PipelineType::Skybox, .rsShaders = {"SkyboxVert", "SkyboxFrag"},.handleSize = sizeof(SkyboxPC)},
-//                            .executeFunc = [=](CommandList& cmd)
-//                            {
-//                                SkyboxPC pushConstant = {skyboxTex,globalData};
-//                                cmd.PushConstantsForHandles(&pushConstant);
-//                                cmd.DrawMesh(*sceneSkybox->mesh);
-//                            }
-//                    });
-//        }
-//
-//
-////        {
-////            struct alignas(16) RTPC
-////            {
-////                Handle outputImg;
-////                Handle tlas;
-////                Handle rtUniform;
-////                Handle materialArray;
-////            };
-////
-////            AddPass({.name = "RayTracing",.type = RenderPassType::RayTracing,.fbExtent = WINDOW_EXTENT,
-////                            .input = {rtIMG,tlasData,rtUniform,materialArray},
-////                            .output = {rtIMG},
-////                            .pipeline = {.type = PipelineType::RayTracing,
-////                                         .rtShaders ={.chit = "closetHit",.gen = "gen",.miss = "miss",.ahit ="anyHit"},
-////                                         .handleSize = sizeof(RTPC)},
-////                            .executeFunc = [=](CommandList& cmd)
-////                            {
-////                                RTPC rtpc = {rtIMG,tlasData,rtUniform,materialArray};
-////                                cmd.PushConstantsForHandles(&rtpc);
-////                                cmd.RayTracing();
-////                                cmd.TransImage(resourceMap[rtIMG].textureInfo.value(),resourceMap[rtSampleImg].textureInfo.value(),
-////                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-////                            }});
-////
-////        }
-//
-//
-//
-//        {
-//            struct alignas(16) PresentPC
-//            {
-//                Handle lastAtt;
-//                Handle rtSampleImg;
-//            };
-//
-//            AddPass({.name = "Present",.type = RenderPassType::Present,.fbExtent = WINDOW_EXTENT,
-//                    .input = {lighted,rtSampleImg},
-//                    .output = {},
-//                    .pipeline = {.type = PipelineType::RenderQuad, .rsShaders ={"PresentVert", "PresentFrag"},.handleSize = sizeof(PresentPC)},
-//                    .executeFunc = [=](CommandList& cmd)
-//                    {
-//                        PresentPC pushConstants = {lighted,rtSampleImg};
-//                        cmd.PushConstantsForHandles(&pushConstants);
-//                        cmd.DrawRenderQuad();
-//                    }});
-//        }
 
     }
 
@@ -287,36 +31,20 @@ namespace RDG
         commandList.BeginCommand();
         for (auto& passData : passArr)
         {
-
-            InsertBarrier(commandList,passData);
+            TransitionLayout(commandList,passData);
             commandList.BeginRenderPass(passData);
             commandList.BindPipeline();
             commandList.BindDescriptor();
             passData.executeFunc(commandList);
             commandList.EndRenderPass();
-            UpdateResourceLayout(passData);
+            InsertBarrier(commandList,passData);
         }
         commandList.EndCommand();
     }
 
     void RenderGraph::WriteDependency()
     {
-        /*//Write Resources' producer
-        for (auto& passData : passArr)
-        {
-            for (auto& resHandle : passData.output)
-            {
-                resourceMap[resHandle].producerPass = passName;
-            }
-        }
-        //Write Passes' producer
-        for (auto& [passName,passData] : passMap)
-        {
-            for (auto& resHandle : passData.input)
-            {
-                passData.producers.push_back(resourceMap[resHandle].producerPass);
-            }
-        }*/
+
     }
 
     void RenderGraph::CreateResource()
@@ -778,29 +506,29 @@ namespace RDG
         return 0;
     }
 
-    void RenderGraph::InsertBarrier(const CommandList &cmd, const PassRef &passRef)
+    void RenderGraph::InsertBarrier(CommandList &cmd, const PassRef &passRef)
+    {
+        for (auto& att : passRef.attDes)
+        {
+            auto& textureInfo = att.texInfo;
+            att.texInfo.currentLayout = att.state.finalLayout;
+            cmd.AddBarrier(textureInfo,att.state.finalLayout);
+
+
+        }
+    }
+
+    void RenderGraph::TransitionLayout(CommandList &cmd, const PassRef &passRef)
     {
         for (auto& att : passRef.attDes)
         {
             auto& textureInfo = att.texInfo;
             if(textureInfo.currentLayout!=att.state.initLayout)
             {
-                VulkanContext::GetContext().bufferAllocator.TransitionImage(
-                        cmd.cmd, textureInfo.data->allocatedImage->vk_image,
-                        textureInfo.currentLayout,
-                        att.state.initLayout,att.texInfo.mipLevels,att.texInfo.arrayCount
-                );
+                cmd.AddBarrier(textureInfo,att.state.initLayout);
                 textureInfo.currentLayout = att.state.initLayout;
             }
 
-        }
-    }
-
-    void RenderGraph::UpdateResourceLayout(const PassRef &passRef)
-    {
-        for (auto& att : passRef.attDes)
-        {
-            att.texInfo.currentLayout = att.state.finalLayout;
         }
     }
 
@@ -882,7 +610,6 @@ namespace RDG
     {
 
     }
-
 
 
 

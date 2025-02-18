@@ -52,7 +52,7 @@ LightVPMat Light::GetSubFrustumLightMatrix(entt::registry *reg, const glm::vec3 
        // float backDistance = glm::distance(sceneCenter,frustumCenter)+radius;
         float backDistance = glm::distance(maxPoint,minPoint);
         glm::vec3 position = frustumCenter - glm::vec3(target)*backDistance;
-        glm::mat4 lightMat = glm::lookAt(position,frustumCenter,{0,1,0});
+        glm::mat4 lightMat = glm::lookAt(position,frustumCenter,{0,0,1});
         auto [sceneMaxLS,sceneMinLS] = EngineMath::TransformAABB(minPoint,maxPoint,lightMat);//world space to light space
         glm::mat4 projMat = glm::ortho(-radius,radius,-radius,radius,0.0f,backDistance*2);
         projMat[1][1] *= -1;

@@ -11,7 +11,7 @@
 #define PROBE_AREA_SIZE 16
 #define RAYS_PER_PROBE 256
 #define IRRADIANCE_VOLUME_SIZE 8
-
+#define PROBE_COUNT PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE
 struct GlobalUniform
 {
     glm::mat4 view;
@@ -21,6 +21,7 @@ struct GlobalUniform
     glm::mat4 lightProjMat;
     float nearPlane;
     float farPlane;
+    int isFirstFrame;
 };
 
 struct LightUnitsInShader
@@ -51,11 +52,17 @@ struct ShadowSetting
     int showCascade = -2;
     int antiShimmering = 1;
     int enablePCF = 1;
+    int pad0;
+    int pad1;
+    int pad2;
 };
 
 struct DDGISetting
 {
     int probeVisualized;
+    int onlyIndirectLight;
+    int pad0;
+    int pad1;
 };
 
 struct RenderSettingUniform

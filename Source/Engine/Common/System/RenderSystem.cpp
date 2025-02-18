@@ -33,9 +33,11 @@ void RenderSystem::SetupUniforms()
         {
             globalU->data.nearPlane = scene->mainCamera.cameraData.nearPlane;
             globalU->data.farPlane = scene->mainCamera.cameraData.farPlane;
+            globalU->data.isFirstFrame = 1;
         };
         globalU->CustomUpdate = [=]()
         {
+            globalU->data.isFirstFrame = 0;
             globalU->data.skyboxProj = glm::perspective(glm::radians(80.0f),
                                                         scene->mainCamera.cameraData.aspect,
                                                         0.001f, 256.0f);
@@ -110,7 +112,6 @@ void RenderSystem::SetupUniforms()
             auto rotationMat = EngineMath::GetRotateMatrix(lightTrans.rotation);
             glm::vec4 target = rotationMat*glm::vec4(0.0,0.0,1.0,0.0);
             auto shadowView = glm::lookAt(glm::vec3(0,0,0),glm::vec3(target),glm::vec3(0,1,0));
-
             // Calculate split depths based on view camera frustum
             // Based on method presented in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
             for (uint32_t i = 0; i < CASCADED_COUNT; i++) {
@@ -151,14 +152,14 @@ void RenderSystem::SetupUniforms()
                 }
 
                 auto [frustumCenter,radius] = EngineMath::GetFrustumCircumsphere(frustumCorners);
-                csmU->data.radiusBias = 30.0f;
+                csmU->data.radiusBias = 50.0f;
                 radius +=csmU->data.radiusBias;
 
-                float unitPerPix = radius*2.0/CASCADED_WIDTH;
+                float unitPerPix = (radius*2.0)/CASCADED_WIDTH;
                 if(globalRenderSettingData.uniform.shadowDebug.antiShimmering==1)
                 {
                     auto fcLS = glm::vec3(shadowView * glm::vec4(frustumCenter, 1.0));
-                    fcLS -= glm::vec3(fmodf(fcLS.x, unitPerPix), fmodf(fcLS.y, unitPerPix), 0.0);
+                    fcLS -= glm::vec3(fmodf(fcLS.x, unitPerPix), fmodf(fcLS.y, unitPerPix),0);
                     frustumCenter = glm::vec3(glm::inverse(shadowView) * glm::vec4(fcLS, 1.0));
                 }
                 csmU->data.unitPerPix[i] = glm::vec4(unitPerPix);
@@ -417,8 +418,6 @@ void RenderSystem::DeclareResource()
                                                 .textureInfo = TextureInfo{{SSAO_ROTATION_SIZE,SSAO_ROTATION_SIZE},
                                                                            TextureUsage::ColorAttachment, VK_FORMAT_R16G16_UNORM}});
 
-     auto cascadedShadowMapData = rg.AddResource({"CascadedShadowMapData",.type = ResourceType::Uniform,
-                                                      .bufferInfo = BufferInfo{.size = sizeof(CSMUniform)}});
 
     auto cascadedShadowMap = rg.AddResource({"CascadedShadowMap",.type = ResourceType::Texture,
                                                  .textureInfo = TextureInfo{{CASCADED_WIDTH, CASCADED_HEIGHT},
@@ -506,6 +505,10 @@ void RenderSystem::DeclareResource()
 
     auto ddgiRadianceRaySamples = rg.AddResource({.name = "RadianceSample",.type = ResourceType::StorageImage,
                                                          .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
+                                                                                    TextureUsage::Storage,VK_FORMAT_R16G16B16A16_SFLOAT}});
+
+    auto probeOffset = rg.AddResource({.name = "ProbeOffset",.type = ResourceType::StorageImage,
+                                                         .textureInfo = TextureInfo{TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE,PROBE_AREA_SIZE},
                                                                                     TextureUsage::Storage,VK_FORMAT_R16G16B16A16_SFLOAT}});
 
     auto ddgiProbesArea = rg.AddResource({"ProbeArea",.type=ResourceType::SSBO,
@@ -619,7 +622,7 @@ void RenderSystem::DeclareResource()
                                cmd.Dispatch(extent.width/16+10,extent.height/16+10,1.0);
                                cmd.TransImage(rg.resourceMap[ssaoBlurIMG].textureInfo.value(),rg.resourceMap[ssaoOutput].textureInfo.value(),
                                               VK_IMAGE_LAYOUT_GENERAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-//
+
                            }});
     }
 
@@ -633,22 +636,49 @@ void RenderSystem::DeclareResource()
             Handle skyboxTex;
             Handle probesArea;
             Handle rtUniform;
+            Handle probeoffset;
         };
 
         rg.AddPass({.name = "RTRadiancePass",.type = RenderPassType::RayTracing,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE,RAYS_PER_PROBE},
-                           .input = {ddgiRadianceRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform},
+                           .input = {ddgiRadianceRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform,probeOffset},
                            .output = {ddgiRadianceRaySamples},
                            .pipeline = {.type = PipelineType::RayTracing,
                                    .rtShaders ={.chit = "DDGIClosestHit",.gen = "DDGIGen",.miss = "DDGIMiss",.miss_shadow = "DDGIShadowMiss",.ahit ="anyHit"},
                                    .handleSize = sizeof(RTRadiancePC)},
                            .executeFunc = [=](CommandList& cmd)
                            {
-                               RTRadiancePC radiancePc = {ddgiRadianceRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform};
+                               RTRadiancePC radiancePc = {ddgiRadianceRaySamples,tlasData,nodeArray,lightData,skyboxTex,ddgiProbesArea,rtUniform,probeOffset};
                                cmd.PushConstantsForHandles(&radiancePc);
                                cmd.RayTracing();
                            }});
 
     }
+
+    {
+        struct alignas(16) ProbeOffsetPC
+        {
+            Handle radianceMap;
+            Handle probeOffsetMap;
+            Handle probeArea;
+            Handle global;
+            glm::vec4 spacing;
+        };
+
+        rg.AddPass({.name = "ProbeOffsetPass",.type = RenderPassType::Compute,.fbExtent = TextureExtent{PROBE_AREA_SIZE*PROBE_AREA_SIZE,PROBE_AREA_SIZE},
+                           .input = {ddgiRadianceRaySamples,probeOffset,ddgiProbesArea,globalData},
+                           .output = {ddgiIrradianceVolume,ddgiDepthVolume},
+                           .pipeline = {.type = PipelineType::Compute, .cpShaders = {"DDGIProbeOffset"},.handleSize = sizeof(ProbeOffsetPC)},
+                           .executeFunc = [=](CommandList& cmd)
+                           {
+                               int width =PROBE_AREA_SIZE*PROBE_AREA_SIZE;
+                               int height = PROBE_AREA_SIZE;
+                               ProbeOffsetPC pushConstants = {ddgiRadianceRaySamples,probeOffset,ddgiProbesArea,globalData,probeSpacing};
+                               cmd.PushConstantsForHandles(&pushConstants);
+                               cmd.Dispatch((PROBE_COUNT+15)/16,1,1.0);
+                           }});
+
+    }
+
 
     {
         struct IrradianceVolumePC
@@ -751,15 +781,16 @@ void RenderSystem::DeclareResource()
                 Handle ProbeArea;
                 Handle globalUniform;
                 Handle irradianceVolume;
+                Handle probeOffset;
             };
 
             rg.AddPass({.name = "ProbeVisual", .type = RenderPassType::Raster, .fbExtent = WINDOW_EXTENT,
-                               .input = {ddgiProbesArea,globalData,IrradianceVolumeSampleImg,lighted,depth},
+                               .input = {ddgiProbesArea,globalData,IrradianceVolumeSampleImg,lighted,depth,probeOffset},
                                .output = {lighted,depth},
                                .pipeline = {.type = PipelineType::Mesh, .rsShaders = {.vert = "DDGIProbeVisualVert",.frag = "DDGIProbeVisualFrag",}, .handleSize = sizeof(ProbeVisualPC)},
                                .executeFunc = [=](CommandList &cmd)
                                {
-                                   ProbeVisualPC pushConstant = {ddgiProbesArea,globalData,IrradianceVolumeSampleImg};
+                                   ProbeVisualPC pushConstant = {ddgiProbesArea,globalData,IrradianceVolumeSampleImg,probeOffset};
                                    cmd.PushConstantsForHandles(&pushConstant);
                                    int instanceCount = globalRenderSettingData.uniform.ddgiSetting.probeVisualized==1?PROBE_AREA_SIZE*PROBE_AREA_SIZE*PROBE_AREA_SIZE:0;
                                    cmd.DrawInstances(*visualProbe,instanceCount);

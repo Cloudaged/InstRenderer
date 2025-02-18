@@ -60,7 +60,6 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     }
 
     float3 receive = sum / sumWeight;
-    //float3 irradiance = receive * GetDiffuseBRDF(baseColor.xyz);
 
     indirectLight[coords] = float4(receive, 1.0);
 }

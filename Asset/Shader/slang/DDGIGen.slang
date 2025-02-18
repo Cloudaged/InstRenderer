@@ -14,6 +14,7 @@ void main()
 
     RaytracingAccelerationStructure tlas = tlasUniform_Arr[handles.tlas];
     RWTexture2D<float4> raddianceMap = rwImg_Arr[handles.radianceMap];
+    RWTexture2D<float4> probeOffset = rwImg_Arr[handles.probeOffset];
 
     uint2 pixelCoord = DispatchRaysIndex().xy;
     float2 pixelCenter = float2(pixelCoord) + float2(0.5, 0.5);
@@ -25,8 +26,9 @@ void main()
     payload.radiance = float3(0);
     payload.distance = 0.0f;
     Probe p = probeBuffer.Load(pixelCoord.x);
+    float3 offset = probeOffset.Load(GetProbeOffsetMapUV(pixelCoord.x)).xyz;
     RayDesc ray;
-    ray.Origin = p.position.xyz;
+    ray.Origin = p.position.xyz+offset;
     ray.Direction = FibonacciSphere(pixelCoord.y,RAYS_PER_PROBE);
     ray.TMin = 0.001;
     ray.TMax = 10000.0;
