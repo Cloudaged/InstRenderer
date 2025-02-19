@@ -47,6 +47,7 @@ void main(inout DDGIPayload payload,Attributes att)
     float3 curPos = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
     Light light = lightUniform.light[0];
     LightProperty lp = GetLightProperty(light, curPos.xyz);
+    float4 sunColor = SunColor(lp.lightDir);
     if (node.baseColor != 0)
     {
         // output.outBaseColor = pow(baseColor.Sample(input.uv),float4(2.2));
@@ -109,6 +110,7 @@ void main(inout DDGIPayload payload,Attributes att)
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
          directColor = lp.intensity * float3(1, 1, 1) * max(dot(normal, lp.lightDir.xyz), 0.0) * finalBRDF;
     }
-    payload.radiance = directColor.xyz*payload.visibility;
+    float sunIntensity = sunColor.w;
+    payload.radiance = sunIntensity*sunColor.xyz*directColor.xyz*payload.visibility;
     payload.distance = RayTCurrent();
 }

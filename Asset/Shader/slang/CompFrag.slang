@@ -75,6 +75,8 @@ float4 main(FragInput input) : SV_Target
 
     float3 finalColor = float3(0.0f);
     float shadow = 0;
+
+    float4 sunColor = 0;
     for (int i = 0; i < lightUniform.lightCount; i++)
     {
         Light light = lightUniform.light[i];
@@ -87,10 +89,10 @@ float4 main(FragInput input) : SV_Target
         float3 F = F_Schlick(F0, VoH);
         float3 ks = F;
         float3 kd = float3(1.0) - F;
-
+        sunColor = SunColor(lp.lightDir);
         float3 specularBRDF = GetSpecularBRDF(normal.xyz, lp.lightDir, view, roughness, F0);
         float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-        finalColor += lp.intensity * saturate(dot(normal.xyz, lp.lightDir.xyz)) * finalBRDF;
+        finalColor += sunColor.w*lp.intensity*sunColor.xyz * saturate(dot(normal.xyz, lp.lightDir.xyz)) * finalBRDF;
 
         shadow = CSM(textureArr[ps.shadowMap], csmIndex,blendIndex,blendValue,
             csmU,
