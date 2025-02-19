@@ -33,6 +33,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     GlobalUniform globalU = Arr_globalUniform[handles.global];
 
     Probe probe = probeBuffer.Load(probeIndex);
+
     int2 sampleCoord = GetProbeOffsetMapUV(probeIndex);
 
     for (int i = 0; i < RAYS_PER_PROBE; i++)
@@ -68,7 +69,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
             currentOffset = probeOffsetMap[sampleCoord].xyz;
         }
         float3 currentPos = probe.position.xyz + currentOffset;
-        float3 fullOffset = float3(10000.0f);
+        float3 fullOffset = currentOffset;
         float3 maxProbeOffsetScale = 0.4;
         float3 cellOffsetLimit = maxProbeOffsetScale * handles.spacing.xyz;
 
@@ -77,9 +78,22 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
         if (insideGeometry && (closestBackfaceIndex != -1))
         {
             //if inside geometry
-            float3 closestBackfaceVec = closestBackfaceDistance * FibonacciSphere(closestBackfaceIndex, RAYS_PER_PROBE);
-            probeOffsetMap[sampleCoord].xyz = closestBackfaceVec;            
-        }
+            float3 closestBackfaceVec = closestBackfaceDistance*2  * FibonacciSphere(closestBackfaceIndex, RAYS_PER_PROBE);
+            fullOffset = closestBackfaceVec;
+            probeOffsetMap[sampleCoord].xyz = fullOffset;
+        } else if (closestFrontfaceDistance < 0.05f)
+        {
+            float3 closestFrontfaceVec = FibonacciSphere(closestFrontfaceIndex, RAYS_PER_PROBE);
+            float3 farthestFrontfaceVec = FibonacciSphere(farthestFrontfaceIndex, RAYS_PER_PROBE);
 
+            if (dot(closestFrontfaceVec, farthestFrontfaceVec) < 0.5f)
+            {
+                fullOffset = farthestFrontfaceVec * min(0.2f, farthestFrontfaceDistance*2);
+                probeOffsetMap[sampleCoord].xyz = fullOffset;
+            }
+        }else
+        {
+            //probeOffsetMap[sampleCoord].xyz = float3(0.0);
+        }
     }
 }

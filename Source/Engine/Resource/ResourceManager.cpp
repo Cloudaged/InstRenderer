@@ -8,7 +8,7 @@ std::string ResourceManager::LoadResource(std::string path)
     std::filesystem::path pathObj(path);
     auto extension = pathObj.extension().string();
 
-    if(extension==".fbx"||extension==".gltf")
+    if(extension==".fbx"||extension==".gltf"||extension==".glb")
     {
         auto pModel= ModelLoader::Load(path);
         auto name =GetNameFromPath(path);

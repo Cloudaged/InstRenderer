@@ -20,7 +20,7 @@ void main(inout DDGIPayload payload,Attributes att)
     //avoid caculate back face
     if (HitKind() == HIT_KIND_TRIANGLE_BACK_FACE)
     {
-        payload.distance = RayTCurrent() * -0.2;
+        payload.distance = RayTCurrent() * -1.0;
         payload.radiance = 0;
         return;
     }
@@ -52,6 +52,10 @@ void main(inout DDGIPayload payload,Attributes att)
         // output.outBaseColor = pow(baseColor.Sample(input.uv),float4(2.2));
         baseColor = textures[node.baseColor].SampleGrad(pixel.uv, uvDiff.duvdx, uvDiff.duvdy);
     }
+    else
+    {
+        baseColor = float4(1.0, 0, 0, 1.0);
+    }
     if (node.normal != 0)
     {
         float4 normalColor = textures[node.normal].SampleGrad(pixel.uv, uvDiff.duvdx, uvDiff.duvdy);
@@ -59,10 +63,19 @@ void main(inout DDGIPayload payload,Attributes att)
         normalColor = normalColor * 2.0 - 1.0;
         normal = UnpackNormalMap(normalColor.xyz, pixel.tangent, pixel.bitangent, pixel.normal);
     }
+    else
+    {
+        normal = pixel.normal;
+    }
     if (node.metallicRoughness != 0)
     {
         metallicRoughness = textures[node.metallicRoughness].SampleGrad(pixel.uv, uvDiff.duvdx, uvDiff.duvdy);
         metallicRoughness = pow(metallicRoughness, float4(1 / 2.2));
+    }
+    else
+    {
+        metallicRoughness.b = 0.0;
+        metallicRoughness.g = 1.0; 
     }
 
     float metallic = metallicRoughness.b;

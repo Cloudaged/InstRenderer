@@ -402,8 +402,6 @@ void VulkanContext::CreateCommandPool()
 
 void VulkanContext::DrawPrepare()
 {
-    //std::lock_guard<std::mutex> guard(Locker::Get().loadResourceMtx);
-
     vkWaitForFences(device, 1, &presentManager.presentFrames[presentManager.currentFrame].renderFence, VK_TRUE, UINT64_MAX);
     vkResetFences(device,1,&presentManager.presentFrames[presentManager.currentFrame].renderFence);
 

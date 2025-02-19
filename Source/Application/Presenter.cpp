@@ -124,7 +124,7 @@ void Presenter::LoadResourceToObj()
     editor->connect(editor->sceneEditor->treeWidget,&SceneTree::DropResource,[&](std::string path)
     {
         auto extension= GetExtension(path);
-        if(extension=="fbx"||extension=="gltf")
+        if(extension=="fbx"||extension=="gltf"||extension=="glb")
         {
             CreateMeshObjectsForRes(path);
         }

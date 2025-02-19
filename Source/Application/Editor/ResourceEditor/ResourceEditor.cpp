@@ -131,7 +131,7 @@ void ResourceEditor::ShowFileOfPath(std::string path)
 void ResourceEditor::SetIcon(QListWidgetItem* item, QString extension)
 {
 
-    if (extension=="fbx"||extension=="gltf")
+    if (extension=="fbx"||extension=="gltf"||extension=="glb")
     {
         item->setIcon(*IconManager::GetIcon("Model.png"));
     }

@@ -29,7 +29,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     {
         int backface = 0;
         int maxBackface = int(RAYS_PER_PROBE * 0.1f);
-        
+        int count = 0;
         for (int i = 0; i < RAYS_PER_PROBE; i++)
         {
             int2 uv = int2(probeIndex, i);
@@ -43,16 +43,20 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
             {
                 continue;
             }
-
             float3 raddiance = sampleValue.xyz;
-            irradianceResult += float4(raddiance * weight, weight);
-            depthResult += float2(distance * weight, distance * distance*weight); 
+
+            if (weight > 0.0001)
+            {
+                irradianceResult += float4(raddiance * weight, weight);
+                depthResult += float2(distance * weight, distance * distance * weight);
+                count += 1;
+            }
         }
 
         if (irradianceResult.w > 0.0001)
         {
             irradianceResult /= irradianceResult.w;
-            depthResult /= irradianceResult.w;
+            depthResult /= count;
         }
 
         float2 uv = float2(coords) / float2(PROBE_AREA_SIZE * PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE, PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE);

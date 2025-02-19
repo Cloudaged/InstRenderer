@@ -15,6 +15,8 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     Sampler2D irradianceVolume = textures[handles.irradianceVolume];
     Sampler2D depthVolume = textures[handles.depthVolume];
     RWTexture2D<float4> indirectLight = rwImg_Arr[handles.indirectLight];
+    RWTexture2D<float4> probeOffsetMap = rwImg_Arr[handles.probeOffset];
+
     Sampler2D baseColorSampler = textures[handles.baseColor];
     int2 extent;
     baseColorSampler.GetDimensions(extent.x, extent.y);
@@ -41,25 +43,38 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
                 int3 offset = int3(x, y, z);
                 int3 probeCoord = clamp(baseGrid + offset, int3(0), int3(PROBE_AREA_SIZE - 1));
                 Probe probe = probeBuffer.Load(GetProbeArrayIndex1D(probeCoord));
+
+                int2 offsetSampleCoord = GetProbeOffsetMapUV(GetProbeArrayIndex1D(probeCoord));
+                float3 offsetMapValue = probeOffsetMap[offsetSampleCoord].xyz;
+                float3 offsetedProbePosition = probe.position.xyz+offsetMapValue;
                 float3 distance = clamp(float3(position.xyz - baseProbePosWS) / handles.probeSpacing.xyz, float3(0.0f), float3(1.0f));
                 float3 trilinear = lerp(1.0 - distance,distance, offset);
                 float weight = 1.0f;
                 weight *= trilinear.x * trilinear.y * trilinear.z + 0.001f;
-                float3 sampleDir = normalize(probe.position.xyz - position.xyz);
+                float3 sampleDir = normalize(offsetedProbePosition.xyz-position.xyz);
                 float2 uv = GetVolumeUV(sampleDir, probeCoord);
 
                 float2 visibility = depthVolume.SampleLevel(uv,0).xy;
                 float meanDistance = visibility.x;
-                float chebyshev = 1.0;
-                weight *= max(0, dot(normal.xyz,sampleDir));
-
+                float distanceToCurProbe = length(offsetedProbePosition - position.xyz);
+                float chebyshevWeight = 1.0;
+                if (distanceToCurProbe > meanDistance)
+                {
+                    float variance = abs(visibility.x * visibility.x - visibility.y);
+                    float distanceDiff = distanceToCurProbe - visibility.x;
+                    chebyshevWeight = variance / (variance + (distanceDiff * distanceDiff));
+                    chebyshevWeight = max((chebyshevWeight * chebyshevWeight * chebyshevWeight), 0.0f);
+                }
+                chebyshevWeight = max(0.05f, chebyshevWeight);
+                weight *= max(0, dot(normal.xyz, sampleDir));
+                weight *= chebyshevWeight;
                 sum += weight*irradianceVolume.SampleLevel(uv,0).xyz;
                 sumWeight +=weight;
             }
         }
     }
 
-    float3 receive = sum / sumWeight;
+    float3 receive = sum/ float3(sumWeight);
 
     indirectLight[coords] = float4(receive, 1.0);
 }

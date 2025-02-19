@@ -72,7 +72,7 @@ public float2 OctEncode(float3 direction)
 
 public float2 GetVolumeUV(float3 direction,int3 probeCoords)
 {
-    float2 octCoords = OctEncode(normalize(-direction));
+    float2 octCoords = OctEncode(normalize(direction));
     float2 grid;
     grid.x = (probeCoords.x + probeCoords.z * PROBE_AREA_SIZE) * IRRADIANCE_VOLUME_SIZE;
     grid.y = probeCoords.y * IRRADIANCE_VOLUME_SIZE;

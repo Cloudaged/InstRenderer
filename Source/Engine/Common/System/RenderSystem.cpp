@@ -13,8 +13,8 @@ void RenderSystem::BeginSystem(std::shared_ptr<Scene> scene)
 
 void RenderSystem::Execute()
 {
-    PrepareData();
     VulkanContext::GetContext().DrawPrepare();
+    PrepareData();
     rg.Execute();
     VulkanContext::GetContext().Submit();
 }
