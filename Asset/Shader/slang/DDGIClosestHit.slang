@@ -100,9 +100,10 @@ void main(inout DDGIPayload payload,Attributes att)
     {
         float3 halfDir = normalize(lp.lightDir + (-WorldRayDirection()));
         float VoH = clamp(dot(-WorldRayDirection(), halfDir), 0.0001, 1);
-        float3 F = F_Schlick(F0, VoH);
+        float VoN = clamp(dot(-WorldRayDirection(), normal), 0.0001, 1);
+        float3 F = F_Schlick(F0, VoN);
         float3 ks = F;
-        float3 kd = float3(1.0) - F0;
+        float3 kd = float3(1.0) - F;
         kd *= (1.0 - metallic);
 
         // specular
