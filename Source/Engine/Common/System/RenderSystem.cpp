@@ -723,6 +723,8 @@ void RenderSystem::DeclareResource()
              Handle probeOffset;
              Handle lightUniform;
              int pad0;
+            int pad1;
+            int pad2;
              glm::vec4 probeBasePos;
              glm::vec4 probeSpacing;
         };
@@ -734,7 +736,7 @@ void RenderSystem::DeclareResource()
                            .executeFunc = [=](CommandList& cmd)
                            {
                                VkExtent2D extent=WINDOW_EXTENT.GetVkExtent();
-                               IndirectLightPC pushConstants = {indirectLight,IrradianceVolumeSampleImg,DepthVolumeSampleImg,ddgiProbesArea,position,normal,baseColor,probeOffset,lightData,0,probeSpacing};
+                               IndirectLightPC pushConstants = {indirectLight,IrradianceVolumeSampleImg,DepthVolumeSampleImg,ddgiProbesArea,position,normal,baseColor,probeOffset,lightData,0,0,0,probeBasePosition,probeSpacing};
                                cmd.PushConstantsForHandles(&pushConstants);
                                cmd.Dispatch((extent.width+15)/16,(extent.height+15)/16,1.0);
                                cmd.TransImage(rg.resourceMap[indirectLight].textureInfo.value(),rg.resourceMap[indirectLightSampleImg].textureInfo.value(),

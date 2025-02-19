@@ -34,7 +34,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     float minDisBetPros = min(handles.probeSpacing.x, min(handles.probeSpacing.y, handles.probeSpacing.z));
     float3 biasVector = (normal.xyz * 0.2f + view * 0.8f) * (0.75f * minDisBetPros) * 0.3;
     float minDistance = 1.0f;
-    float3 biasedPos = position.xyz ;
+    float3 biasedPos = position.xyz +biasVector;
     int3 baseGrid = GetGridIndice(biasedPos.xyz, handles.probeBasePos.xyz, handles.probeSpacing.xyz);
     float3 baseProbePosWS = handles.probeBasePos.xyz + baseGrid * handles.probeSpacing.xyz;
     float3 sum = 0;
@@ -53,7 +53,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
 
                 int2 offsetSampleCoord = GetProbeOffsetMapUV(GetProbeArrayIndex1D(probeCoord));
                 float3 offsetMapValue = probeOffsetMap[offsetSampleCoord].xyz;
-                float3 offsetedProbePosition = probe.position.xyz;
+                float3 offsetedProbePosition = probe.position.xyz+offset;
                 float3 distance = clamp(float3(biasedPos - baseProbePosWS) / handles.probeSpacing.xyz, float3(0.0f), float3(1.0f));
                 float3 trilinear = lerp(1.0 - distance,distance, offset);
                 float weight = 1.0f;
@@ -74,7 +74,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
                 }
                 chebyshevWeight = max(0.05f, chebyshevWeight);
                 weight *= max(0, dot(normal.xyz, sampleDir));
-                //weight *= chebyshevWeight;
+                weight *= chebyshevWeight;
                 sum += weight*irradianceVolume.SampleLevel(uv,0).xyz;
                 sumWeight +=weight;
             }
