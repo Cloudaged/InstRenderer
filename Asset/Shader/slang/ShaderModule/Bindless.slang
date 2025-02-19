@@ -118,6 +118,8 @@ public struct IndirectLightHandle
     Handle normal;
     Handle baseColor;
     Handle probeOffset;
+    Handle lightUniform;
+    int pad0;
     public float4 probeBasePos;
     public float4 probeSpacing;
 }

@@ -6,6 +6,8 @@ import ShaderModule.PBR;
 [[vk::push_constant]] ConstantBuffer<IndirectLightHandle> handles;
 [[vk::binding(3, 0)]] RWTexture2D<float4> rwImg_Arr[];
 [[vk::binding(2, 0)]] Sampler2D textures[];
+[[vk::binding(0, 0)]] ConstantBuffer<GlobalUniform> globalUniform_Arr[];
+[[vk::binding(0, 0)]] ConstantBuffer<LightCameraUniform> Arr_lightUniform[];
 
 [shader("compute")]
 [numthreads(16, 16, 1)]
@@ -16,6 +18,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     Sampler2D depthVolume = textures[handles.depthVolume];
     RWTexture2D<float4> indirectLight = rwImg_Arr[handles.indirectLight];
     RWTexture2D<float4> probeOffsetMap = rwImg_Arr[handles.probeOffset];
+    LightCameraUniform lightUniform = Arr_lightUniform[handles.lightUniform];
 
     Sampler2D baseColorSampler = textures[handles.baseColor];
     int2 extent;
@@ -27,13 +30,17 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
     float4 normal = textures[handles.normal].Sample(uv);
     float4 position = textures[handles.position].Sample(uv);
 
-    float3 cameraPos;
-    float3 view = normalize(cameraPos - position.xyz);
+    float3 view = normalize(lightUniform.cameraPos.xyz - position.xyz);
+    float minDisBetPros = min(handles.probeSpacing.x, min(handles.probeSpacing.y, handles.probeSpacing.z));
+    float3 biasVector = (normal.xyz * 0.2f + view * 0.8f) * (0.75f * minDisBetPros) * 0.3;
     float minDistance = 1.0f;
-    int3 baseGrid = GetGridIndice(position.xyz, handles.probeBasePos.xyz, handles.probeSpacing.xyz);
+    float3 biasedPos = position.xyz ;
+    int3 baseGrid = GetGridIndice(biasedPos.xyz, handles.probeBasePos.xyz, handles.probeSpacing.xyz);
     float3 baseProbePosWS = handles.probeBasePos.xyz + baseGrid * handles.probeSpacing.xyz;
     float3 sum = 0;
     float sumWeight = 0;
+
+
     for (int z = 0; z < 2; z++)
     {
         for (int y = 0; y < 2; y++)
@@ -46,17 +53,17 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
 
                 int2 offsetSampleCoord = GetProbeOffsetMapUV(GetProbeArrayIndex1D(probeCoord));
                 float3 offsetMapValue = probeOffsetMap[offsetSampleCoord].xyz;
-                float3 offsetedProbePosition = probe.position.xyz+offsetMapValue;
-                float3 distance = clamp(float3(position.xyz - baseProbePosWS) / handles.probeSpacing.xyz, float3(0.0f), float3(1.0f));
+                float3 offsetedProbePosition = probe.position.xyz;
+                float3 distance = clamp(float3(biasedPos - baseProbePosWS) / handles.probeSpacing.xyz, float3(0.0f), float3(1.0f));
                 float3 trilinear = lerp(1.0 - distance,distance, offset);
                 float weight = 1.0f;
                 weight *= trilinear.x * trilinear.y * trilinear.z + 0.001f;
-                float3 sampleDir = normalize(offsetedProbePosition.xyz-position.xyz);
+                float3 sampleDir = normalize(offsetedProbePosition.xyz - biasedPos);
                 float2 uv = GetVolumeUV(sampleDir, probeCoord);
 
                 float2 visibility = depthVolume.SampleLevel(uv,0).xy;
                 float meanDistance = visibility.x;
-                float distanceToCurProbe = length(offsetedProbePosition - position.xyz);
+                float distanceToCurProbe = length(offsetedProbePosition - biasedPos);
                 float chebyshevWeight = 1.0;
                 if (distanceToCurProbe > meanDistance)
                 {
@@ -67,14 +74,14 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
                 }
                 chebyshevWeight = max(0.05f, chebyshevWeight);
                 weight *= max(0, dot(normal.xyz, sampleDir));
-                weight *= chebyshevWeight;
+                //weight *= chebyshevWeight;
                 sum += weight*irradianceVolume.SampleLevel(uv,0).xyz;
                 sumWeight +=weight;
             }
         }
     }
 
-    float3 receive = sum/ float3(sumWeight);
+    float3 receive = sum/float3(sumWeight);
 
     indirectLight[coords] = float4(receive, 1.0);
 }

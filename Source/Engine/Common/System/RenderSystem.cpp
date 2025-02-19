@@ -720,19 +720,21 @@ void RenderSystem::DeclareResource()
              Handle position;
              Handle normal;
              Handle baseColor;
-             Handle pad0;
+             Handle probeOffset;
+             Handle lightUniform;
+             int pad0;
              glm::vec4 probeBasePos;
              glm::vec4 probeSpacing;
         };
 
         rg.AddPass({.name = "IndirectLight",.type = RenderPassType::Compute,.fbExtent = WINDOW_EXTENT,
-                           .input = {indirectLight,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea,position,normal,baseColor},
+                           .input = {indirectLight,ddgiIrradianceVolume,ddgiDepthVolume,ddgiProbesArea,position,normal,baseColor,lightData},
                            .output = {indirectLight},
                            .pipeline = {.type = PipelineType::Compute, .cpShaders = {"IndirectLight"},.handleSize = sizeof(IndirectLightPC)},
                            .executeFunc = [=](CommandList& cmd)
                            {
                                VkExtent2D extent=WINDOW_EXTENT.GetVkExtent();
-                               IndirectLightPC pushConstants = {indirectLight,IrradianceVolumeSampleImg,DepthVolumeSampleImg,ddgiProbesArea,position,normal,baseColor,0,probeBasePosition,probeSpacing};
+                               IndirectLightPC pushConstants = {indirectLight,IrradianceVolumeSampleImg,DepthVolumeSampleImg,ddgiProbesArea,position,normal,baseColor,probeOffset,lightData,0,probeSpacing};
                                cmd.PushConstantsForHandles(&pushConstants);
                                cmd.Dispatch((extent.width+15)/16,(extent.height+15)/16,1.0);
                                cmd.TransImage(rg.resourceMap[indirectLight].textureInfo.value(),rg.resourceMap[indirectLightSampleImg].textureInfo.value(),
