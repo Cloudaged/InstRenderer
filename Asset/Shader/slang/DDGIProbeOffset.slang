@@ -62,38 +62,60 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
                 farthestFrontfaceIndex = i;
             }
         }
-        //Sample previous offset
-        float3 currentOffset = 0;
-        if (globalU.isFirstFrame != 0)
-        {
-            currentOffset = probeOffsetMap[sampleCoord].xyz;
-        }
-        float3 currentPos = probe.position.xyz + currentOffset;
-        float3 fullOffset = currentOffset;
-        float3 maxProbeOffsetScale = 0.4;
-        float3 cellOffsetLimit = maxProbeOffsetScale * handles.spacing.xyz;
-
-        //check
-        bool insideGeometry = (float(backfaceCount) / RAYS_PER_PROBE) > 0.25f;
-        if (insideGeometry && (closestBackfaceIndex != -1))
-        {
-            //if inside geometry
-            float3 closestBackfaceVec = closestBackfaceDistance*2  * FibonacciSphere(closestBackfaceIndex, RAYS_PER_PROBE);
-            fullOffset = closestBackfaceVec;
-            probeOffsetMap[sampleCoord].xyz = fullOffset;
-        } else if (closestFrontfaceDistance < 0.05f)
-        {
-            float3 closestFrontfaceVec = FibonacciSphere(closestFrontfaceIndex, RAYS_PER_PROBE);
-            float3 farthestFrontfaceVec = FibonacciSphere(farthestFrontfaceIndex, RAYS_PER_PROBE);
-
-            if (dot(closestFrontfaceVec, farthestFrontfaceVec) < 0.5f)
-            {
-                fullOffset = farthestFrontfaceVec * min(0.2f, farthestFrontfaceDistance*2);
-                probeOffsetMap[sampleCoord].xyz = fullOffset;
-            }
-        }else
-        {
-            //probeOffsetMap[sampleCoord].xyz = float3(0.0);
-        }
+        
     }
+
+    // Sample previous offset
+    float3 currentOffset = probeOffsetMap[sampleCoord].xyz;
+
+    float3 fullOffset = 1000000;
+    float3 maxProbeOffsetScale = 0.4;
+    float3 offsetLimit = maxProbeOffsetScale * handles.spacing.xyz;
+
+    float _ProbeMinFrontfaceDistance = 10;
+        // check
+    bool insideGeometry = (float(backfaceCount) / RAYS_PER_PROBE) > 0.25f;
+    if (insideGeometry && (closestBackfaceIndex != -1))
+    {
+        // if inside geometry
+        // float scaleFactor = 2.0f;
+        // for (int i = 1; i < 100; i++)
+        // {
+        //     if (!all(abs(fullOffset) <= offsetLimit))
+        //     {
+        //         fullOffset = currentOffset + FibonacciSphere(closestBackfaceIndex, RAYS_PER_PROBE) * (scaleFactor * (i - 0.01));
+        //     }
+        // }
+
+        float3 closestBackVec = FibonacciSphere(closestBackfaceIndex, RAYS_PER_PROBE);
+        fullOffset = currentOffset + closestBackVec * (closestFrontfaceDistance + _ProbeMinFrontfaceDistance * 0.5);
+    } else if (closestFrontfaceDistance < _ProbeMinFrontfaceDistance)
+    {
+        float3 closestFrontfaceVec = FibonacciSphere(closestFrontfaceIndex, RAYS_PER_PROBE);
+        float3 farthestFrontfaceVec = FibonacciSphere(farthestFrontfaceIndex, RAYS_PER_PROBE);
+
+        if (dot(closestFrontfaceVec, farthestFrontfaceVec) < 0.5f)
+        {
+            float3 farthestDir = farthestFrontfaceVec * min(1.f, farthestFrontfaceDistance);
+            fullOffset = currentOffset + farthestDir;
+        }
+    } else if (closestFrontfaceDistance > _ProbeMinFrontfaceDistance)
+    {
+        float moveBackMargin = min(closestFrontfaceDistance - _ProbeMinFrontfaceDistance, length(currentOffset));
+        float3 moveBackDirection = normalize(-currentOffset);
+        fullOffset = currentOffset + (moveBackMargin * moveBackDirection);
+    }
+
+    // if (all(abs(fullOffset) < offsetLimit))
+    // {
+    //     probeOffsetMap[sampleCoord] = float4(fullOffset, 1.0);
+    // }
+
+    float3 normalizedOffset = fullOffset / handles.spacing.xyz;
+    if (dot(normalizedOffset, normalizedOffset) < 0.2025f) // 0.45 * 0.45 == 0.2025
+    {
+        currentOffset = fullOffset;
+    }
+
+    probeOffsetMap[sampleCoord] = float4(currentOffset, 1.0);
 }

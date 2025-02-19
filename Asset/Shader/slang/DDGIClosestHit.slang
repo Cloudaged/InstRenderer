@@ -77,7 +77,7 @@ void main(inout DDGIPayload payload,Attributes att)
         metallicRoughness.b = 0.0;
         metallicRoughness.g = 1.0; 
     }
-
+    
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
 
