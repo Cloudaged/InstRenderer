@@ -1,1 +1,0 @@
-  -LD:/code_lib/AGProject/InstRenderer/ThirdParty/sdl2/lib  -LD:/code_lib/AGProject/InstRenderer/ThirdParty/Assimp/lib  "D:/code_lib/ImportLib/VulkanSDK/Lib/vulkan-1.lib" -lmingw32 -lSDL2main -lSDL2 -lassimp -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 
