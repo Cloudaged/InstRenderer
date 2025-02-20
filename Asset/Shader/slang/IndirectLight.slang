@@ -60,9 +60,9 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
                 float3 offsetedProbePosition = probe.position.xyz + offsetMapValue.xyz;
                 float3 distance = clamp(float3(biasedPos - baseProbePosWS) / handles.probeSpacing.xyz, float3(0.0f), float3(1.0f));
                 float3 trilinear = lerp(1.0 - distance,distance, offset);
-                float weight = 1.0f;
-                weight *= trilinear.x * trilinear.y * trilinear.z + 0.001f;
-                float3 sampleDir = normalize(offsetedProbePosition.xyz - biasedPos);
+
+                float3 worldToCurProbe = normalize(offsetedProbePosition - position.xyz);
+                float3 sampleDir = -normalize(offsetedProbePosition.xyz - biasedPos);
                 float2 uv = GetVolumeUV(sampleDir, probeCoord);
 
                 float2 visibility = depthVolume.SampleLevel(uv,0).xy;
@@ -77,8 +77,13 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
                     chebyshevWeight = max((chebyshevWeight * chebyshevWeight * chebyshevWeight), 0.0f);
                 }
                 chebyshevWeight = max(0.05f, chebyshevWeight);
+                float weight = 1.0f;
+                weight *= trilinear.x * trilinear.y * trilinear.z + 0.001f;
                 weight *= chebyshevWeight;
-                weight *= max(0, dot(normal.xyz, sampleDir));                sum += weight*irradianceVolume.SampleLevel(uv,0).xyz;
+                float warpShading = (dot(normal.xyz, worldToCurProbe) + 1.f) * 0.5;
+                weight *= (warpShading * warpShading) + 0.2;
+                float2 irrUV = GetVolumeUV(normal.xyz, probeCoord);
+                sum += weight * irradianceVolume.SampleLevel(irrUV,0).xyz;
                 sumWeight +=weight;
             }
         }
