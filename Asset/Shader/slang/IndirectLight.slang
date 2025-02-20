@@ -52,8 +52,12 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
                 Probe probe = probeBuffer.Load(GetProbeArrayIndex1D(probeCoord));
 
                 int2 offsetSampleCoord = GetProbeOffsetMapUV(GetProbeArrayIndex1D(probeCoord));
-                float3 offsetMapValue = probeOffsetMap[offsetSampleCoord].xyz;
-                float3 offsetedProbePosition = probe.position.xyz+offset;
+                float4 offsetMapValue = probeOffsetMap[offsetSampleCoord].xyzw;
+                if (offsetMapValue.w < 0)
+                {
+                    continue;
+                }
+                float3 offsetedProbePosition = probe.position.xyz + offsetMapValue.xyz;
                 float3 distance = clamp(float3(biasedPos - baseProbePosWS) / handles.probeSpacing.xyz, float3(0.0f), float3(1.0f));
                 float3 trilinear = lerp(1.0 - distance,distance, offset);
                 float weight = 1.0f;
@@ -73,9 +77,8 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
                     chebyshevWeight = max((chebyshevWeight * chebyshevWeight * chebyshevWeight), 0.0f);
                 }
                 chebyshevWeight = max(0.05f, chebyshevWeight);
-                weight *= max(0, dot(normal.xyz, sampleDir));
                 weight *= chebyshevWeight;
-                sum += weight*irradianceVolume.SampleLevel(uv,0).xyz;
+                weight *= max(0, dot(normal.xyz, sampleDir));                sum += weight*irradianceVolume.SampleLevel(uv,0).xyz;
                 sumWeight +=weight;
             }
         }

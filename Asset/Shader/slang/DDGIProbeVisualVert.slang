@@ -35,11 +35,11 @@ VertOutput main(VertInput input)
 
     RWTexture2D<float4> probeOffsetMap = rwImg_Arr[handles.probeOffset];
     int2 sampleCoord = GetProbeOffsetMapUV(input.instanceID);
-    float3 offset = probeOffsetMap[sampleCoord].xyz;
-
-    float3 pos = input.position.xyz + probe.position.xyz+offset;
+    float4 offset = probeOffsetMap[sampleCoord];
+    float insideGeo = offset.w;
+    float3 pos = input.position.xyz + probe.position.xyz+offset.xyz;
     output.posSV = mul(globalU.projMat, mul(globalU.viewMat, float4(pos, 1.0)));
-    output.normalWS = input.normal;
+    output.normalWS = float4(input.normal.xyz,insideGeo);
     output.instanceID = input.instanceID;
     return output;
 }

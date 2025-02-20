@@ -405,7 +405,6 @@ void VulkanContext::DrawPrepare()
     vkWaitForFences(device, 1, &presentManager.presentFrames[presentManager.currentFrame].renderFence, VK_TRUE, UINT64_MAX);
     vkResetFences(device,1,&presentManager.presentFrames[presentManager.currentFrame].renderFence);
 
-
     auto result = vkAcquireNextImageKHR(device, swapchainData.swapchain, 1000000000,
                           presentManager.presentFrames[presentManager.currentFrame].swapChainSemaphore, nullptr,
                           &presentManager.swapChainImageIndex);
@@ -420,7 +419,13 @@ void VulkanContext::DrawPrepare()
 
     VkCommandBuffer cmd = presentManager.presentFrames[presentManager.currentFrame].cmd;
     vkResetCommandBuffer(cmd, 0);
-
+    if(!isFirstFrame)
+    {
+        vkWaitForFences(device, 1, &presentManager.presentFrames[presentManager.lastFrame].renderFence, VK_TRUE,
+                        UINT64_MAX);
+        //vkResetFences(device, 1, &presentManager.presentFrames[presentManager.lastFrame].renderFence);
+    }
+    isFirstFrame = false;
 }
 
 void VulkanContext::Submit()
@@ -504,7 +509,7 @@ void VulkanContext::Submit()
     }else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");
     }
-
+    presentManager.lastFrame = presentManager.currentFrame;
     presentManager.currentFrame = ++presentManager.currentFrame%INFLIGHT_COUNT;
 }
 

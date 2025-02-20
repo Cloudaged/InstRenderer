@@ -26,6 +26,7 @@ FragOutput main(FragInput input)
     float2 uv = GetVolumeUV(normalize(input.normalWS.xyz), grid);
 
     float3 color = textures[handles.irradianceVolume].Sample(uv).xyz;
+    
     output.color = float4(color,1);
     return output;
 }

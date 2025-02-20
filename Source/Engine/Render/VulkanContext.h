@@ -57,7 +57,7 @@ public:
     SDL_Event* sdlEvent;
     //RenderPassManager* passManager;
     VkCommandBuffer drawCmd;
-
+    bool isFirstFrame = true;
     VkDescriptorSetLayout bindlessLayout;
     VkDescriptorSet bindlessSet;
 private:

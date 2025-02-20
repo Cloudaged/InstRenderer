@@ -61,10 +61,9 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID)
 
         float2 uv = float2(coords) / float2(PROBE_AREA_SIZE * PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE, PROBE_AREA_SIZE * IRRADIANCE_VOLUME_SIZE);
         float4 lastIrradiance = irradianceVolume.Load(coords);
-
-        // irradianceVolume[coords] = lerp(irradianceResult, lastIrradiance,0.5);
-        irradianceVolume[coords] = irradianceResult;
-        depthVolume[coords] = float2(depthResult);
+        float2 lastDepth = depthVolume.Load(coords);
+        irradianceVolume[coords] = lerp(irradianceResult, lastIrradiance,0.7);
+        depthVolume[coords] = lerp(depthResult, lastDepth,0.7);
     }
     else
     {

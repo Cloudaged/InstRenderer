@@ -37,7 +37,7 @@ public float4 SunColor(float3 dir)
 
     float4 morningColor = float4(0.2, 0.3, 0.35,0.5); 
     float4 noonColor = float4(1.0, 1.0, 1.0,1.5);    
-    float4 eveningColor = float4(1.0, 0.3, 0.3,0.5);
+    float4 eveningColor = float4(1.0, 0.6, 0.3,0.5);
 
     float4 sunColor = lerp(morningColor, noonColor, smoothstep(-1, 0, timeOfDay));
     sunColor = lerp(sunColor, eveningColor, smoothstep(0, 1.0, timeOfDay));

@@ -29,6 +29,7 @@ public:
 public:
     std::function<void()> recreatePassFunc;
     uint32_t currentFrame=0;
+    uint32_t lastFrame = 0;
     uint32_t swapChainImageIndex;
     VkRenderPass lastRenderpass;
     std::vector<VkImage> swapchainImage;
