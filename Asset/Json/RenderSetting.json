@@ -1,0 +1,12 @@
+{
+    "ShadowSetting" :
+    {
+        "PcfSampleCount" : 32,
+        "BlockerSearchCount" : 32
+    },
+    "LightSetting" :
+    {
+        "DefaultLightIntensity": 5,
+        "DefaultLightRange": 30
+    }
+}

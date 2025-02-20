@@ -1,0 +1,252 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v3.2.43",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                1
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Object_4"
+        },
+        {
+            "children" : [
+                0
+            ],
+            "name" : "node_damagedHelmet_-6514_0"
+        }
+    ],
+    "materials" : [
+        {
+            "emissiveFactor" : [
+                1,
+                1,
+                1
+            ],
+            "emissiveTexture" : {
+                "index" : 0
+            },
+            "name" : "Material_MR",
+            "normalTexture" : {
+                "index" : 1
+            },
+            "occlusionTexture" : {
+                "index" : 2
+            },
+            "pbrMetallicRoughness" : {
+                "baseColorTexture" : {
+                    "index" : 3
+                },
+                "metallicRoughnessTexture" : {
+                    "index" : 2
+                }
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Object_0",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TANGENT" : 2,
+                        "TEXCOORD_0" : 3,
+                        "TEXCOORD_1" : 4,
+                        "TEXCOORD_2" : 5,
+                        "TEXCOORD_3" : 6,
+                        "TEXCOORD_4" : 7,
+                        "TEXCOORD_5" : 8
+                    },
+                    "indices" : 9,
+                    "material" : 0
+                }
+            ]
+        }
+    ],
+    "textures" : [
+        {
+            "sampler" : 0,
+            "source" : 0
+        },
+        {
+            "sampler" : 0,
+            "source" : 1
+        },
+        {
+            "sampler" : 0,
+            "source" : 2
+        },
+        {
+            "sampler" : 0,
+            "source" : 3
+        }
+    ],
+    "images" : [
+        {
+            "mimeType" : "image/jpeg",
+            "name" : "Material_MR_emissive",
+            "uri" : "Material_MR_emissive.jpg"
+        },
+        {
+            "mimeType" : "image/jpeg",
+            "name" : "Material_MR_normal",
+            "uri" : "Material_MR_normal.jpg"
+        },
+        {
+            "mimeType" : "image/png",
+            "name" : "Material_MR_metallicRoughness",
+            "uri" : "Material_MR_metallicRoughness.png"
+        },
+        {
+            "mimeType" : "image/jpeg",
+            "name" : "Material_MR_baseColor",
+            "uri" : "Material_MR_baseColor.jpg"
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 16579,
+            "max" : [
+                47.12477111816406,
+                45.04976272583008,
+                40.64225769042969
+            ],
+            "min" : [
+                -47.372928619384766,
+                -45.048709869384766,
+                -59.35776138305664
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 16579,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 16579,
+            "type" : "VEC4"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5126,
+            "count" : 16579,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 16579,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 5,
+            "componentType" : 5126,
+            "count" : 16579,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 6,
+            "componentType" : 5126,
+            "count" : 16579,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 7,
+            "componentType" : 5126,
+            "count" : 16579,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 8,
+            "componentType" : 5126,
+            "count" : 16579,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 9,
+            "componentType" : 5123,
+            "count" : 46356,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 198948,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 198948,
+            "byteOffset" : 198948
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 265264,
+            "byteOffset" : 397896
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 132632,
+            "byteOffset" : 663160
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 132632,
+            "byteOffset" : 795792
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 132632,
+            "byteOffset" : 928424
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 132632,
+            "byteOffset" : 1061056
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 132632,
+            "byteOffset" : 1193688
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 132632,
+            "byteOffset" : 1326320
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 92712,
+            "byteOffset" : 1458952
+        }
+    ],
+    "samplers" : [
+        {
+            "magFilter" : 9729,
+            "minFilter" : 9987
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 1551664,
+            "uri" : "DamageHelmet.bin"
+        }
+    ]
+}

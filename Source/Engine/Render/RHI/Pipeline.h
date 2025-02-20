@@ -1,0 +1,12 @@
+
+#ifndef INSTRENDERER_PIPELINE_H
+#define INSTRENDERER_PIPELINE_H
+
+
+class Pipeline
+{
+
+};
+
+
+#endif //INSTRENDERER_PIPELINE_H

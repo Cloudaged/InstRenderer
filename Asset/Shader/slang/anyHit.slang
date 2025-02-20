@@ -1,0 +1,5 @@
+[shader("anyhit")]
+void main()
+{
+
+}

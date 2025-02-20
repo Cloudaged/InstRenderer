@@ -1,0 +1,11 @@
+Model Information:
+* title:	Heidenturm
+* source:	https://sketchfab.com/3d-models/heidenturm-87da4fd772bc43ce827a0807196b33f0
+* author:	noe-3d.at (https://sketchfab.com/www.noe-3d.at)
+
+Model License:
+* license type:	CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
+* requirements:	Author must be credited. No commercial use.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Heidenturm" (https://sketchfab.com/3d-models/heidenturm-87da4fd772bc43ce827a0807196b33f0) by noe-3d.at (https://sketchfab.com/www.noe-3d.at) licensed under CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
