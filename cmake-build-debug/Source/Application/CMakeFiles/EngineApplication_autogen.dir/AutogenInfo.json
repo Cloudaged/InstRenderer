@@ -1,0 +1,492 @@
+{
+	"BUILD_DIR" : "D:/code_lib/AGProject/InstRenderer/cmake-build-debug/Source/Application/EngineApplication_autogen",
+	"CMAKE_BINARY_DIR" : "D:/code_lib/AGProject/InstRenderer/cmake-build-debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "D:/code_lib/AGProject/InstRenderer/cmake-build-debug/Source/Application",
+	"CMAKE_CURRENT_SOURCE_DIR" : "D:/code_lib/AGProject/InstRenderer/Source/Application",
+	"CMAKE_EXECUTABLE" : "D:/code_lib/Tools/cmake-3.27.5-windows-x86_64/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"D:/code_lib/AGProject/InstRenderer/Source/Application/CMakeLists.txt"
+	],
+	"CMAKE_SOURCE_DIR" : "D:/code_lib/AGProject/InstRenderer",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Application.h",
+			"MU",
+			"EWIEGA46WW/moc_Application.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ComponentEditor/ComponentEditor.h",
+			"MU",
+			"APMFY7ZVSP/moc_ComponentEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ComponentEditor/ui_ComponentEditor.h",
+			"MU",
+			"APMFY7ZVSP/moc_ui_ComponentEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ComponentUI/LightComponentUI/LightComponentUI.h",
+			"MU",
+			"H3PUKPUH5H/moc_LightComponentUI.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ComponentUI/LightComponentUI/ui_LightComponentUI.h",
+			"MU",
+			"H3PUKPUH5H/moc_ui_LightComponentUI.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ComponentUI/TransformComponentUI/TransformComponentUI.h",
+			"MU",
+			"WV5P7DS5LR/moc_TransformComponentUI.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ComponentUI/TransformComponentUI/ui_TransformComponentUI.h",
+			"MU",
+			"WV5P7DS5LR/moc_ui_TransformComponentUI.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ConsoleEditor/ConsoleEditor.h",
+			"MU",
+			"HNWLRWJHGJ/moc_ConsoleEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ConsoleEditor/ui_ConsoleEditor.h",
+			"MU",
+			"HNWLRWJHGJ/moc_ui_ConsoleEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/DragableLabel.h",
+			"MU",
+			"O66NMUW73P/moc_DragableLabel.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/MyToolBox.h",
+			"MU",
+			"O66NMUW73P/moc_MyToolBox.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/MyToolPage.h",
+			"MU",
+			"O66NMUW73P/moc_MyToolPage.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/Transform3D.h",
+			"MU",
+			"O66NMUW73P/moc_Transform3D.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/TriggerBox.h",
+			"MU",
+			"O66NMUW73P/moc_TriggerBox.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/TypeSelector.h",
+			"MU",
+			"O66NMUW73P/moc_TypeSelector.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/ValueEdit.h",
+			"MU",
+			"O66NMUW73P/moc_ValueEdit.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/ui_DragableLabel.h",
+			"MU",
+			"O66NMUW73P/moc_ui_DragableLabel.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/ui_MyToolBox.h",
+			"MU",
+			"O66NMUW73P/moc_ui_MyToolBox.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/ui_MyToolPage.h",
+			"MU",
+			"O66NMUW73P/moc_ui_MyToolPage.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/ui_Transform3D.h",
+			"MU",
+			"O66NMUW73P/moc_ui_Transform3D.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/ui_TriggerBox.h",
+			"MU",
+			"O66NMUW73P/moc_ui_TriggerBox.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/ui_TypeSelector.h",
+			"MU",
+			"O66NMUW73P/moc_ui_TypeSelector.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/ui_ValueEdit.h",
+			"MU",
+			"O66NMUW73P/moc_ui_ValueEdit.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/CustomTitleBar.h",
+			"MU",
+			"VXJ2TIUOOO/moc_CustomTitleBar.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/EditorTypes.h",
+			"MU",
+			"VXJ2TIUOOO/moc_EditorTypes.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/GameThread.h",
+			"MU",
+			"VXJ2TIUOOO/moc_GameThread.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/GraphicSettingWidget/GraphicSettingWidget.h",
+			"MU",
+			"DOA6NB7XT2/moc_GraphicSettingWidget.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/GraphicSettingWidget/ui_GraphicSettingWidget.h",
+			"MU",
+			"DOA6NB7XT2/moc_ui_GraphicSettingWidget.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/IconManager.h",
+			"MU",
+			"VXJ2TIUOOO/moc_IconManager.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/MainEditor/MainEditor.h",
+			"MU",
+			"RDVJX6OFQM/moc_MainEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/MainEditor/ui_MainEditor.h",
+			"MU",
+			"RDVJX6OFQM/moc_ui_MainEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/RenderEditor/RenderEditor.h",
+			"MU",
+			"D2PVH5YUFI/moc_RenderEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/RenderEditor/ui_RenderEditor.h",
+			"MU",
+			"D2PVH5YUFI/moc_ui_RenderEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ResourceEditor/ContentWidget.h",
+			"MU",
+			"3AZBHURT6X/moc_ContentWidget.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ResourceEditor/ResourceEditor.h",
+			"MU",
+			"3AZBHURT6X/moc_ResourceEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ResourceEditor/ui_ContentWidget.h",
+			"MU",
+			"3AZBHURT6X/moc_ui_ContentWidget.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ResourceEditor/ui_ResourceEditor.h",
+			"MU",
+			"3AZBHURT6X/moc_ui_ResourceEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/SceneEditor/SceneEditor.h",
+			"MU",
+			"SVAHAXXSOI/moc_SceneEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/SceneEditor/SceneTree.h",
+			"MU",
+			"SVAHAXXSOI/moc_SceneTree.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/SceneEditor/ui_SceneEditor.h",
+			"MU",
+			"SVAHAXXSOI/moc_ui_SceneEditor.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/SceneEditor/ui_SceneTree.h",
+			"MU",
+			"SVAHAXXSOI/moc_ui_SceneTree.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ui_CustomTitleBar.h",
+			"MU",
+			"VXJ2TIUOOO/moc_ui_CustomTitleBar.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Presenter.h",
+			"MU",
+			"EWIEGA46WW/moc_Presenter.cpp",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Engine/Common/Core/WindowContext.h",
+			"MU",
+			"GIGDLTBZTQ/moc_WindowContext.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "D:/code_lib/AGProject/InstRenderer/cmake-build-debug/Source/Application/EngineApplication_autogen/include",
+	"MOC_COMPILATION_FILE" : "D:/code_lib/AGProject/InstRenderer/cmake-build-debug/Source/Application/EngineApplication_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"MINGW_HAS_SECURE_API=1",
+		"PROJECT_ROOT=\"D:/code_lib/AGProject/InstRenderer\"",
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_WIDGETS_LIB",
+		"UNICODE",
+		"VK_NO_PROTOTYPES",
+		"VK_USE_PLATFORM_WIN32_KHR",
+		"WIN32",
+		"WIN64",
+		"WITH_EDITOR=1",
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE",
+		"_UNICODE",
+		"_WIN64"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"D:/code_lib/AGProject/InstRenderer/ThirdParty/sdl2/include",
+		"D:/code_lib/AGProject/InstRenderer/ThirdParty/glm",
+		"D:/code_lib/AGProject/InstRenderer/ThirdParty/Assimp/include",
+		"D:/code_lib/AGProject/InstRenderer/ThirdParty/stb_image",
+		"D:/code_lib/AGProject/InstRenderer/ThirdParty/tinygltf",
+		"D:/code_lib/AGProject/InstRenderer/ThirdParty/entt",
+		"D:/code_lib/AGProject/InstRenderer/ThirdParty/json",
+		"D:/code_lib/AGProject/InstRenderer/ThirdParty/volk",
+		"D:/code_lib/AGProject/InstRenderer/ThirdParty/hhh",
+		"D:/code_lib/AGProject/InstRenderer/Source/Editor",
+		"D:/code_lib/AGProject/InstRenderer/Source/Engine",
+		"D:/code_lib/ImportLib/VulkanSDK/Include",
+		"D:/code_lib/myqt/6.5.0/mingw_64/include/QtCore",
+		"D:/code_lib/myqt/6.5.0/mingw_64/include",
+		"D:/code_lib/myqt/6.5.0/mingw_64/mkspecs/win32-g++",
+		"D:/code_lib/myqt/6.5.0/mingw_64/include/QtGui",
+		"D:/code_lib/myqt/6.5.0/mingw_64/include/QtWidgets",
+		"D:/CLion 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++",
+		"D:/CLion 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/x86_64-w64-mingw32",
+		"D:/CLion 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/backward",
+		"D:/CLion 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include",
+		"D:/CLion 2023.1.3/bin/mingw/include",
+		"D:/CLion 2023.1.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/11.2.0/include-fixed",
+		"D:/CLion 2023.1.3/bin/mingw/x86_64-w64-mingw32/include"
+	],
+	"MOC_MACRO_NAMES" : 
+	[
+		"Q_OBJECT",
+		"Q_GADGET",
+		"Q_NAMESPACE",
+		"Q_NAMESPACE_EXPORT",
+		"Q_GADGET_EXPORT"
+	],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : 
+	[
+		"D:/CLion 2023.1.3/bin/mingw/bin/g++.exe",
+		"-dM",
+		"-E",
+		"-c",
+		"D:/code_lib/Tools/cmake-3.27.5-windows-x86_64/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp"
+	],
+	"MOC_PREDEFS_FILE" : "D:/code_lib/AGProject/InstRenderer/cmake-build-debug/Source/Application/EngineApplication_autogen/moc_predefs.h",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 14,
+	"PARSE_CACHE_FILE" : "D:/code_lib/AGProject/InstRenderer/cmake-build-debug/Source/Application/CMakeFiles/EngineApplication_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "D:/code_lib/myqt/6.5.0/mingw_64/./bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "D:/code_lib/myqt/6.5.0/mingw_64/./bin/uic.exe",
+	"QT_VERSION_MAJOR" : 6,
+	"QT_VERSION_MINOR" : 5,
+	"SETTINGS_FILE" : "D:/code_lib/AGProject/InstRenderer/cmake-build-debug/Source/Application/CMakeFiles/EngineApplication_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Application.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ComponentEditor/ComponentEditor.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ComponentUI/LightComponentUI/LightComponentUI.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ComponentUI/TransformComponentUI/TransformComponentUI.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ConsoleEditor/ConsoleEditor.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/DragableLabel.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/MyToolBox.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/MyToolPage.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/Transform3D.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/TriggerBox.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/TypeSelector.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/Custom/ValueEdit.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/CustomTitleBar.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/GameThread.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/GraphicSettingWidget/GraphicSettingWidget.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/IconManager.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/MainEditor/MainEditor.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/RenderEditor/RenderEditor.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ResourceEditor/ContentWidget.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/ResourceEditor/ResourceEditor.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/SceneEditor/SceneEditor.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Editor/SceneEditor/SceneTree.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/Presenter.cpp",
+			"MU",
+			null
+		],
+		[
+			"D:/code_lib/AGProject/InstRenderer/Source/Application/main.cpp",
+			"MU",
+			null
+		]
+	],
+	"UIC_OPTIONS" : [],
+	"UIC_SEARCH_PATHS" : [],
+	"UIC_SKIP" : [],
+	"UIC_UI_FILES" : [],
+	"VERBOSITY" : 0
+}

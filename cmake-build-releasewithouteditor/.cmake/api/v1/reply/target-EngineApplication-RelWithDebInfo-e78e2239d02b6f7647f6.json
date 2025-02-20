@@ -1,0 +1,1050 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "Bin/EngineApplication.exe"
+		},
+		{
+			"path" : "Bin/EngineApplication.pdb"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"link_directories",
+			"include",
+			"target_link_libraries",
+			"set_target_properties",
+			"find_package",
+			"add_definitions",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"Source/Application/CMakeLists.txt",
+			"CMake/third.cmake",
+			"CMakeLists.txt",
+			"Source/Engine/CMakeLists.txt",
+			"D:/code_lib/myqt/6.5.0/mingw_64/lib/cmake/Qt6Widgets/Qt6WidgetsVersionlessTargets.cmake",
+			"D:/code_lib/myqt/6.5.0/mingw_64/lib/cmake/Qt6Widgets/Qt6WidgetsConfig.cmake",
+			"D:/code_lib/myqt/6.5.0/mingw_64/lib/cmake/Qt6/Qt6Config.cmake",
+			"D:/code_lib/myqt/6.5.0/mingw_64/lib/cmake/Qt6Gui/Qt6GuiVersionlessTargets.cmake",
+			"D:/code_lib/myqt/6.5.0/mingw_64/lib/cmake/Qt6Gui/Qt6GuiConfig.cmake",
+			"D:/code_lib/myqt/6.5.0/mingw_64/lib/cmake/Qt6Core/Qt6CoreVersionlessTargets.cmake",
+			"D:/code_lib/myqt/6.5.0/mingw_64/lib/cmake/Qt6Core/Qt6CoreConfig.cmake",
+			"D:/code_lib/myqt/6.5.0/mingw_64/lib/cmake/Qt6Core/Qt6CoreTargets.cmake",
+			"D:/code_lib/myqt/6.5.0/mingw_64/lib/cmake/Qt6Gui/Qt6GuiTargets.cmake",
+			"CMake/CmakeMacros.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 14,
+				"parent" : 0
+			},
+			{
+				"file" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 6,
+				"parent" : 2
+			},
+			{
+				"file" : 1,
+				"parent" : 3
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 16,
+				"parent" : 4
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 24,
+				"parent" : 4
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 23,
+				"parent" : 0
+			},
+			{
+				"file" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 3,
+				"line" : 10,
+				"parent" : 8
+			},
+			{
+				"command" : 5,
+				"file" : 1,
+				"line" : 5,
+				"parent" : 4
+			},
+			{
+				"file" : 6,
+				"parent" : 10
+			},
+			{
+				"command" : 5,
+				"file" : 6,
+				"line" : 157,
+				"parent" : 11
+			},
+			{
+				"file" : 5,
+				"parent" : 12
+			},
+			{
+				"command" : 2,
+				"file" : 5,
+				"line" : 55,
+				"parent" : 13
+			},
+			{
+				"file" : 4,
+				"parent" : 14
+			},
+			{
+				"command" : 4,
+				"file" : 4,
+				"line" : 61,
+				"parent" : 15
+			},
+			{
+				"command" : 5,
+				"file" : 6,
+				"line" : 157,
+				"parent" : 11
+			},
+			{
+				"file" : 8,
+				"parent" : 17
+			},
+			{
+				"command" : 2,
+				"file" : 8,
+				"line" : 55,
+				"parent" : 18
+			},
+			{
+				"file" : 7,
+				"parent" : 19
+			},
+			{
+				"command" : 4,
+				"file" : 7,
+				"line" : 61,
+				"parent" : 20
+			},
+			{
+				"command" : 5,
+				"file" : 6,
+				"line" : 157,
+				"parent" : 11
+			},
+			{
+				"file" : 10,
+				"parent" : 22
+			},
+			{
+				"command" : 2,
+				"file" : 10,
+				"line" : 55,
+				"parent" : 23
+			},
+			{
+				"file" : 9,
+				"parent" : 24
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 61,
+				"parent" : 25
+			},
+			{
+				"command" : 2,
+				"file" : 10,
+				"line" : 52,
+				"parent" : 23
+			},
+			{
+				"file" : 11,
+				"parent" : 27
+			},
+			{
+				"command" : 4,
+				"file" : 11,
+				"line" : 61,
+				"parent" : 28
+			},
+			{
+				"command" : 2,
+				"file" : 8,
+				"line" : 52,
+				"parent" : 18
+			},
+			{
+				"file" : 12,
+				"parent" : 30
+			},
+			{
+				"command" : 4,
+				"file" : 12,
+				"line" : 61,
+				"parent" : 31
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 9,
+				"parent" : 2
+			},
+			{
+				"file" : 13,
+				"parent" : 33
+			},
+			{
+				"command" : 6,
+				"file" : 13,
+				"line" : 1,
+				"parent" : 34
+			},
+			{
+				"command" : 6,
+				"file" : 13,
+				"line" : 3,
+				"parent" : 34
+			},
+			{
+				"command" : 6,
+				"file" : 13,
+				"line" : 2,
+				"parent" : 34
+			},
+			{
+				"command" : 7,
+				"file" : 1,
+				"line" : 17,
+				"parent" : 4
+			},
+			{
+				"command" : 7,
+				"file" : 1,
+				"line" : 21,
+				"parent" : 4
+			},
+			{
+				"command" : 7,
+				"file" : 1,
+				"line" : 25,
+				"parent" : 4
+			},
+			{
+				"command" : 7,
+				"file" : 1,
+				"line" : 29,
+				"parent" : 4
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-O2 -g -DNDEBUG -fdiagnostics-color=always"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 7,
+					"define" : "MINGW_HAS_SECURE_API=1"
+				},
+				{
+					"backtrace" : 35,
+					"define" : "PROJECT_ROOT=\"D:/code_lib/AGProject/InstRenderer\""
+				},
+				{
+					"backtrace" : 7,
+					"define" : "QT_CORE_LIB"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "QT_GUI_LIB"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "QT_NO_DEBUG"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "QT_WIDGETS_LIB"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "UNICODE"
+				},
+				{
+					"backtrace" : 36,
+					"define" : "VK_NO_PROTOTYPES"
+				},
+				{
+					"backtrace" : 37,
+					"define" : "VK_USE_PLATFORM_WIN32_KHR"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "WIN32"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "WIN64"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "_ENABLE_EXTENDED_ALIGNED_STORAGE"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "_UNICODE"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "_WIN64"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 0,
+					"path" : "D:/code_lib/AGProject/InstRenderer/cmake-build-releasewithouteditor/Source/Application/EngineApplication_autogen/include"
+				},
+				{
+					"backtrace" : 38,
+					"path" : "D:/code_lib/AGProject/InstRenderer/ThirdParty/sdl2/include"
+				},
+				{
+					"backtrace" : 39,
+					"path" : "D:/code_lib/AGProject/InstRenderer/ThirdParty/glm"
+				},
+				{
+					"backtrace" : 40,
+					"path" : "D:/code_lib/AGProject/InstRenderer/ThirdParty/Assimp/include"
+				},
+				{
+					"backtrace" : 41,
+					"path" : "D:/code_lib/AGProject/InstRenderer/ThirdParty/stb_image"
+				},
+				{
+					"backtrace" : 41,
+					"path" : "D:/code_lib/AGProject/InstRenderer/ThirdParty/tinygltf"
+				},
+				{
+					"backtrace" : 41,
+					"path" : "D:/code_lib/AGProject/InstRenderer/ThirdParty/entt"
+				},
+				{
+					"backtrace" : 41,
+					"path" : "D:/code_lib/AGProject/InstRenderer/ThirdParty/json"
+				},
+				{
+					"backtrace" : 41,
+					"path" : "D:/code_lib/AGProject/InstRenderer/ThirdParty/volk"
+				},
+				{
+					"backtrace" : 41,
+					"path" : "D:/code_lib/AGProject/InstRenderer/ThirdParty/hhh"
+				},
+				{
+					"backtrace" : 42,
+					"path" : "D:/code_lib/AGProject/InstRenderer/Source/Editor"
+				},
+				{
+					"backtrace" : 43,
+					"path" : "D:/code_lib/AGProject/InstRenderer/Source/Engine"
+				},
+				{
+					"backtrace" : 7,
+					"isSystem" : true,
+					"path" : "D:/code_lib/ImportLib/VulkanSDK/Include"
+				},
+				{
+					"backtrace" : 7,
+					"isSystem" : true,
+					"path" : "D:/code_lib/myqt/6.5.0/mingw_64/include/QtCore"
+				},
+				{
+					"backtrace" : 7,
+					"isSystem" : true,
+					"path" : "D:/code_lib/myqt/6.5.0/mingw_64/include"
+				},
+				{
+					"backtrace" : 7,
+					"isSystem" : true,
+					"path" : "D:/code_lib/myqt/6.5.0/mingw_64/mkspecs/win32-g++"
+				},
+				{
+					"backtrace" : 7,
+					"isSystem" : true,
+					"path" : "D:/code_lib/myqt/6.5.0/mingw_64/include/QtGui"
+				},
+				{
+					"backtrace" : 7,
+					"isSystem" : true,
+					"path" : "D:/code_lib/myqt/6.5.0/mingw_64/include/QtWidgets"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					7,
+					7
+				],
+				"standard" : "17"
+			},
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				3,
+				4,
+				7,
+				48,
+				49,
+				50,
+				51,
+				52,
+				53,
+				54,
+				55,
+				56,
+				57,
+				58,
+				59,
+				60,
+				61,
+				62,
+				63,
+				64,
+				65,
+				66,
+				67
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 7,
+			"id" : "Engine::@8dedc67b3cf829627957"
+		},
+		{
+			"backtrace" : 0,
+			"id" : "EngineApplication_autogen::@6a10c4abb00fb0368858"
+		}
+	],
+	"id" : "EngineApplication::@6a10c4abb00fb0368858",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-O2 -g -DNDEBUG",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 5,
+				"fragment" : "-LD:\\code_lib\\AGProject\\InstRenderer\\ThirdParty\\sdl2\\lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 6,
+				"fragment" : "-LD:\\code_lib\\AGProject\\InstRenderer\\ThirdParty\\Assimp\\lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 7,
+				"fragment" : "..\\Engine\\libEngine.dll.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 7,
+				"fragment" : "-lmingw32",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 7,
+				"fragment" : "-lSDL2main",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 7,
+				"fragment" : "-lSDL2",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 9,
+				"fragment" : "D:\\code_lib\\ImportLib\\VulkanSDK\\Lib\\vulkan-1.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 9,
+				"fragment" : "-lassimp",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 16,
+				"fragment" : "D:\\code_lib\\myqt\\6.5.0\\mingw_64\\lib\\libQt6Widgets.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 21,
+				"fragment" : "D:\\code_lib\\myqt\\6.5.0\\mingw_64\\lib\\libQt6Gui.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 26,
+				"fragment" : "D:\\code_lib\\myqt\\6.5.0\\mingw_64\\lib\\libQt6Core.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 29,
+				"fragment" : "-lmpr",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 29,
+				"fragment" : "-luserenv",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 32,
+				"fragment" : "-ld3d11",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 32,
+				"fragment" : "-ldxgi",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 32,
+				"fragment" : "-ldxguid",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 32,
+				"fragment" : "-ldcomp",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "EngineApplication",
+	"nameOnDisk" : "EngineApplication.exe",
+	"paths" : 
+	{
+		"build" : "Source/Application",
+		"source" : "Source/Application"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				3,
+				4,
+				7,
+				48,
+				49,
+				50,
+				51,
+				52,
+				53,
+				54,
+				55,
+				56,
+				57,
+				58,
+				59,
+				60,
+				61,
+				62,
+				63,
+				64,
+				65,
+				66,
+				67
+			]
+		},
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				2,
+				5,
+				6,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29,
+				30,
+				31,
+				32,
+				33,
+				34,
+				35,
+				36,
+				37,
+				38,
+				39,
+				40,
+				41,
+				42,
+				43,
+				44,
+				45,
+				46,
+				47,
+				68
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 0,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "cmake-build-releasewithouteditor/Source/Application/EngineApplication_autogen/mocs_compilation.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/main.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Application.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Application.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Presenter.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Presenter.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/GameThread.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/GameThread.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ComponentEditor/ComponentEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ComponentEditor/ui_ComponentEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ComponentUI/LightComponentUI/LightComponentUI.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ComponentUI/LightComponentUI/ui_LightComponentUI.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ComponentUI/TransformComponentUI/TransformComponentUI.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ComponentUI/TransformComponentUI/ui_TransformComponentUI.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ConsoleEditor/ConsoleEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ConsoleEditor/ui_ConsoleEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/DragableLabel.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/MyToolBox.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/MyToolPage.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/Transform3D.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/TriggerBox.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/TypeSelector.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/ValueEdit.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/ui_DragableLabel.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/ui_MyToolBox.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/ui_MyToolPage.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/ui_Transform3D.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/ui_TriggerBox.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/ui_TypeSelector.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/Custom/ui_ValueEdit.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/CustomTitleBar.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/EditorTypes.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/GraphicSettingWidget/GraphicSettingWidget.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/GraphicSettingWidget/ui_GraphicSettingWidget.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/IconManager.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/MainEditor/MainEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/MainEditor/ui_MainEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/RenderEditor/RenderEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/RenderEditor/ui_RenderEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ResourceEditor/ContentWidget.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ResourceEditor/ResourceEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ResourceEditor/ui_ContentWidget.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ResourceEditor/ui_ResourceEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/SceneEditor/SceneEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/SceneEditor/SceneTree.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/SceneEditor/ui_SceneEditor.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/SceneEditor/ui_SceneTree.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Application/Editor/ui_CustomTitleBar.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/ComponentEditor/ComponentEditor.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/ComponentUI/LightComponentUI/LightComponentUI.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/ComponentUI/TransformComponentUI/TransformComponentUI.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/ConsoleEditor/ConsoleEditor.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/Custom/DragableLabel.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/Custom/MyToolBox.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/Custom/MyToolPage.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/Custom/Transform3D.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/Custom/TriggerBox.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/Custom/TypeSelector.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/Custom/ValueEdit.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/CustomTitleBar.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/GraphicSettingWidget/GraphicSettingWidget.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/IconManager.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/MainEditor/MainEditor.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/RenderEditor/RenderEditor.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/ResourceEditor/ContentWidget.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/ResourceEditor/ResourceEditor.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/SceneEditor/SceneEditor.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Source/Application/Editor/SceneEditor/SceneTree.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "Source/Engine/Common/Core/WindowContext.h",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "EXECUTABLE"
+}
