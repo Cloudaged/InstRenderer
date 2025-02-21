@@ -154,7 +154,8 @@ void RenderSystem::SetupUniforms()
 
                 auto [frustumCenter,radius] = EngineMath::GetFrustumCircumsphere(frustumCorners);
                 csmU->data.radiusBias = 50.0f;
-                radius +=csmU->data.radiusBias;
+                radius*=1.5;
+                //radius +=csmU->data.radiusBias;
                 float unitPerPix = (radius*2.0)/CASCADED_WIDTH;
                 if(globalRenderSettingData.uniform.shadowDebug.antiShimmering==1)
                 {

@@ -25,6 +25,7 @@ void main()
     DDGIPayload payload;
     payload.radiance = float3(0);
     payload.distance = 0.0f;
+    payload.curDepth = 0;
     Probe p = probeBuffer.Load(pixelCoord.x);
     float3 offset = probeOffset.Load(GetProbeOffsetMapUV(pixelCoord.x)).xyz;
     RayDesc ray;

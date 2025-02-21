@@ -6,6 +6,7 @@ public struct DDGIPayload
    public float3 radiance;
    public float distance;
    public float visibility;
+   public int curDepth;
 }
 
 public struct Probe

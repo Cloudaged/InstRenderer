@@ -24,7 +24,7 @@ void main(inout DDGIPayload payload,Attributes att)
         payload.radiance = 0;
         return;
     }
-
+    
     RaytracingAccelerationStructure tlas = tlasUniform_Arr[handles.tlas];
     LightCameraUniform lightUniform = Arr_lightUniform[handles.lightData];
     StructuredBuffer<GeometryNode> nodeBuffer = node_Arr[handles.geometryNodeArray];
@@ -82,6 +82,47 @@ void main(inout DDGIPayload payload,Attributes att)
     float metallic = metallicRoughness.b;
     float roughness = metallicRoughness.g;
 
+    // Secondary Ray
+    payload.curDepth++;
+    uint seed ;
+    float3 secDir;
+    if (payload.curDepth == 1)
+    {
+        seed = ((DispatchRaysIndex().y * DispatchRaysDimensions().x) + DispatchRaysIndex().x);
+        secDir = GetRandomCosineDirectionOnHemisphere(normal, seed);
+        RayDesc secRay;
+        secRay.Origin = curPos;
+        secRay.Direction = secDir;
+        secRay.TMin = 0.001;
+        secRay.TMax = 10000;
+        payload.visibility = 0.0;
+        TraceRay(tlas, RAY_FLAG_FORCE_OPAQUE, 0XFF, 0, 0, 0, secRay, payload);
+    }
+
+    float3 F0 = GetF0(baseColor.xyz, metallic);
+
+    float3 diffuseBRDF = GetDiffuseBRDF(baseColor.xyz);
+    float VoN = clamp(dot(-WorldRayDirection(), normal), 0.0001, 1);
+    float3 F = F_Schlick(F0, VoN);
+    float3 ks = F;
+    float3 kd = float3(1.0) - F;
+    kd *= (1.0 - metallic);
+    float3 directColor = (0, 0, 0);
+    // direct Light
+    {
+        float3 specularBRDF = GetSpecularBRDF(normal, lp.lightDir, -WorldRayDirection(), roughness, F0);
+        float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
+        directColor = lp.intensity * float3(1, 1, 1) * max(dot(normal, lp.lightDir.xyz), 0.0) * finalBRDF;
+    }
+    float3 indirectColor = (0, 0, 0);
+    // Indirect Light
+    if (payload.curDepth == 1)
+    {
+        float3 specularBRDF = GetSpecularBRDF(normal, secDir, -WorldRayDirection(), roughness, F0);
+        float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
+        indirectColor = float3(payload.radiance) * finalBRDF*PI;
+    }
+
     RayDesc ray;
     ray.Origin = curPos;
     ray.Direction = -normalize(light.toward.xyz);
@@ -91,27 +132,9 @@ void main(inout DDGIPayload payload,Attributes att)
     payload.visibility = 0;
     TraceRay(tlas, flags, 0XFF, 0, 0, 1, ray, payload);
 
-    float3 F0 = GetF0(baseColor.xyz, metallic);
-
-    float3 diffuseBRDF = GetDiffuseBRDF(baseColor.xyz);
-
-    float3 directColor = (0, 0, 0);
-    // direct Light
-    {
-        float3 halfDir = normalize(lp.lightDir + (-WorldRayDirection()));
-        float VoH = clamp(dot(-WorldRayDirection(), halfDir), 0.0001, 1);
-        float VoN = clamp(dot(-WorldRayDirection(), normal), 0.0001, 1);
-        float3 F = F_Schlick(F0, VoN);
-        float3 ks = F;
-        float3 kd = float3(1.0) - F;
-        kd *= (1.0 - metallic);
-
-        // specular
-        float3 specularBRDF = GetSpecularBRDF(normal, lp.lightDir, -WorldRayDirection(), roughness, F0);
-        float3 finalBRDF = kd * diffuseBRDF + ks * specularBRDF;
-         directColor = lp.intensity * float3(1, 1, 1) * max(dot(normal, lp.lightDir.xyz), 0.0) * finalBRDF;
-    }
     float sunIntensity = sunColor.w;
-    payload.radiance = sunIntensity*sunColor.xyz*directColor.xyz*payload.visibility;
+    
+    payload.radiance = sunIntensity * sunColor.xyz * directColor.xyz * payload.visibility + indirectColor;
     payload.distance = RayTCurrent();
+    payload.curDepth--;
 }
