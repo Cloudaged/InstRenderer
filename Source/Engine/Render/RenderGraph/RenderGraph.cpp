@@ -85,7 +85,7 @@ namespace RDG
         auto img = std::make_shared<AllocatedImage>(imageType,textureInfo->format,textureInfo->usage,
                                                     textureInfo->extent.GetVkExtent(),
                                                     textureInfo->mipLevels,textureInfo->arrayCount);
-        texture = std::make_shared<Texture>(img);
+        texture = std::make_shared<Texture>(img,textureInfo->usage);
     }
 
     void RenderGraph::CreateBufferResource(ResourceRef& resource)

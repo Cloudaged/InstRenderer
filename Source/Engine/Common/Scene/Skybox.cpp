@@ -15,6 +15,6 @@ Skybox::Skybox(std::string boxPath, std::vector<std::string> paths)
                        VkExtent2D{(uint32_t)resTex->width,(uint32_t)resTex->height},1,paths.size());
     img->LoadData(resTex);
 
-    this->texture = std::make_shared<Texture>(img,TextureType::DontCare);
+    this->texture = std::make_shared<Texture>(img,TextureUsage::Unknown);
 
 }

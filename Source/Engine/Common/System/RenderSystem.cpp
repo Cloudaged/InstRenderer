@@ -267,7 +267,7 @@ void RenderSystem::SetupUniforms()
                                 VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT|VK_IMAGE_USAGE_SAMPLED_BIT,
                                 VkExtent2D{SSAO_ROTATION_SIZE,SSAO_ROTATION_SIZE},1,1);
         allocIMG->LoadData(ssaoNoise.data(),ssaoNoise.size()*sizeof(glm::vec2));
-        rotationRes.textureInfo->data = std::make_shared<Texture>(allocIMG,TextureType::DontCare);
+        rotationRes.textureInfo->data = std::make_shared<Texture>(allocIMG,TextureUsage::Unknown);
     }
 
     {
@@ -440,19 +440,19 @@ void RenderSystem::DeclareResource()
 
     auto viewNormal = rg.AddResource({"ViewNormal",.type = ResourceType::Texture,
                                                 .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                                           TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                                           TextureUsage::ColorAttachment, VK_FORMAT_R8G8B8A8_SNORM}});
 
     auto normal = rg.AddResource({.name = "Normal",.type = ResourceType::Texture,
                                       .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                                 TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                                 TextureUsage::ColorAttachment, VK_FORMAT_R8G8B8A8_SNORM}});
 
     auto baseColor = rg.AddResource({.name = "BaseColor",.type = ResourceType::Texture,
                                          .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                                    TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                                    TextureUsage::ColorAttachment, VK_FORMAT_R8G8B8A8_UNORM}});
 
     auto metallicRoughness = rg.AddResource({.name = "MetallicRoughness",.type = ResourceType::Texture,
                                                  .textureInfo = TextureInfo{WINDOW_EXTENT,
-                                                                            TextureUsage::ColorAttachment, VK_FORMAT_R16G16B16A16_SFLOAT}});
+                                                                            TextureUsage::ColorAttachment, VK_FORMAT_R8G8B8A8_UNORM}});
 
     auto depth = rg.AddResource({.name = "Depth",.type = ResourceType::Texture,
                                      .textureInfo = TextureInfo{WINDOW_EXTENT,

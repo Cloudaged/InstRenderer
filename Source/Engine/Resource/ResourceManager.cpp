@@ -108,7 +108,7 @@ std::shared_ptr<Texture> ResourceManager::AllocTexture(std::shared_ptr<Res::ResT
 
     VulkanContext::GetContext().EndSingleTimeCommands(cmd, CmdThread::Resource);
 
-    return std::make_shared<Texture>(img,resTexture->textureType);
+    return std::make_shared<Texture>(img,TextureUsage::Unknown);
 }
 
 void ResourceManager::CompileModel(GameInstance *instance,std::shared_ptr<Res::ResModel> model)

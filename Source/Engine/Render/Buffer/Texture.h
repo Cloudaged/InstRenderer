@@ -5,10 +5,11 @@
 #include "vma/vk_mem_alloc.h"
 #include "AllocatedImage.h"
 #include "../../Resource/ResTexture.h"
+#include "../RenderGraph/TextureUsage.h"
 class Texture
 {
 public:
-    Texture(std::shared_ptr<AllocatedImage> image,TextureType type=TextureType::DontCare);
+    Texture(std::shared_ptr<AllocatedImage> image,UsageFlags usage=TextureUsage::Unknown);
     ~Texture();
 public:
     VkSampler sampler;

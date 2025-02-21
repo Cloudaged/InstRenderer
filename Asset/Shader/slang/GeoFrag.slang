@@ -45,6 +45,10 @@ FragOutput main(FragInput input)
     {
         // output.outBaseColor = pow(baseColor.Sample(input.uv),float4(2.2));
         output.outBaseColor = textures[basecolorIndex].Sample(input.uv);
+        if (output.outBaseColor.w < 0.5)
+        {
+            discard;
+        }
     }
     else
     {

@@ -3,7 +3,7 @@
 #include "../VulkanContext.h"
 
 
-Texture::Texture(std::shared_ptr<AllocatedImage> image,TextureType type): allocatedImage(image)
+Texture::Texture(std::shared_ptr<AllocatedImage> image,UsageFlags usage): allocatedImage(image)
 {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(VulkanContext::GetContext().gpu, &properties);
@@ -14,9 +14,19 @@ Texture::Texture(std::shared_ptr<AllocatedImage> image,TextureType type): alloca
     samplerInfo.magFilter = VK_FILTER_LINEAR;
     samplerInfo.minFilter = VK_FILTER_LINEAR;
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+    if(usage&TextureUsage::ShadowMap)
+    {
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    } else
+    {
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    }
+
     samplerInfo.anisotropyEnable = VK_TRUE;
     samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
     samplerInfo.borderColor =VK_BORDER_COLOR_INT_OPAQUE_BLACK;
