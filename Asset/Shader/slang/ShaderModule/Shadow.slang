@@ -112,7 +112,7 @@ public float GetAvgBlockerDepth(Sampler2D shadowMap,float2 screenPos,float camDe
     for (int i = 0; i < BLOCKER_SEARCH_COUNTS; i++)
     {
         // float range = 0.002;
-        float2 samplePos = screenPos + poissonDisk[i] * searchRange;
+        float2 samplePos = screenPos + (poissonDisk[i]*2.f-1) * searchRange;
         if (samplePos.x < 0.0 || samplePos.x > 1.0 || samplePos.y < 0.0 || samplePos.y > 1.0) {
             continue;
         }
@@ -176,7 +176,7 @@ float PCF_CSM(Sampler2DArray shadowMapArr,int index, float2 screenPos, float cam
 
         float lightCamDepth = shadowMapArr.Sample(float3(samplePos, index)).r;
     
-        sum += float(camDepth - bias < lightCamDepth);
+        sum += float(camDepth - bias < lightCamDepth); 
     }        
 
     return sum / sampleCount;
@@ -206,8 +206,7 @@ public float CSM(Sampler2DArray shadowMapArr,int index,int blendIndex,float blen
     posInLightNDC = posInLightNDC / posInLightNDC.w;
     float2 screenPos = posInLightNDC.xy * 0.5 + 0.5;
     float viewCamDepthLS = posInLightNDC.z;
-    float range = (1.0f / csmU.unitPerPix[index]) * rangeFactor;
-    float2 poissonDisk[MAX_SMAPLE_COUNT];
+    float range = (1.0f /csmU.unitPerPix[index]) * rangeFactor;
 
     float4 posInLightNDC1 = mul(csmU.vpMat[blendIndex], worldPos);
     posInLightNDC1 = posInLightNDC1 / posInLightNDC1.w;

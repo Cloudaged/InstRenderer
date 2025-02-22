@@ -13,6 +13,7 @@
 #include "../Serialization/RenderSettingSerializer.h"
 #include "fstream"
 #include "../Core/PathDefine.h"
+#include "../../Render/Meshlet.h"
 struct RenderSettings
 {
     RenderSettingUniform uniform;

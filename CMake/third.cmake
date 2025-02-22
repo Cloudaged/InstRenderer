@@ -33,3 +33,8 @@ include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/stb_image
         ${CMAKE_SOURCE_DIR}/ThirdParty/volk
         ${CMAKE_SOURCE_DIR}/ThirdParty/hhh)
 
+#meshopt
+link_directories(${CMAKE_SOURCE_DIR}/ThirdParty/meshopt/bin)
+include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/meshopt/include)
+FILE(COPY ${CMAKE_SOURCE_DIR}/ThirdParty/meshopt/bin/libmeshoptimizer.dll DESTINATION ${CMAKE_BINARY_DIR}/Bin)
+
