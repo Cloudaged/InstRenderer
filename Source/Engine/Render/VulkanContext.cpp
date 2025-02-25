@@ -160,7 +160,7 @@ void VulkanContext::CreateQueueAndDevice()
 
     float graphicQueuePriority = 1.0f;
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamily = {indices.graphicFamily.value(),indices.presentFamily.value()};
+    std::set<uint32_t> uniqueQueueFamily = {indices.graphicFamily.value(),indices.computeFamily.value(),indices.presentFamily.value()};
 
     for (uint32_t queueFamily:uniqueQueueFamily)
     {
@@ -250,6 +250,7 @@ void VulkanContext::CreateQueueAndDevice()
 
     //get the queue from device
     vkGetDeviceQueue(device,indices.graphicFamily.value(),0,&queues.graphicsQueue);
+    vkGetDeviceQueue(device,indices.computeFamily.value(),0,&queues.computeQueue);
     vkGetDeviceQueue(device,indices.presentFamily.value(),0,&queues.presentQueue);
 }
 
@@ -500,7 +501,7 @@ void VulkanContext::Submit()
 
     presentInfo.pImageIndices = &presentManager.swapChainImageIndex;
 
-    auto result1 = vkQueuePresentKHR(queues.graphicsQueue, &presentInfo);
+    auto result1 = vkQueuePresentKHR(queues.presentQueue, &presentInfo);
 
     if(result==VK_ERROR_OUT_OF_DATE_KHR)
     {

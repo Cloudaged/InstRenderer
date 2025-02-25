@@ -29,6 +29,12 @@ QueueFamilyIndices VulkanFuncs::FindQueueFamilies(VkPhysicalDevice device)
         if(queueFamily.queueFlags&VK_QUEUE_GRAPHICS_BIT)
         {
             indices.graphicFamily = i;
+        } else
+        {
+            if(queueFamily.queueFlags&VK_QUEUE_COMPUTE_BIT)
+            {
+                indices.computeFamily = i;
+            }
         }
 
         VkBool32 presentSupport = false;

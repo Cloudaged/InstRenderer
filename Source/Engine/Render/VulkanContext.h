@@ -47,6 +47,7 @@ public:
     QueueFamilyIndices familyIndices;
     VmaAllocator allocator;
     VkCommandPool gameCmdPool;
+    VkCommandPool computeCmdPool;
     VkCommandPool resourceCmdPool;
     VkCommandPool editorCmdPool;
     PresentManager presentManager;

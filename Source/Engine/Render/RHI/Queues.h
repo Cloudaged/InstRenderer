@@ -9,17 +9,19 @@ struct QueueFamilyIndices
 {
     //QueueFamilies that we need
     std::optional<uint32_t> graphicFamily;
+    std::optional<uint32_t> computeFamily;
     std::optional<uint32_t> presentFamily;
 
     bool IsComplete()
     {
-        return graphicFamily.has_value()&&presentFamily.has_value();
+        return graphicFamily.has_value()&&presentFamily.has_value()&&computeFamily.has_value();
     }
 };
 
 struct ContextQueues
 {
     VkQueue graphicsQueue;
+    VkQueue computeQueue;
     VkQueue presentQueue;
 };
 
